@@ -83,6 +83,13 @@ and installs the coding package set. That step needs network access and may
 take a few minutes. If it fails, the shell remains usable and the SETUP button
 retries it.
 
+The app currently targets Android API 28 intentionally. Android 10 and newer
+block apps targeting API 29 or higher from executing binaries extracted into
+private app data, while this focused harness installs and updates its Termux
+userspace under the app-private `files/coding-harness` directory. Raising the
+target requires moving the complete mutable runtime to Android's native-library
+execution path; it is not enough to chmod the extracted files.
+
 ## CI workflow template
 
 The workflow template is deliberately stored outside `.github/workflows`:

@@ -52,6 +52,22 @@ public final class HarnessEnvironment {
             + (existingLibraries == null || existingLibraries.isEmpty()
                 ? "" : File.pathSeparator + existingLibraries));
 
+        // Termux packages use this hook to translate Linux-style executable
+        // paths such as /bin/sh and /usr/bin/env to the private PREFIX. Newer
+        // bootstraps use the linker-aware variant; older ones use the original
+        // library name. Only export a path that is actually present, otherwise
+        // Android's linker rejects every child process at startup.
+        File termuxExec = new File(config.libraryDirectory, "libtermux-exec-ld-preload.so");
+        if (!termuxExec.isFile()) {
+            termuxExec = new File(config.libraryDirectory, "libtermux-exec.so");
+        }
+        if (termuxExec.isFile()) {
+            String existingPreload = environment.get("LD_PRELOAD");
+            environment.put("LD_PRELOAD", termuxExec.getAbsolutePath()
+                + (existingPreload == null || existingPreload.isEmpty()
+                    ? "" : File.pathSeparator + existingPreload));
+        }
+
         // Android's shell prompt can be platform-dependent. A stable prompt
         // makes the embedded terminal useful for agents and tests.
         environment.put("PS1", "\\u@coding-harness:\\w$ ");

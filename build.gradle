@@ -5,7 +5,12 @@ plugins {
 
 ext {
     minSdkVersion = 29
-    targetSdkVersion = 35
+    // The harness extracts and executes the Termux userspace from app-private
+    // storage. Android 10+ blocks execution from app data for apps targeting
+    // API 29+, while the Termux-style runtime requires those files to run.
+    // Keep the compatibility target until the runtime is packaged through the
+    // native-library execution path instead of being installed under files/.
+    targetSdkVersion = 28
     compileSdkVersion = 35
     ndkVersion = "27.2.12479018"
 }
