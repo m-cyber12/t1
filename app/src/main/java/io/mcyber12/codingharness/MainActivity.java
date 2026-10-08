@@ -5,6 +5,7 @@ import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.KeyEvent;
@@ -80,6 +81,8 @@ public final class MainActivity extends Activity {
         statusView.setTextColor(Color.rgb(125, 211, 252));
         statusView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 11);
         statusView.setGravity(Gravity.CENTER_VERTICAL);
+        statusView.setMaxLines(2);
+        statusView.setEllipsize(TextUtils.TruncateAt.END);
         toolbar.addView(statusView, new LinearLayout.LayoutParams(0, dp(48), 1));
 
         Button setupButton = new Button(this);
@@ -161,8 +164,22 @@ public final class MainActivity extends Activity {
             HarnessPackageInstaller.InstallResult result =
                 HarnessPackageInstaller.installCodingToolchain(harnessConfig);
             setupRunning.set(false);
-            setStatus(result.message);
+            if (result.success) {
+                setStatus(result.message);
+            } else {
+                setStatus("setup failed — tap SETUP to retry");
+                runOnUiThread(() -> showSetupFailure(result.message));
+            }
         }, "coding-harness-packages").start();
+    }
+
+    private void showSetupFailure(String message) {
+        if (isFinishing()) return;
+        new android.app.AlertDialog.Builder(this)
+            .setTitle("Coding tools are not installed")
+            .setMessage(message)
+            .setPositiveButton("Close", null)
+            .show();
     }
 
     private void showToolInventory() {
