@@ -1,0 +1,25 @@
+plugins {
+    id "com.android.application" version "8.13.2" apply false
+    id "com.android.library" version "8.13.2" apply false
+}
+
+ext {
+    minSdkVersion = 29
+    targetSdkVersion = 35
+    compileSdkVersion = 35
+    ndkVersion = "27.2.12479018"
+}
+
+allprojects {
+    group = "io.mcyber12.codingharness"
+    version = "0.1.0"
+}
+
+// Keep the copied Termux terminal libraries boring and independently reusable.
+// This task is deliberately separate from the application build so the same
+// harness-core + terminal modules can be added to a larger Android app later.
+tasks.register("printHarnessModules") {
+    doLast {
+        println("terminal-emulator + terminal-view + harness-core + app")
+    }
+}
