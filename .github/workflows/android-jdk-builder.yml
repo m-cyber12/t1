@@ -29,21 +29,9 @@ jobs:
         uses: android-actions/setup-android@v3
         with:
           # setup-android v3 still defaults to the removed SDK package "tools".
-          # Install only the command-line tools here; the supported SDK packages
-          # are installed explicitly in the next step.
-          packages: ''
-
-      - name: Install Android SDK and NDK
-        shell: bash
-        run: |
-          yes | sdkmanager --licenses >/dev/null
-          # sdkmanager installs packages when they are positional arguments;
-          # there is no --install option.
-          sdkmanager \
-            "platform-tools" \
-            "platforms;android-35" \
-            "build-tools;35.0.0" \
-            "ndk;27.2.12479018"
+          # Override the default with only supported package names. The action
+          # installs each package as a positional sdkmanager argument.
+          packages: 'platform-tools platforms;android-35 build-tools;35.0.0 ndk;27.2.12479018'
 
       - name: Verify toolchain
         run: |
