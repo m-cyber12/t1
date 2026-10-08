@@ -55,6 +55,14 @@ jobs:
             echo "::error title=Gradle build::${line}"
           done || true
 
+          report=$(grep -h -m1 -A8 '<failure' terminal-emulator/build/test-results/testDebugUnitTest/*.xml 2>/dev/null | tr '\n' ' ' | cut -c1-4000 || true)
+          if [ -n "$report" ]; then
+            report=${report//%/%25}
+            report=${report//$'\r'/%0D}
+            report=${report//$'\n'/%0A}
+            echo "::error title=First JUnit failure::$report"
+          fi
+
       - name: Upload Gradle failure log
         if: failure()
         uses: actions/upload-artifact@v4
