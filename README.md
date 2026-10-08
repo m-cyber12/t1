@@ -90,6 +90,34 @@ userspace under the app-private `files/coding-harness` directory. Raising the
 target requires moving the complete mutable runtime to Android's native-library
 execution path; it is not enough to chmod the extracted files.
 
+## How the standalone app works
+
+The startup path is deliberately small and layered:
+
+1. `MainActivity` creates the terminal view and a private runtime configuration.
+2. `HarnessBootstrap` extracts the ABI-specific Termux bootstrap into the app's
+   private `files/coding-harness/usr` prefix and restores its symlinks and
+   executable permissions.
+3. `HarnessSession` starts a real PTY-backed Bash process in the private
+   workspace. `terminal-emulator` handles terminal parsing and PTY I/O;
+   `terminal-view` renders it and forwards touch/keyboard input.
+4. `HarnessEnvironment` supplies `HOME`, `PREFIX`, `PATH`, XDG directories,
+   library paths and Termux relocation variables. The small `harness-exec`
+   preload translates the official bootstrap's `/data/data/com.termux` script
+   interpreters to this app's private prefix.
+5. `HarnessPackageInstaller` runs `apt-get` inside that same environment and
+   installs the focused coding set: Python, Node.js/npm, Perl, Ruby, Git,
+   ripgrep, Clang, Make, CMake, curl, SSH and common Unix tools.
+
+This is a real Linux userspace and process environment inside the Android app,
+not a fake command console. It has a persistent workspace, a private HOME,
+package state, shell processes, executable toolchain, environment variables,
+PTY behavior, scrollback, copy/paste and keyboard input. It intentionally does
+not include Termux's Android UI, plugins, services, add-on ecosystem, storage
+browser or general-purpose distribution surface. The reusable process,
+bootstrap and environment modules remain independent of this Activity so the
+main OpenCode app can later attach its own UI and workspace policy.
+
 ## CI workflow template
 
 The workflow template is deliberately stored outside `.github/workflows`:
