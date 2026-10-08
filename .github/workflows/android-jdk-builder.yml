@@ -37,7 +37,9 @@ jobs:
         shell: bash
         run: |
           yes | sdkmanager --licenses >/dev/null
-          sdkmanager --install \
+          # sdkmanager installs packages when they are positional arguments;
+          # there is no --install option.
+          sdkmanager \
             "platform-tools" \
             "platforms;android-35" \
             "build-tools;35.0.0" \
