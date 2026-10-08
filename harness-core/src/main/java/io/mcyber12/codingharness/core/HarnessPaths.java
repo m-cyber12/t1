@@ -77,6 +77,8 @@ public final class HarnessPaths {
     public File xdgCache() { return xdgCache; }
 
     public String defaultShell() {
+        File bash = new File(bin, "bash");
+        if (bash.isFile() && bash.canExecute()) return bash.getAbsolutePath();
         File shell = new File("/system/bin/sh");
         return shell.exists() ? shell.getAbsolutePath() : "sh";
     }

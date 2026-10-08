@@ -40,7 +40,10 @@ public final class HarnessSession {
         ensureDirectory(config.libraryDirectory);
 
         String shell = config.shellPath;
-        if (shell.indexOf('/') >= 0 && !new File(shell).canExecute()) {
+        File bundledBash = new File(config.toolDirectory, "bash");
+        if (bundledBash.isFile() && bundledBash.canExecute()) {
+            shell = bundledBash.getAbsolutePath();
+        } else if (shell.indexOf('/') >= 0 && !new File(shell).canExecute()) {
             shell = "/system/bin/sh";
         }
         Map<String, String> environment = HarnessEnvironment.create(
