@@ -50,12 +50,7 @@ jobs:
         if: failure()
         shell: bash
         run: |
-          grep -Ei 'FAILURE:|What went wrong:|Execution failed|A problem occurred|Could not|error:|Caused by:|FAILED|AssertionError|ComparisonFailure|expected|but was|was=|Test .* failed|junit' gradle-build.log | tail -120 | while IFS= read -r line; do
-            line="${line:0:1000}"
-            echo "::error title=Gradle build::${line}"
-          done || true
-
-          report=$(grep -h -m1 -A8 '<failure' terminal-emulator/build/test-results/testDebugUnitTest/*.xml 2>/dev/null | tr '\n' ' ' | cut -c1-4000 || true)
+          report=$(grep -h -m1 -A12 '<failure' terminal-emulator/build/test-results/testDebugUnitTest/*.xml 2>/dev/null | tr '\n' ' ' | cut -c1-8000 || true)
           if [ -n "$report" ]; then
             report=${report//%/%25}
             report=${report//$'\r'/%0D}
