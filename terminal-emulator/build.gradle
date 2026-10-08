@@ -36,6 +36,13 @@ android {
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
     }
+
+    // Termux's emulator tests touch Android framework timing APIs such as
+    // SystemClock.uptimeMillis(). The tests are JVM tests, so return the
+    // framework defaults instead of throwing "method not mocked".
+    testOptions {
+        unitTests.returnDefaultValues = true
+    }
 }
 
 dependencies {
