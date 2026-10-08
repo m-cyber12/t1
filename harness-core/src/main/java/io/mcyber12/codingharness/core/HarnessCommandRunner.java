@@ -1,17 +1,12 @@
 package io.mcyber12.codingharness.core;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 /** Runs one-shot coding tools with the same sandbox as the interactive shell. */
@@ -43,51 +38,38 @@ public final class HarnessCommandRunner {
         environment.putAll(HarnessEnvironment.create(config));
         builder.redirectErrorStream(true);
 
-        Process process = builder.start();
-        ExecutorService readerExecutor = Executors.newSingleThreadExecutor(r -> {
-            Thread thread = new Thread(r, "coding-harness-command-reader");
-            thread.setDaemon(true);
-            return thread;
-        });
-        Future<String> outputFuture = readerExecutor.submit(() -> readOutput(process));
+        // Android may close ProcessPipeInputStream as soon as a child exits,
+        // which can hide the useful apt/dpkg error behind "Unable to read
+        // command output". Redirect to a private file and read it after the
+        // process has finished instead of racing the Android pipe cleanup.
+        File outputFile = new File(config.prefix, "var/log/harness-command.log");
+        File outputDirectory = outputFile.getParentFile();
+        if (outputDirectory != null && !outputDirectory.isDirectory()
+            && !outputDirectory.mkdirs() && !outputDirectory.isDirectory()) {
+            throw new IOException("Unable to create command log directory: " + outputDirectory);
+        }
+        if (outputFile.exists() && !outputFile.delete()) {
+            throw new IOException("Unable to clear command log: " + outputFile);
+        }
+        builder.redirectOutput(outputFile);
 
+        Process process = builder.start();
         boolean completed = process.waitFor(timeoutMillis, TimeUnit.MILLISECONDS);
         if (!completed) {
             process.destroy();
             if (!process.waitFor(250, TimeUnit.MILLISECONDS)) process.destroyForcibly();
         }
 
-        String output;
-        try {
-            output = outputFuture.get(2, TimeUnit.SECONDS);
-        } catch (ExecutionException e) {
-            Throwable cause = e.getCause();
-            output = "[command output reader failed: "
-                + (cause == null ? "unknown error" : cause.getMessage()) + "]\n";
-        } catch (java.util.concurrent.TimeoutException e) {
-            output = "[command output unavailable after process timeout]\n";
-            outputFuture.cancel(true);
-        } finally {
-            readerExecutor.shutdownNow();
-        }
-
+        String output = readOutput(outputFile);
         return new CommandResult(completed ? process.exitValue() : -1, output, !completed);
     }
 
-    private static String readOutput(Process process) {
-        StringBuilder text = new StringBuilder();
-        try (BufferedReader reader = new BufferedReader(
-            new InputStreamReader(process.getInputStream(), StandardCharsets.UTF_8))) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                text.append(line).append('\n');
-            }
+    private static String readOutput(File outputFile) {
+        try {
+            return new String(Files.readAllBytes(outputFile.toPath()), StandardCharsets.UTF_8);
         } catch (IOException e) {
-            text.append("[command output read failed: ")
-                .append(e.getMessage())
-                .append("]\n");
+            return "[command output read failed: " + e.getMessage() + "]\n";
         }
-        return text.toString();
     }
 
     public CommandResult run(String executable, String... args) throws IOException, InterruptedException {
