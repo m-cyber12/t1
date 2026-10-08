@@ -25,6 +25,8 @@ public class HarnessEnvironmentTest {
         assertEquals("/tmp/workspace", environment.get("PWD"));
         assertTrue(environment.get("PATH").startsWith("/tmp/harness/usr/bin"));
         assertEquals("/tmp/harness/usr", environment.get("PREFIX"));
+        assertEquals("/tmp/harness", environment.get("TERMUX__ROOTFS"));
+        assertEquals("/tmp/harness/usr", environment.get("TERMUX__PREFIX"));
         assertEquals("xterm-256color", environment.get("TERM"));
         assertEquals("/system/bin/sh", environment.get("SHELL"));
     }

@@ -115,6 +115,7 @@ public final class MainActivity extends Activity {
             .prefix(paths.prefix())
             .toolDirectory(paths.bin())
             .libraryDirectory(paths.lib())
+            .nativeLibraryDirectory(new java.io.File(getApplicationInfo().nativeLibraryDir))
             .shellPath(paths.defaultShell())
             .transcriptRows(2_000)
             .build();

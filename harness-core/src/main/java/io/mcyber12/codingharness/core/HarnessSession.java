@@ -38,6 +38,11 @@ public final class HarnessSession {
         ensureDirectory(config.prefix);
         ensureDirectory(config.toolDirectory);
         ensureDirectory(config.libraryDirectory);
+        try {
+            HarnessEnvironment.prepare(config);
+        } catch (java.io.IOException e) {
+            throw new IllegalStateException("Unable to prepare relocated package configuration", e);
+        }
 
         String shell = config.shellPath;
         File bundledBash = new File(config.toolDirectory, "bash");
@@ -59,9 +64,13 @@ public final class HarnessSession {
         );
 
         // TerminalSession uses argv[0] as the process name and creates the
-        // PTY through Termux's small native helper. Keep the shell interactive
-        // but do not use a login shell that could source an unknown profile.
-        String[] args = new String[] { new File(shell).getName(), "-i" };
+        // PTY through Termux's small native helper. Do not let the bootstrap's
+        // compiled-in /data/data/com.termux bashrc path run in this standalone
+        // package; its files live under the harness prefix. The host can add
+        // a future harness rc file explicitly without inheriting that path.
+        String[] args = new String[] {
+            new File(shell).getName(), "--noprofile", "--norc", "-i"
+        };
         TerminalSession terminal = new TerminalSession(
             shell,
             config.workspace.getAbsolutePath(),

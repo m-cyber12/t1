@@ -35,6 +35,7 @@ public final class HarnessCommandRunner {
             }
         }
 
+        HarnessEnvironment.prepare(config);
         ProcessBuilder builder = new ProcessBuilder(resolvedCommand);
         builder.directory(config.workspace);
         Map<String, String> environment = builder.environment();

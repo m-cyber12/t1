@@ -1,6 +1,9 @@
 package io.mcyber12.codingharness.core;
 
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -8,7 +11,41 @@ import java.util.Map;
 
 /** Builds the Termux-compatible environment exposed to coding tools. */
 public final class HarnessEnvironment {
+    private static final String APT_CONFIG_NAME = "harness-apt.conf";
+
     private HarnessEnvironment() {}
+
+    /**
+     * Creates the small relocation config needed by apt and dpkg. The
+     * official Termux binaries use a fixed build-time prefix, so package
+     * management must be pointed at this app's private prefix explicitly.
+     */
+    public static void prepare(HarnessConfig config) throws IOException {
+        File aptDirectory = new File(config.prefix, "etc/apt");
+        if (!aptDirectory.isDirectory() && !aptDirectory.mkdirs() && !aptDirectory.isDirectory()) {
+            throw new IOException("Unable to create apt configuration directory: " + aptDirectory);
+        }
+
+        File aptConfig = new File(aptDirectory, APT_CONFIG_NAME);
+        String prefix = config.prefix.getAbsolutePath();
+        String content =
+            "Dir \"" + prefix + "\";\n" +
+            "Dir::State \"var/lib/apt\";\n" +
+            "Dir::State::status \"var/lib/dpkg/status\";\n" +
+            "Dir::State::lists \"var/lib/apt/lists\";\n" +
+            "Dir::Cache \"var/cache/apt\";\n" +
+            "Dir::Cache::archives \"archives\";\n" +
+            "Dir::Etc \"etc/apt\";\n" +
+            "Dir::Etc::sourcelist \"sources.list\";\n" +
+            "Dir::Etc::sourceparts \"sources.list.d\";\n" +
+            "Dir::Etc::main \"apt.conf\";\n" +
+            "Dir::Etc::parts \"apt.conf.d\";\n" +
+            "Dir::Log \"var/log/apt\";\n" +
+            "Dir::Bin::methods \"lib/apt/methods\";\n";
+        try (FileOutputStream output = new FileOutputStream(aptConfig)) {
+            output.write(content.getBytes(StandardCharsets.UTF_8));
+        }
+    }
 
     public static Map<String, String> create(HarnessConfig config) {
         Map<String, String> environment = new LinkedHashMap<>();
@@ -42,6 +79,23 @@ public final class HarnessEnvironment {
         environment.put("HARNESS_PREFIX", config.prefix.getAbsolutePath());
         environment.put("HARNESS_WORKSPACE", config.workspace.getAbsolutePath());
         environment.put("HARNESS_TOOLS", config.toolDirectory.getAbsolutePath());
+
+        // The official bootstrap is built for Termux's default package path.
+        // termux-exec supports relocating that path when these variables are
+        // exported by the host app. Without them, scripts retain
+        // /data/data/com.termux/files/usr in their shebangs and fail with
+        // "bad interpreter" in this standalone package.
+        File appData = root.getParentFile() == null ? root : root.getParentFile().getParentFile();
+        String appDataPath = appData == null ? root.getAbsolutePath() : appData.getAbsolutePath();
+        String legacyAppDataPath = appDataPath.replace("/data/user/0/", "/data/data/");
+        environment.put("TERMUX_APP__DATA_DIR", appDataPath);
+        environment.put("TERMUX_APP__LEGACY_DATA_DIR", legacyAppDataPath);
+        environment.put("TERMUX__ROOTFS", root.getAbsolutePath());
+        environment.put("TERMUX__PREFIX", config.prefix.getAbsolutePath());
+        environment.put("TERMUX__PROJECT_DIR", root.getAbsolutePath());
+        environment.put("DPKG_ADMINDIR", new File(config.prefix, "var/lib/dpkg").getAbsolutePath());
+        File aptConfig = new File(config.prefix, "etc/apt/" + APT_CONFIG_NAME);
+        if (aptConfig.isFile()) environment.put("APT_CONFIG", aptConfig.getAbsolutePath());
         environment.put("XDG_DATA_HOME", new File(root, "xdg/data").getAbsolutePath());
         environment.put("XDG_CONFIG_HOME", new File(root, "xdg/config").getAbsolutePath());
         environment.put("XDG_STATE_HOME", new File(root, "xdg/state").getAbsolutePath());
@@ -57,16 +111,25 @@ public final class HarnessEnvironment {
         // bootstraps use the linker-aware variant; older ones use the original
         // library name. Only export a path that is actually present, otherwise
         // Android's linker rejects every child process at startup.
+        StringBuilder preload = new StringBuilder();
+        if (config.nativeLibraryDirectory != null) {
+            File harnessExec = new File(config.nativeLibraryDirectory, "libharness-exec.so");
+            if (harnessExec.isFile()) preload.append(harnessExec.getAbsolutePath());
+        }
         File termuxExec = new File(config.libraryDirectory, "libtermux-exec-ld-preload.so");
         if (!termuxExec.isFile()) {
             termuxExec = new File(config.libraryDirectory, "libtermux-exec.so");
         }
         if (termuxExec.isFile()) {
-            String existingPreload = environment.get("LD_PRELOAD");
-            environment.put("LD_PRELOAD", termuxExec.getAbsolutePath()
-                + (existingPreload == null || existingPreload.isEmpty()
-                    ? "" : File.pathSeparator + existingPreload));
+            if (preload.length() > 0) preload.append(File.pathSeparator);
+            preload.append(termuxExec.getAbsolutePath());
         }
+        String existingPreload = environment.get("LD_PRELOAD");
+        if (existingPreload != null && !existingPreload.isEmpty()) {
+            if (preload.length() > 0) preload.append(File.pathSeparator);
+            preload.append(existingPreload);
+        }
+        if (preload.length() > 0) environment.put("LD_PRELOAD", preload.toString());
 
         // Android's shell prompt can be platform-dependent. A stable prompt
         // makes the embedded terminal useful for agents and tests.
