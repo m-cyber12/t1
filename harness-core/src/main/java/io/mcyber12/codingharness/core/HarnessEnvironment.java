@@ -25,10 +25,24 @@ public final class HarnessEnvironment {
         if (!aptDirectory.isDirectory() && !aptDirectory.mkdirs() && !aptDirectory.isDirectory()) {
             throw new IOException("Unable to create apt configuration directory: " + aptDirectory);
         }
+        ensureDirectory(new File(aptDirectory, "apt.conf.d"));
+        ensureDirectory(new File(aptDirectory, "sources.list.d"));
+        ensureDirectory(new File(aptDirectory, "trusted.gpg.d"));
+        ensureDirectory(new File(config.prefix, "var/lib/apt/lists/partial"));
+        ensureDirectory(new File(config.prefix, "var/cache/apt/archives/partial"));
+        ensureDirectory(new File(config.prefix, "var/log/apt"));
 
         File aptConfig = new File(aptDirectory, APT_CONFIG_NAME);
         String prefix = config.prefix.getAbsolutePath();
+        String architecture = System.getProperty("os.arch", "");
+        if (architecture.contains("aarch64") || architecture.contains("arm64")) {
+            architecture = "aarch64";
+        } else if (architecture.contains("86_64") || architecture.contains("amd64")) {
+            architecture = "x86_64";
+        }
         String content =
+            "Apt::System \"Debian APT planner interface\";\n" +
+            (architecture.isEmpty() ? "" : "Apt::Architecture \"" + architecture + "\";\n") +
             "Dir \"" + prefix + "\";\n" +
             "Dir::State \"var/lib/apt\";\n" +
             "Dir::State::status \"var/lib/dpkg/status\";\n" +
@@ -41,9 +55,16 @@ public final class HarnessEnvironment {
             "Dir::Etc::main \"apt.conf\";\n" +
             "Dir::Etc::parts \"apt.conf.d\";\n" +
             "Dir::Log \"var/log/apt\";\n" +
+            "Dir::Bin::dpkg \"bin/dpkg\";\n" +
             "Dir::Bin::methods \"lib/apt/methods\";\n";
         try (FileOutputStream output = new FileOutputStream(aptConfig)) {
             output.write(content.getBytes(StandardCharsets.UTF_8));
+        }
+    }
+
+    private static void ensureDirectory(File directory) throws IOException {
+        if (!directory.isDirectory() && !directory.mkdirs() && !directory.isDirectory()) {
+            throw new IOException("Unable to create runtime directory: " + directory);
         }
     }
 
