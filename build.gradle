@@ -15,6 +15,18 @@ allprojects {
     version = "0.1.0"
 }
 
+subprojects {
+    tasks.withType(Test).configureEach {
+        testLogging {
+            events "failed"
+            exceptionFormat "full"
+            showExceptions true
+            showCauses true
+            showStackTraces true
+        }
+    }
+}
+
 // Keep the copied Termux terminal libraries boring and independently reusable.
 // This task is deliberately separate from the application build so the same
 // harness-core + terminal modules can be added to a larger Android app later.
