@@ -14,7 +14,8 @@ public class HarnessEnvironmentTest {
         HarnessConfig config = new HarnessConfig.Builder()
             .workspace(new File("/tmp/workspace"))
             .home(new File("/tmp/harness/home"))
-            .toolDirectory(new File("/tmp/harness/bin"))
+            .prefix(new File("/tmp/harness/usr"))
+            .toolDirectory(new File("/tmp/harness/usr/bin"))
             .libraryDirectory(new File("/tmp/harness/lib"))
             .shellPath("/system/bin/sh")
             .build();
@@ -22,16 +23,20 @@ public class HarnessEnvironmentTest {
         Map<String, String> environment = HarnessEnvironment.create(config);
 
         assertEquals("/tmp/workspace", environment.get("PWD"));
-        assertTrue(environment.get("PATH").startsWith("/tmp/harness/bin"));
+        assertTrue(environment.get("PATH").startsWith("/tmp/harness/usr/bin"));
+        assertEquals("/tmp/harness/usr", environment.get("PREFIX"));
         assertEquals("xterm-256color", environment.get("TERM"));
         assertEquals("/system/bin/sh", environment.get("SHELL"));
     }
 
     @Test
-    public void omittedRuntimesAreExplicit() {
-        assertTrue(Toolchain.OMITTED_RUNTIMES.contains("python"));
-        assertTrue(Toolchain.OMITTED_RUNTIMES.contains("npm"));
-        assertTrue(Toolchain.OMITTED_RUNTIMES.contains("perl"));
-        assertTrue(Toolchain.OMITTED_RUNTIMES.contains("ruby"));
+    public void codingPackagesIncludeTheLanguageRuntimes() {
+        assertTrue(HarnessPackageInstaller.CODING_PACKAGES.contains("python"));
+        assertTrue(HarnessPackageInstaller.CODING_PACKAGES.contains("nodejs"));
+        assertTrue(HarnessPackageInstaller.CODING_PACKAGES.contains("npm"));
+        assertTrue(HarnessPackageInstaller.CODING_PACKAGES.contains("perl"));
+        assertTrue(HarnessPackageInstaller.CODING_PACKAGES.contains("ruby"));
+        assertTrue(HarnessPackageInstaller.CODING_PACKAGES.contains("git"));
+        assertTrue(HarnessPackageInstaller.CODING_PACKAGES.contains("ripgrep"));
     }
 }

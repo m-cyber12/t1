@@ -35,6 +35,7 @@ public final class HarnessSession {
 
         ensureDirectory(config.workspace);
         ensureDirectory(config.home);
+        ensureDirectory(config.prefix);
         ensureDirectory(config.toolDirectory);
         ensureDirectory(config.libraryDirectory);
 
@@ -46,6 +47,7 @@ public final class HarnessSession {
             new HarnessConfig.Builder()
                 .workspace(config.workspace)
                 .home(config.home)
+                .prefix(config.prefix)
                 .toolDirectory(config.toolDirectory)
                 .libraryDirectory(config.libraryDirectory)
                 .shellPath(shell)

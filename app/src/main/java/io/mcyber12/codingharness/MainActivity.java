@@ -3,18 +3,15 @@ package io.mcyber12.codingharness;
 import android.app.Activity;
 import android.content.ClipData;
 import android.content.ClipboardManager;
-import android.content.Context;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
-import android.view.View;
 import android.view.Window;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
-import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -25,24 +22,29 @@ import com.termux.view.TerminalView;
 import com.termux.view.TerminalViewClient;
 
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
+import io.mcyber12.codingharness.core.HarnessBootstrap;
 import io.mcyber12.codingharness.core.HarnessConfig;
+import io.mcyber12.codingharness.core.HarnessPackageInstaller;
 import io.mcyber12.codingharness.core.HarnessPaths;
 import io.mcyber12.codingharness.core.HarnessSession;
 import io.mcyber12.codingharness.core.Toolchain;
 
 /**
- * Small standalone host for the reusable coding harness.
+ * Standalone terminal app host for the reusable coding harness.
  *
- * <p>The Activity contains no shell setup logic. That lives in harness-core so
- * this UI can later be removed and the same session can be attached to the
- * main OpenCode app.</p>
+ * <p>The Activity contains no package/bootstrap logic. That lives in
+ * harness-core so this UI can later be removed and the same session can be
+ * attached to the main OpenCode app.</p>
  */
 public final class MainActivity extends Activity {
     private TerminalView terminalView;
     private HarnessSession harnessSession;
+    private HarnessConfig harnessConfig;
     private TextView statusView;
     private int fontSize = 14;
+    private final AtomicBoolean setupRunning = new AtomicBoolean(false);
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,7 +55,7 @@ public final class MainActivity extends Activity {
         window.setSoftInputMode(android.view.WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
 
         buildUi();
-        startSession();
+        prepareRuntime();
     }
 
     private void buildUi() {
@@ -74,11 +76,18 @@ public final class MainActivity extends Activity {
         toolbar.addView(title, new LinearLayout.LayoutParams(0, dp(48), 1));
 
         statusView = new TextView(this);
-        statusView.setText("starting shell...");
+        statusView.setText("preparing Termux runtime...");
         statusView.setTextColor(Color.rgb(125, 211, 252));
         statusView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 11);
         statusView.setGravity(Gravity.CENTER_VERTICAL);
         toolbar.addView(statusView, new LinearLayout.LayoutParams(0, dp(48), 1));
+
+        Button setupButton = new Button(this);
+        setupButton.setText("SETUP");
+        setupButton.setTextSize(TypedValue.COMPLEX_UNIT_SP, 10);
+        setupButton.setTextColor(Color.rgb(186, 230, 253));
+        setupButton.setOnClickListener(v -> installToolchain());
+        toolbar.addView(setupButton, new LinearLayout.LayoutParams(dp(76), dp(44)));
 
         Button toolsButton = new Button(this);
         toolsButton.setText("TOOLS");
@@ -98,31 +107,67 @@ public final class MainActivity extends Activity {
         setContentView(root);
     }
 
-    private void startSession() {
+    private void prepareRuntime() {
         HarnessPaths paths = HarnessPaths.forApp(this);
-        HarnessConfig config = HarnessConfig.builder(this)
+        harnessConfig = HarnessConfig.builder(this)
             .workspace(paths.workspace())
             .home(paths.home())
+            .prefix(paths.prefix())
             .toolDirectory(paths.bin())
             .libraryDirectory(paths.lib())
             .shellPath(paths.defaultShell())
             .transcriptRows(2_000)
             .build();
 
+        new Thread(() -> {
+            try {
+                setStatus("installing base runtime...");
+                HarnessBootstrap.ensureInstalled(this, harnessConfig);
+                runOnUiThread(this::attachTerminal);
+            } catch (Exception e) {
+                setStatus("bootstrap failed: " + shortMessage(e));
+            }
+        }, "coding-harness-bootstrap").start();
+    }
+
+    private void attachTerminal() {
         SessionClient client = new SessionClient();
         terminalView.setTerminalViewClient(client);
         terminalView.setTerminalCursorBlinkerRate(500);
-        harnessSession = HarnessSession.start(this, config, client);
+        harnessSession = HarnessSession.start(this, harnessConfig, client);
         terminalView.attachSession(harnessSession.terminalSession());
         terminalView.requestFocus();
-        statusView.setText("shell ready");
+        setStatus("base ready; installing coding tools...");
+
+        // Do this automatically on the first run, while SETUP remains available
+        // for retrying after a network failure.
+        installToolchain();
+    }
+
+    private void installToolchain() {
+        if (harnessConfig == null || harnessSession == null) {
+            setStatus("base runtime is still preparing...");
+            return;
+        }
+        if (HarnessPackageInstaller.isCodingToolchainReady(harnessConfig)) {
+            setStatus("ready: Python / Node/npm / Perl / Ruby");
+            return;
+        }
+        if (!setupRunning.compareAndSet(false, true)) return;
+
+        setStatus("installing Python / Node/npm / Perl / Ruby...");
+        new Thread(() -> {
+            HarnessPackageInstaller.InstallResult result =
+                HarnessPackageInstaller.installCodingToolchain(harnessConfig);
+            setupRunning.set(false);
+            setStatus(result.message);
+        }, "coding-harness-packages").start();
     }
 
     private void showToolInventory() {
-        if (harnessSession == null) return;
-        HarnessConfig config = harnessSession.config();
+        if (harnessConfig == null) return;
         StringBuilder text = new StringBuilder("Coding harness tools\n\n");
-        for (Map.Entry<String, Toolchain.ToolStatus> entry : Toolchain.inspect(config).entrySet()) {
+        for (Map.Entry<String, Toolchain.ToolStatus> entry : Toolchain.inspect(harnessConfig).entrySet()) {
             Toolchain.ToolStatus tool = entry.getValue();
             text.append(tool.name)
                 .append(tool.available ? "  READY" : "  —")
@@ -141,6 +186,17 @@ public final class MainActivity extends Activity {
         terminalView.requestFocus();
         InputMethodManager input = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
         if (input != null) input.showSoftInput(terminalView, InputMethodManager.SHOW_IMPLICIT);
+    }
+
+    private void setStatus(String status) {
+        runOnUiThread(() -> {
+            if (statusView != null) statusView.setText(status);
+        });
+    }
+
+    private String shortMessage(Throwable throwable) {
+        String message = throwable.getMessage();
+        return message == null ? throwable.getClass().getSimpleName() : message;
     }
 
     private int dp(int value) {
@@ -168,7 +224,7 @@ public final class MainActivity extends Activity {
 
         @Override
         public void onSessionFinished(TerminalSession finishedSession) {
-            runOnUiThread(() -> statusView.setText("shell exited: " + finishedSession.getExitStatus()));
+            setStatus("shell exited: " + finishedSession.getExitStatus());
         }
 
         @Override

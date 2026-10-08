@@ -7,19 +7,13 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Tool discovery for the coding harness.
- *
- * <p>The harness deliberately does not pretend to be a general Linux distro.
- * Bun/JavaScript, Git, ripgrep and the Android shell are the first-class
- * tools. Python, npm, Perl and Ruby are not silently assumed to exist.</p>
- */
+/** Tool discovery for the coding harness. */
 public final class Toolchain {
     public static final List<String> REQUIRED_TOOLS = Collections.unmodifiableList(
-        Arrays.asList("sh", "git", "rg", "bun")
+        Arrays.asList("sh", "bash", "git", "rg", "python", "node", "npm", "perl", "ruby")
     );
-    public static final List<String> OMITTED_RUNTIMES = Collections.unmodifiableList(
-        Arrays.asList("python", "python3", "npm", "perl", "ruby")
+    public static final List<String> OPTIONAL_TOOLS = Collections.unmodifiableList(
+        Arrays.asList("bun", "curl", "make", "clang", "cmake", "jq", "tree", "tar", "zip", "unzip", "ssh")
     );
 
     private Toolchain() {}
@@ -27,16 +21,21 @@ public final class Toolchain {
     public static Map<String, ToolStatus> inspect(HarnessConfig config) {
         Map<String, ToolStatus> result = new LinkedHashMap<>();
         result.put("sh", new ToolStatus("sh", config.shellPath, true, "Android system shell"));
-        for (String name : Arrays.asList("git", "rg", "bun")) {
-            File candidate = new File(config.toolDirectory, name);
-            boolean executable = candidate.isFile() && candidate.canExecute();
-            result.put(name, new ToolStatus(name, candidate.getAbsolutePath(), executable,
-                executable ? "harness tool" : "not bundled yet"));
+        for (String name : REQUIRED_TOOLS) {
+            if ("sh".equals(name)) continue;
+            result.put(name, inspectPrefixTool(config, name));
         }
-        for (String name : OMITTED_RUNTIMES) {
-            result.put(name, new ToolStatus(name, null, false, "intentionally not part of the harness"));
+        for (String name : OPTIONAL_TOOLS) {
+            result.put(name, inspectPrefixTool(config, name));
         }
         return result;
+    }
+
+    private static ToolStatus inspectPrefixTool(HarnessConfig config, String name) {
+        File candidate = new File(config.toolDirectory, name);
+        boolean executable = candidate.isFile() && candidate.canExecute();
+        return new ToolStatus(name, candidate.getAbsolutePath(), executable,
+            executable ? "Termux package or host-provided tool" : "not installed yet");
     }
 
     public static final class ToolStatus {

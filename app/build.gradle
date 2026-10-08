@@ -2,6 +2,23 @@ plugins {
     id "com.android.application"
 }
 
+// The bootstrap contains the base Termux userspace (apt/dpkg, shell, core
+// utilities and certificates). Language packages are installed from the Termux
+// repository on first run by harness-core.
+def bootstrapVersion = "2026.02.12-r1%2Bapt.android-7"
+def bootstrapAssets = [
+    "aarch64": [
+        url: "https://github.com/termux/termux-packages/releases/download/bootstrap-${bootstrapVersion}/bootstrap-aarch64.zip",
+        sha256: "ea2aeba8819e517db711f8c32369e89e7c52cee73e07930ff91185e1ab93f4f3"
+    ],
+    "x86_64": [
+        url: "https://github.com/termux/termux-packages/releases/download/bootstrap-${bootstrapVersion}/bootstrap-x86_64.zip",
+        sha256: "b7fd0f2e3a4de534be3144f9f91acc768630fc463eaf134ab2e64c545e834f7a"
+    ]
+]
+
+def bootstrapOutput = layout.buildDirectory.dir("generated/harness-bootstrap/assets")
+
 android {
     namespace "io.mcyber12.codingharness"
     compileSdk rootProject.ext.compileSdkVersion
@@ -10,8 +27,14 @@ android {
         applicationId "io.mcyber12.codingharness"
         minSdk rootProject.ext.minSdkVersion
         targetSdk rootProject.ext.targetSdkVersion
-        versionCode 1
-        versionName "0.1.0"
+        versionCode 2
+        versionName "0.2.0"
+    }
+
+    sourceSets {
+        main {
+            assets.srcDir(bootstrapOutput)
+        }
     }
 
     buildTypes {
@@ -25,6 +48,54 @@ android {
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
     }
+}
+
+def sha256 = { File file ->
+    def digest = java.security.MessageDigest.getInstance("SHA-256")
+    file.withInputStream { input ->
+        byte[] buffer = new byte[64 * 1024]
+        int count
+        while ((count = input.read(buffer)) != -1) digest.update(buffer, 0, count)
+    }
+    digest.digest().collect { String.format("%02x", it & 0xff) }.join()
+}
+
+def downloadBootstrap = tasks.register("downloadHarnessBootstrap") {
+    outputs.dir(bootstrapOutput)
+    doLast {
+        File outputDir = bootstrapOutput.get().asFile
+        outputDir.mkdirs()
+        bootstrapAssets.each { arch, metadata ->
+            File output = new File(outputDir, "bootstrap-${arch}.zip")
+            boolean valid = output.isFile() && sha256(output) == metadata.sha256
+            if (valid) return
+
+            logger.lifecycle("Downloading Termux bootstrap for ${arch}")
+            File temporary = new File(outputDir, output.name + ".part")
+            temporary.delete()
+            def connection = new URL(metadata.url).openConnection()
+            connection.setConnectTimeout(30_000)
+            connection.setReadTimeout(180_000)
+            connection.setUseCaches(false)
+            connection.inputStream.withCloseable { input ->
+                temporary.withOutputStream { outputStream ->
+                    byte[] buffer = new byte[64 * 1024]
+                    int count
+                    while ((count = input.read(buffer)) != -1) outputStream.write(buffer, 0, count)
+                }
+            }
+            if (sha256(temporary) != metadata.sha256) {
+                temporary.delete()
+                throw new GradleException("SHA-256 mismatch for ${metadata.url}")
+            }
+            if (output.exists() && !output.delete()) throw new GradleException("Unable to replace ${output}")
+            if (!temporary.renameTo(output)) throw new GradleException("Unable to activate ${output}")
+        }
+    }
+}
+
+tasks.matching { it.name in ["preDebugBuild", "preReleaseBuild"] }.configureEach {
+    dependsOn(downloadBootstrap)
 }
 
 dependencies {

@@ -4,14 +4,15 @@ import android.content.Context;
 
 import java.io.File;
 
-/** App-private paths used by the harness runtime. */
+/** App-private Termux-style paths used by the harness runtime. */
 public final class HarnessPaths {
     private final File root;
+    private final File prefix;
     private final File workspace;
     private final File home;
+    private final File tmp;
     private final File bin;
     private final File lib;
-    private final File tmp;
     private final File xdgData;
     private final File xdgConfig;
     private final File xdgState;
@@ -19,11 +20,15 @@ public final class HarnessPaths {
 
     private HarnessPaths(File root) {
         this.root = root;
+        // Termux packages expect PREFIX/bin, PREFIX/lib, PREFIX/etc and
+        // PREFIX/var. Keeping this layout means package scripts work without
+        // rewriting paths when this module is integrated into the main app.
+        prefix = new File(root, "usr");
         workspace = new File(root, "workspace");
         home = new File(root, "home");
-        bin = new File(root, "bin");
-        lib = new File(root, "lib");
-        tmp = new File(root, "tmp");
+        tmp = new File(prefix, "tmp");
+        bin = new File(prefix, "bin");
+        lib = new File(prefix, "lib");
         xdgData = new File(root, "xdg/data");
         xdgConfig = new File(root, "xdg/config");
         xdgState = new File(root, "xdg/state");
@@ -38,11 +43,12 @@ public final class HarnessPaths {
 
     public void ensure() {
         mkdir(root);
+        mkdir(prefix);
         mkdir(workspace);
         mkdir(home);
+        mkdir(tmp);
         mkdir(bin);
         mkdir(lib);
-        mkdir(tmp);
         mkdir(xdgData);
         mkdir(xdgConfig);
         mkdir(xdgState);
@@ -59,11 +65,12 @@ public final class HarnessPaths {
     }
 
     public File root() { return root; }
+    public File prefix() { return prefix; }
     public File workspace() { return workspace; }
     public File home() { return home; }
+    public File tmp() { return tmp; }
     public File bin() { return bin; }
     public File lib() { return lib; }
-    public File tmp() { return tmp; }
     public File xdgData() { return xdgData; }
     public File xdgConfig() { return xdgConfig; }
     public File xdgState() { return xdgState; }

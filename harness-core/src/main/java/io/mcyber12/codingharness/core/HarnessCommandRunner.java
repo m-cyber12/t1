@@ -1,6 +1,7 @@
 package io.mcyber12.codingharness.core;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
@@ -25,7 +26,16 @@ public final class HarnessCommandRunner {
         if (command == null || command.isEmpty()) throw new IllegalArgumentException("command is empty");
         if (timeoutMillis <= 0) throw new IllegalArgumentException("timeoutMillis must be positive");
 
-        ProcessBuilder builder = new ProcessBuilder(new ArrayList<>(command));
+        List<String> resolvedCommand = new ArrayList<>(command);
+        String requestedExecutable = resolvedCommand.get(0);
+        if (requestedExecutable.indexOf('/') < 0) {
+            File bundledExecutable = new File(config.toolDirectory, requestedExecutable);
+            if (bundledExecutable.isFile() && bundledExecutable.canExecute()) {
+                resolvedCommand.set(0, bundledExecutable.getAbsolutePath());
+            }
+        }
+
+        ProcessBuilder builder = new ProcessBuilder(resolvedCommand);
         builder.directory(config.workspace);
         Map<String, String> environment = builder.environment();
         environment.clear();
