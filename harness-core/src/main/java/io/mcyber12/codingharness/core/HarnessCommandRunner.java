@@ -61,7 +61,9 @@ public final class HarnessCommandRunner {
         try {
             output = outputFuture.get(2, TimeUnit.SECONDS);
         } catch (ExecutionException e) {
-            throw new IOException("Unable to read command output", e.getCause());
+            Throwable cause = e.getCause();
+            output = "[command output reader failed: "
+                + (cause == null ? "unknown error" : cause.getMessage()) + "]\n";
         } catch (java.util.concurrent.TimeoutException e) {
             output = "[command output unavailable after process timeout]\n";
             outputFuture.cancel(true);
@@ -72,16 +74,20 @@ public final class HarnessCommandRunner {
         return new CommandResult(completed ? process.exitValue() : -1, output, !completed);
     }
 
-    private static String readOutput(Process process) throws IOException {
+    private static String readOutput(Process process) {
+        StringBuilder text = new StringBuilder();
         try (BufferedReader reader = new BufferedReader(
             new InputStreamReader(process.getInputStream(), StandardCharsets.UTF_8))) {
-            StringBuilder text = new StringBuilder();
             String line;
             while ((line = reader.readLine()) != null) {
                 text.append(line).append('\n');
             }
-            return text.toString();
+        } catch (IOException e) {
+            text.append("[command output read failed: ")
+                .append(e.getMessage())
+                .append("]\n");
         }
+        return text.toString();
     }
 
     public CommandResult run(String executable, String... args) throws IOException, InterruptedException {
@@ -90,7 +96,7 @@ public final class HarnessCommandRunner {
         if (args != null) {
             for (String arg : args) command.add(arg);
         }
-        return run(command, 60_000L);
+        return run(command, 10 * 60_000L);
     }
 
     public static final class CommandResult {
