@@ -50,7 +50,7 @@ jobs:
         if: failure()
         shell: bash
         run: |
-          grep -E 'FAILURE:|What went wrong:|Execution failed|A problem occurred|Could not|error:|Caused by:' gradle-build.log | tail -40 | while IFS= read -r line; do
+          grep -E 'FAILURE:|What went wrong:|Execution failed|A problem occurred|Could not|error:|Caused by:|FAILED|AssertionError|ComparisonFailure|expected|but was|Test .* failed' gradle-build.log | tail -80 | while IFS= read -r line; do
             line="${line:0:1000}"
             echo "::error title=Gradle build::${line}"
           done || true
