@@ -25,18 +25,23 @@ jobs:
           java-version: "17"
           cache: gradle
 
-      - name: Set up Android SDK
+      - name: Set up Android SDK command-line tools
         uses: android-actions/setup-android@v3
+        with:
+          # setup-android v3 still defaults to the removed SDK package "tools".
+          # Install only the command-line tools here; the supported SDK packages
+          # are installed explicitly in the next step.
+          packages: ''
 
       - name: Install Android SDK and NDK
         shell: bash
         run: |
+          yes | sdkmanager --licenses >/dev/null
           sdkmanager --install \
             "platform-tools" \
             "platforms;android-35" \
             "build-tools;35.0.0" \
             "ndk;27.2.12479018"
-          yes | sdkmanager --licenses >/dev/null || true
 
       - name: Verify toolchain
         run: |
