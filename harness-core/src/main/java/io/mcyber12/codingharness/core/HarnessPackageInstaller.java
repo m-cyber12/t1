@@ -112,10 +112,13 @@ public final class HarnessPackageInstaller {
         }
     }
 
+    /** Keeps the head and the tail: the first error explains the cause, the
+     *  last lines show where apt gave up. */
     private static String compact(String output) {
         if (output == null) return "no output";
         String normalized = output.replace('\n', ' ').replace('\r', ' ').trim();
-        return normalized.length() > 240 ? normalized.substring(normalized.length() - 240) : normalized;
+        if (normalized.length() <= 900) return normalized;
+        return normalized.substring(0, 450) + " … " + normalized.substring(normalized.length() - 450);
     }
 
     public static final class InstallResult {

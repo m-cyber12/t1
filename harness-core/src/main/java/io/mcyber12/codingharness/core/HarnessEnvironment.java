@@ -28,6 +28,18 @@ public final class HarnessEnvironment {
         ensureDirectory(new File(aptDirectory, "apt.conf.d"));
         ensureDirectory(new File(aptDirectory, "sources.list.d"));
         ensureDirectory(new File(aptDirectory, "trusted.gpg.d"));
+
+        // Without at least one deb line, apt-get update succeeds while
+        // fetching nothing and every install then reports "Unable to locate
+        // package". The official bootstrap ships this file; recreate it if a
+        // partial extraction ever left it missing or empty.
+        File sourcesList = new File(aptDirectory, "sources.list");
+        if (!sourcesList.isFile() || sourcesList.length() == 0) {
+            try (FileOutputStream sources = new FileOutputStream(sourcesList)) {
+                sources.write("deb https://packages-cf.termux.dev/apt/termux-main/ stable main\n"
+                    .getBytes(StandardCharsets.UTF_8));
+            }
+        }
         ensureDirectory(new File(config.prefix, "var/lib/apt/lists/partial"));
         ensureDirectory(new File(config.prefix, "var/cache/apt/archives/partial"));
         ensureDirectory(new File(config.prefix, "var/log/apt"));
