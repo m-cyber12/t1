@@ -75,20 +75,7 @@ jobs:
               && git add -A && git -c user.email=ci@invalid -c user.name=ci-inspect commit -qm "bootstrap inspect log [ci]" \
               && git push -q "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${GITHUB_REPOSITORY}.git" HEAD:refs/heads/diagnostics/inspect --force ) >> inspect.log 2>&1 || true
           fi
-          python3 - <<PYEOF >> inspect-final.log 2>&1 || true
-import json, os, urllib.request
-log = open("inspect.log", "rb").read().decode("utf8", "replace")
-payload = {"title": "bootstrap inspect ${GITHUB_RUN_ID}", "body": "```\n" + log[-6000:] + "\n```"}
-req = urllib.request.Request("https://api.github.com/repos/" + os.environ["GITHUB_REPOSITORY"] + "/issues",
-                             data=json.dumps(payload).encode(), method="POST")
-req.add_header("Authorization", "Bearer ${{ secrets.GITHUB_TOKEN }}")
-req.add_header("Accept", "application/vnd.github+json")
-try:
-    print("issue status", urllib.request.urlopen(req, timeout=30).status)
-except Exception as exc:
-    print("issue post failed:", exc)
-PYEOF
-          cat inspect-final.log
+          python3 -c "import json,os,urllib.request;log=open('inspect.log','rb').read().decode('utf8','replace');payload={'title':'bootstrap inspect ${GITHUB_RUN_ID}','body':'bootstrap inspect log\n'+log[-6000:]};req=urllib.request.Request('https://api.github.com/repos/'+os.environ['GITHUB_REPOSITORY']+'/issues',data=json.dumps(payload).encode(),method='POST');req.add_header('Authorization','Bearer ${{ secrets.GITHUB_TOKEN }}');req.add_header('Accept','application/vnd.github+json');print('issue status',urllib.request.urlopen(req,timeout=30).status)" || true
           rm -rf "$WORK"
           exit 0
 
