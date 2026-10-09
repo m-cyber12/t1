@@ -67,14 +67,15 @@ jobs:
           } > inspect.log 2>&1
           tail -c 4000 inspect.log
           # The build sandbox cannot download CI logs or artifacts, so publish
-          # the inspection log both as a diagnostics branch and as an issue.
-          git clone --depth 1 "https://github.com/${GITHUB_REPOSITORY}.git" pushrepo >> inspect.log 2>&1 || true
-          if [ -d pushrepo ]; then
-            ( cd pushrepo && git checkout -B diagnostics/inspect \
-              && mkdir -p diagnostics && cp ../inspect.log diagnostics/bootstrap-inspect.log \
-              && git add -A && git -c user.email=ci@invalid -c user.name=ci-inspect commit -qm "bootstrap inspect log [ci]" \
-              && git push -q "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${GITHUB_REPOSITORY}.git" HEAD:refs/heads/diagnostics/inspect --force ) >> inspect.log 2>&1 || true
-          fi
+          # the inspection log on a diagnostics branch using the checkout
+          # action's own credentials.
+          cd "$GITHUB_WORKSPACE" || exit 0
+          mkdir -p diagnostics
+          cp "$WORK/inspect.log" diagnostics/bootstrap-inspect.log || true
+          git add diagnostics/bootstrap-inspect.log || true
+          git -c user.email=ci@invalid -c user.name=ci-inspect commit -qm "bootstrap inspect log ${GITHUB_RUN_ID} [ci]" || true
+          git push origin "HEAD:refs/heads/diagnostics/inspect" --force || true
+          cd "$WORK" || exit 0
           python3 -c "import json,os,urllib.request;log=open('inspect.log','rb').read().decode('utf8','replace');payload={'title':'bootstrap inspect ${GITHUB_RUN_ID}','body':'bootstrap inspect log\n'+log[-6000:]};req=urllib.request.Request('https://api.github.com/repos/'+os.environ['GITHUB_REPOSITORY']+'/issues',data=json.dumps(payload).encode(),method='POST');req.add_header('Authorization','Bearer ${{ secrets.GITHUB_TOKEN }}');req.add_header('Accept','application/vnd.github+json');print('issue status',urllib.request.urlopen(req,timeout=30).status)" || true
           rm -rf "$WORK"
           exit 0
