@@ -19,49 +19,58 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Inspect Termux bootstrap and run its apt
+        continue-on-error: true
         shell: bash
         run: |
-          set -x
           WORK="$(mktemp -d)"
-          cd "$WORK"
-          curl -fsSL -o bs.zip "https://github.com/termux/termux-packages/releases/download/bootstrap-2026.02.12-r1%2Bapt.android-7/bootstrap-x86_64.zip"
-          mkdir rootfs && cd rootfs
-          unzip -q ../bs.zip
-          P="$PWD"
-          echo "== etc/apt =="; ls -la etc/apt || true
-          echo "== sources.list =="; cat etc/apt/sources.list 2>/dev/null || echo "SOURCES.LIST MISSING"
-          echo "== sources.list.d =="; ls -la etc/apt/sources.list.d 2>/dev/null || true
-          echo "== trusted.gpg.d =="; ls -la etc/apt/trusted.gpg.d 2>/dev/null || true
-          echo "== methods =="; ls lib/apt/methods 2>/dev/null || true
-          echo "== dpkg status =="; head -4 var/lib/dpkg/status 2>/dev/null || echo "STATUS MISSING"
-          cat > harness-apt.conf <<EOF
-          Apt::Architecture "x86_64";
-          Acquire::Retries "2";
-          Dir "$P";
-          Dir::State "var/lib/apt";
-          Dir::Cache "var/cache/apt";
-          Dir::Cache::archives "archives";
-          Dir::Etc "etc/apt";
-          Dir::Etc::sourcelist "sources.list";
-          Dir::Etc::sourceparts "sources.list.d";
-          Dir::Etc::main "apt.conf";
-          Dir::Etc::parts "apt.conf.d";
-          Dir::Log "var/log/apt";
-          Dir::Bin::dpkg "bin/dpkg";
-          Dir::Bin::methods "lib/apt/methods";
-          EOF
-          sed -i 's/^          //' harness-apt.conf
-          export APT_CONFIG="$P/harness-apt.conf"
-          export LD_LIBRARY_PATH="$P/lib"
-          export HOME="$P/home" TMPDIR="$P/tmp" PREFIX="$P"
-          mkdir -p home tmp
-          chmod +x bin/* lib/apt/methods/* 2>/dev/null || true
-          echo "== apt-get update (direct) =="
-          ./bin/apt-get update; echo "direct exit=$?"
-          echo "== apt-get update (linux loader) =="
-          /lib64/ld-linux-x86-64.so.2 ./bin/apt-get update; echo "loader exit=$?"
-          echo "== lists after update =="; ls -la var/lib/apt/lists | head
+          cd "$WORK" || exit 0
+          {
+            set -x
+            set +e
+            curl -fsSL -o bs.zip "https://github.com/termux/termux-packages/releases/download/bootstrap-2026.02.12-r1%2Bapt.android-7/bootstrap-x86_64.zip"
+            echo "curl exit=$?"
+            mkdir rootfs && cd rootfs
+            unzip -q ../bs.zip
+            P="$PWD"
+            echo "== etc/apt =="; ls -la etc/apt
+            echo "== sources.list =="; cat etc/apt/sources.list || echo "SOURCES.LIST MISSING"
+            echo "== sources.list.d =="; ls -la etc/apt/sources.list.d
+            echo "== trusted.gpg.d =="; ls -la etc/apt/trusted.gpg.d
+            echo "== methods =="; ls lib/apt/methods
+            echo "== dpkg status =="; head -4 var/lib/dpkg/status || echo "STATUS MISSING"
+            printf '%s\n' \
+              'Apt::Architecture "x86_64";' \
+              'Acquire::Retries "2";' \
+              "Dir \"$P\";" \
+              'Dir::State "var/lib/apt";' \
+              'Dir::Cache "var/cache/apt";' \
+              'Dir::Cache::archives "archives";' \
+              'Dir::Etc "etc/apt";' \
+              'Dir::Etc::sourcelist "sources.list";' \
+              'Dir::Etc::sourceparts "sources.list.d";' \
+              'Dir::Etc::main "apt.conf";' \
+              'Dir::Etc::parts "apt.conf.d";' \
+              'Dir::Log "var/log/apt";' \
+              'Dir::Bin::dpkg "bin/dpkg";' \
+              'Dir::Bin::methods "lib/apt/methods";' \
+              > harness-apt.conf
+            export APT_CONFIG="$P/harness-apt.conf"
+            export LD_LIBRARY_PATH="$P/lib"
+            export HOME="$P/home" TMPDIR="$P/tmp" PREFIX="$P"
+            mkdir -p home tmp
+            chmod +x bin/* lib/apt/methods/* 2>/dev/null
+            echo "== apt-get update (linux loader) =="
+            /lib64/ld-linux-x86-64.so.2 ./bin/apt-get update
+            echo "loader exit=$?"
+            echo "== lists after update =="; ls -la var/lib/apt/lists | head -20
+          } > inspect.log 2>&1
+          tail -c 4000 inspect.log
+          enc() { printf '%s' "$1" | sed -e 's/%/%25/g' -e 's/\r/%0D/g' -e 's/$/%0A/' | tr -d '\n' | sed 's/%0A$//'; }
+          echo "::notice title=bootstrap-inspect-A::$(enc "$(sed -n 1,40p inspect.log)")"
+          echo "::notice title=bootstrap-inspect-B::$(enc "$(sed -n 41,90p inspect.log)")"
+          echo "::notice title=bootstrap-inspect-C::$(enc "$(tail -30 inspect.log)")"
           cd /; rm -rf "$WORK"
+          exit 0
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
