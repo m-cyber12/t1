@@ -32,6 +32,20 @@ public final class HarnessEnvironment {
         ensureDirectory(new File(config.prefix, "var/cache/apt/archives/partial"));
         ensureDirectory(new File(config.prefix, "var/log/apt"));
 
+        // The deb packaging system is auto-detected by apt only when a dpkg
+        // status database and the dpkg binary exist. Never set
+        // "Apt::System" here: selecting a system explicitly can pick the EDSP
+        // planner interface, which forces APT::Get::Simulate and redirects the
+        // status/list databases to /dev/null, so nothing would be installed.
+        File dpkgDirectory = new File(config.prefix, "var/lib/dpkg");
+        ensureDirectory(dpkgDirectory);
+        File dpkgStatus = new File(dpkgDirectory, "status");
+        if (!dpkgStatus.isFile()) {
+            try (FileOutputStream status = new FileOutputStream(dpkgStatus)) {
+                // An empty dpkg database is valid; package installs fill it.
+            }
+        }
+
         File aptConfig = new File(aptDirectory, APT_CONFIG_NAME);
         String prefix = config.prefix.getAbsolutePath();
         String architecture = System.getProperty("os.arch", "");
@@ -41,8 +55,8 @@ public final class HarnessEnvironment {
             architecture = "x86_64";
         }
         String content =
-            "Apt::System \"Debian APT planner interface\";\n" +
             (architecture.isEmpty() ? "" : "Apt::Architecture \"" + architecture + "\";\n") +
+            "Acquire::Retries \"2\";\n" +
             "Dir \"" + prefix + "\";\n" +
             "Dir::State \"var/lib/apt\";\n" +
             "Dir::State::status \"var/lib/dpkg/status\";\n" +

@@ -15,13 +15,16 @@ public final class HarnessPackageInstaller {
     /**
      * These are package names from the official Termux repository. The list is
      * intentionally a coding harness, not every package available in Termux.
+     * Base tools (bash, coreutils, curl, ca-certificates, ...) already ship in
+     * the bootstrap, so requesting them again would only slow setup down.
      */
     public static final List<String> CODING_PACKAGES = Collections.unmodifiableList(Arrays.asList(
-        "bash", "coreutils", "findutils", "grep", "sed", "tar", "gzip", "bzip2", "xz-utils",
-        "zip", "unzip", "curl", "ca-certificates", "openssl", "git", "ripgrep",
-        "python", "nodejs", "npm", "perl", "ruby", "make", "pkg-config", "clang", "cmake",
-        "jq", "tree", "diffutils", "patch", "procps", "which", "file", "openssh"
+        "git", "ripgrep", "python", "nodejs", "npm", "perl", "ruby",
+        "make", "pkg-config", "clang", "cmake",
+        "jq", "tree", "which", "file", "openssh"
     ));
+
+    private static final long FRESH_LIST_AGE_MILLIS = 6 * 60 * 60 * 1000L;
 
     private HarnessPackageInstaller() {}
 
@@ -51,9 +54,11 @@ public final class HarnessPackageInstaller {
 
         try {
             HarnessCommandRunner runner = new HarnessCommandRunner(config);
-            HarnessCommandRunner.CommandResult update = runner.run("apt-get", "update");
-            if (!update.isSuccess()) {
-                return new InstallResult(false, "apt-get update failed: " + compact(update.output));
+            if (!packageListsAreFresh(config)) {
+                HarnessCommandRunner.CommandResult update = runner.run("apt-get", "update");
+                if (!update.isSuccess()) {
+                    return new InstallResult(false, "apt-get update failed: " + compact(update.output));
+                }
             }
 
             String[] packageArgs = new String[CODING_PACKAGES.size() + 2];
@@ -78,6 +83,24 @@ public final class HarnessPackageInstaller {
             Thread.currentThread().interrupt();
             return new InstallResult(false, "package setup was interrupted");
         }
+    }
+
+    /**
+     * A repository index downloaded less than six hours ago does not need to be
+     * fetched again, so retries and repairs go straight to the installer.
+     */
+    private static boolean packageListsAreFresh(HarnessConfig config) {
+        File lists = new File(config.prefix, "var/lib/apt/lists");
+        File[] entries = lists.listFiles();
+        if (entries == null) return false;
+        long now = System.currentTimeMillis();
+        for (File entry : entries) {
+            if (entry.isFile() && entry.getName().contains("_Packages")
+                && now - entry.lastModified() < FRESH_LIST_AGE_MILLIS) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private static void writeMarker(HarnessConfig config) {
