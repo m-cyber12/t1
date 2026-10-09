@@ -77,6 +77,7 @@ jobs:
           git push origin "HEAD:refs/heads/diagnostics/inspect" --force || true
           cd "$WORK" || exit 0
           python3 -c "import json,os,urllib.request;log=open('inspect.log','rb').read().decode('utf8','replace');payload={'title':'bootstrap inspect ${GITHUB_RUN_ID}','body':'bootstrap inspect log\n'+log[-6000:]};req=urllib.request.Request('https://api.github.com/repos/'+os.environ['GITHUB_REPOSITORY']+'/issues',data=json.dumps(payload).encode(),method='POST');req.add_header('Authorization','Bearer ${{ secrets.GITHUB_TOKEN }}');req.add_header('Accept','application/vnd.github+json');print('issue status',urllib.request.urlopen(req,timeout=30).status)" || true
+          python3 -c "import os,json,urllib.request;log=open('inspect.log','rb').read().decode('utf8','replace');clean=' '.join(log.split());chunks=[clean[i:i+130] for i in range(0,min(len(clean),1300),130)];[urllib.request.urlopen(urllib.request.Request('https://api.github.com/repos/'+os.environ['GITHUB_REPOSITORY']+'/statuses/'+os.environ['GITHUB_SHA'],data=json.dumps({'state':'success','context':'inspect/%02d'%n,'description':c}).encode(),method='POST'),timeout=30) for n,c in enumerate(chunks)];print('statuses',len(chunks))" || true
           rm -rf "$WORK"
           exit 0
 

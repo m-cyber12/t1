@@ -54,11 +54,13 @@ public final class HarnessPackageInstaller {
 
         try {
             HarnessCommandRunner runner = new HarnessCommandRunner(config);
+            String updateSummary = "skipped (lists fresh)";
             if (!packageListsAreFresh(config)) {
                 HarnessCommandRunner.CommandResult update = runner.run("apt-get", "update");
                 if (!update.isSuccess()) {
                     return new InstallResult(false, "apt-get update failed: " + compact(update.output));
                 }
+                updateSummary = "ok, " + countPackageLists(config) + " lists: " + tail(update.output, 180);
             }
 
             String[] packageArgs = new String[CODING_PACKAGES.size() + 2];
@@ -69,7 +71,8 @@ public final class HarnessPackageInstaller {
             }
             HarnessCommandRunner.CommandResult install = runner.run("apt-get", packageArgs);
             if (!install.isSuccess()) {
-                return new InstallResult(false, "package installation failed: " + compact(install.output));
+                return new InstallResult(false,
+                    "install failed (update " + updateSummary + "): " + compact(install.output));
             }
 
             if (!isCodingToolchainReady(config)) {
@@ -83,6 +86,22 @@ public final class HarnessPackageInstaller {
             Thread.currentThread().interrupt();
             return new InstallResult(false, "package setup was interrupted");
         }
+    }
+
+    private static int countPackageLists(HarnessConfig config) {
+        File[] entries = new File(config.prefix, "var/lib/apt/lists").listFiles();
+        if (entries == null) return 0;
+        int count = 0;
+        for (File entry : entries) {
+            if (entry.isFile() && entry.getName().contains("_Packages")) count++;
+        }
+        return count;
+    }
+
+    private static String tail(String output, int length) {
+        if (output == null) return "";
+        String normalized = output.replace('\n', ' ').replace('\r', ' ').trim();
+        return normalized.length() <= length ? normalized : normalized.substring(normalized.length() - length);
     }
 
     /**
