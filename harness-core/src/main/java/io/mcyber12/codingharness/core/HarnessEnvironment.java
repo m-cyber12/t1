@@ -58,9 +58,14 @@ public final class HarnessEnvironment {
             (architecture.isEmpty() ? "" : "Apt::Architecture \"" + architecture + "\";\n") +
             "Acquire::Retries \"2\";\n" +
             "Dir \"" + prefix + "\";\n" +
+            // FindFile() joins every ancestor value, so sub-keys must be
+            // relative to their parent: "var/lib/apt" + "lists/". Setting
+            // Dir::State::status/lists to full prefix-relative paths would
+            // resolve to .../var/lib/apt/var/lib/... and make debSystem::Score
+            // fail with "Unable to determine a suitable packaging system
+            // type". Left unset, apt derives the status file as
+            // <Dir>/var/lib/dpkg/status exactly like Termux.
             "Dir::State \"var/lib/apt\";\n" +
-            "Dir::State::status \"var/lib/dpkg/status\";\n" +
-            "Dir::State::lists \"var/lib/apt/lists\";\n" +
             "Dir::Cache \"var/cache/apt\";\n" +
             "Dir::Cache::archives \"archives\";\n" +
             "Dir::Etc \"etc/apt\";\n" +
