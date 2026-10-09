@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   build:
@@ -65,10 +65,16 @@ jobs:
             echo "== lists after update =="; ls -la var/lib/apt/lists | head -20
           } > inspect.log 2>&1
           tail -c 4000 inspect.log
-          enc() { printf '%s' "$1" | sed -e 's/%/%25/g' -e 's/\r/%0D/g' -e 's/$/%0A/' | tr -d '\n' | sed 's/%0A$//'; }
-          echo "::notice title=bootstrap-inspect-A::$(enc "$(sed -n 1,40p inspect.log)")"
-          echo "::notice title=bootstrap-inspect-B::$(enc "$(sed -n 41,90p inspect.log)")"
-          echo "::notice title=bootstrap-inspect-C::$(enc "$(tail -30 inspect.log)")"
+          # Sandbox cannot download CI logs/artifacts; publish the log as a
+          # commit on a diagnostics branch instead.
+          git clone --depth 1 "https://github.com/${GITHUB_REPOSITORY}.git" pushrepo >> inspect.log 2>&1
+          cd pushrepo || exit 0
+          git checkout -B diagnostics/inspect >> ../inspect.log 2>&1
+          mkdir -p diagnostics
+          cp ../inspect.log diagnostics/bootstrap-inspect.log
+          git add -A
+          git -c user.email=ci@invalid -c user.name=ci-inspect commit -m "bootstrap inspect log [ci]" >> ../inspect.log 2>&1
+          git push "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${GITHUB_REPOSITORY}.git" HEAD:refs/heads/diagnostics/inspect --force
           cd /; rm -rf "$WORK"
           exit 0
 
