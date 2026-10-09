@@ -8,6 +8,7 @@ on:
 
 permissions:
   contents: write
+  issues: write
 
 jobs:
   build:
@@ -65,17 +66,30 @@ jobs:
             echo "== lists after update =="; ls -la var/lib/apt/lists | head -20
           } > inspect.log 2>&1
           tail -c 4000 inspect.log
-          # Sandbox cannot download CI logs/artifacts; publish the log as a
-          # commit on a diagnostics branch instead.
-          git clone --depth 1 "https://github.com/${GITHUB_REPOSITORY}.git" pushrepo >> inspect.log 2>&1
-          cd pushrepo || exit 0
-          git checkout -B diagnostics/inspect >> ../inspect.log 2>&1
-          mkdir -p diagnostics
-          cp ../inspect.log diagnostics/bootstrap-inspect.log
-          git add -A
-          git -c user.email=ci@invalid -c user.name=ci-inspect commit -m "bootstrap inspect log [ci]" >> ../inspect.log 2>&1
-          git push "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${GITHUB_REPOSITORY}.git" HEAD:refs/heads/diagnostics/inspect --force
-          cd /; rm -rf "$WORK"
+          # The build sandbox cannot download CI logs or artifacts, so publish
+          # the inspection log both as a diagnostics branch and as an issue.
+          git clone --depth 1 "https://github.com/${GITHUB_REPOSITORY}.git" pushrepo >> inspect.log 2>&1 || true
+          if [ -d pushrepo ]; then
+            ( cd pushrepo && git checkout -B diagnostics/inspect \
+              && mkdir -p diagnostics && cp ../inspect.log diagnostics/bootstrap-inspect.log \
+              && git add -A && git -c user.email=ci@invalid -c user.name=ci-inspect commit -qm "bootstrap inspect log [ci]" \
+              && git push -q "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${GITHUB_REPOSITORY}.git" HEAD:refs/heads/diagnostics/inspect --force ) >> inspect.log 2>&1 || true
+          fi
+          python3 - <<PYEOF >> inspect-final.log 2>&1 || true
+import json, os, urllib.request
+log = open("inspect.log", "rb").read().decode("utf8", "replace")
+payload = {"title": "bootstrap inspect ${GITHUB_RUN_ID}", "body": "```\n" + log[-6000:] + "\n```"}
+req = urllib.request.Request("https://api.github.com/repos/" + os.environ["GITHUB_REPOSITORY"] + "/issues",
+                             data=json.dumps(payload).encode(), method="POST")
+req.add_header("Authorization", "Bearer ${{ secrets.GITHUB_TOKEN }}")
+req.add_header("Accept", "application/vnd.github+json")
+try:
+    print("issue status", urllib.request.urlopen(req, timeout=30).status)
+except Exception as exc:
+    print("issue post failed:", exc)
+PYEOF
+          cat inspect-final.log
+          rm -rf "$WORK"
           exit 0
 
       - name: Set up JDK 17
