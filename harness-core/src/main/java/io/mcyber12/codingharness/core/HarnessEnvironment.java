@@ -89,6 +89,11 @@ public final class HarnessEnvironment {
         String content =
             (architecture.isEmpty() ? "" : "Apt::Architecture \"" + architecture + "\";\n") +
             "Acquire::Retries \"2\";\n" +
+            // apt's https method loads CA certificates from this option (or a
+            // compiled-in default pointing at the official prefix). Give it
+            // the relocated bundle explicitly; see HarnessBootstrap
+            // .ensureCertificates for the file itself.
+            "Acquire::https::CaInfo \"" + prefix + "/etc/tls/cert.pem\";\n" +
             "Dir \"" + prefix + "\";\n" +
             // FindFile() joins every ancestor value, so sub-keys must be
             // relative to their parent: "var/lib/apt" + "lists/". Setting

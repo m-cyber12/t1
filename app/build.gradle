@@ -27,8 +27,8 @@ android {
         applicationId "io.mcyber12.codingharness"
         minSdk rootProject.ext.minSdkVersion
         targetSdk rootProject.ext.targetSdkVersion
-        versionCode 13
-        versionName "0.13.0"
+        versionCode 14
+        versionName "0.14.0"
     }
 
     sourceSets {

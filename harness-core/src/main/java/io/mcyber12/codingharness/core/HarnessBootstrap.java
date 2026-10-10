@@ -118,6 +118,27 @@ public final class HarnessBootstrap {
         }
     }
 
+    /**
+     * Installs the bundled CA certificate bundle. Termux clients (apt's https
+     * method, curl, git) have the official cert store path compiled in, which
+     * does not exist in this relocated prefix; without a bundle every TLS
+     * handshake fails certificate verification.
+     */
+    public static void ensureCertificates(Context context, HarnessConfig config) throws IOException {
+        File certBundle = new File(config.prefix, "etc/tls/cert.pem");
+        if (certBundle.isFile() && certBundle.length() > 1000) return;
+        File directory = certBundle.getParentFile();
+        if (!directory.isDirectory() && !directory.mkdirs() && !directory.isDirectory()) {
+            throw new IOException("Unable to create certificate directory: " + directory);
+        }
+        try (InputStream input = context.getAssets().open("cacert.pem", android.content.res.AssetManager.ACCESS_STREAMING);
+             FileOutputStream output = new FileOutputStream(certBundle)) {
+            byte[] buffer = new byte[8192];
+            int count;
+            while ((count = input.read(buffer)) != -1) output.write(buffer, 0, count);
+        }
+    }
+
     public static String assetName() throws IOException {
         for (String abi : Build.SUPPORTED_ABIS) {
             if ("arm64-v8a".equals(abi)) return "bootstrap-aarch64.zip";

@@ -60,7 +60,9 @@ public final class HarnessPackageInstaller {
                 if (!update.isSuccess()) {
                     return new InstallResult(false, "apt-get update failed: " + compact(update.output));
                 }
-                updateSummary = "ok, " + countPackageLists(config) + " lists: " + tail(update.output, 180);
+                updateSummary = "ok, " + countPackageLists(config) + " lists, cert "
+                    + new File(config.prefix, "etc/tls/cert.pem").length()
+                    + "B: " + tail(update.output, 160);
             }
 
             String[] packageArgs = new String[CODING_PACKAGES.size() + 2];

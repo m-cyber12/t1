@@ -127,6 +127,7 @@ public final class MainActivity extends Activity {
             try {
                 setStatus("installing base runtime...");
                 HarnessBootstrap.ensureInstalled(this, harnessConfig);
+                HarnessBootstrap.ensureCertificates(this, harnessConfig);
                 runOnUiThread(this::attachTerminal);
             } catch (Exception e) {
                 setStatus("bootstrap failed: " + shortMessage(e));
