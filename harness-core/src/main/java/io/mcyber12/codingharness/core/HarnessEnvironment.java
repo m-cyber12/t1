@@ -158,6 +158,21 @@ public final class HarnessEnvironment {
             + (existingLibraries == null || existingLibraries.isEmpty()
                 ? "" : File.pathSeparator + existingLibraries));
 
+        // Termux's OpenSSL/curl/git have the CA store compiled in for the
+        // official prefix (/data/data/com.termux/files/usr/etc/tls/cert.pem),
+        // which does not exist in this relocated prefix; without the override
+        // every TLS handshake dies with "Error in the certificate
+        // verification" and apt cannot download any index.
+        File certBundle = new File(config.prefix, "etc/tls/cert.pem");
+        if (certBundle.isFile()) environment.put("SSL_CERT_FILE", certBundle.getAbsolutePath());
+        for (String candidate : new String[] {"etc/tls/certs", "etc/ssl/certs"}) {
+            File certDirectory = new File(config.prefix, candidate);
+            if (certDirectory.isDirectory()) {
+                environment.put("SSL_CERT_DIR", certDirectory.getAbsolutePath());
+                break;
+            }
+        }
+
         // Termux packages use this hook to translate Linux-style executable
         // paths such as /bin/sh and /usr/bin/env to the private PREFIX. Newer
         // bootstraps use the linker-aware variant; older ones use the original

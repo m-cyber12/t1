@@ -64,8 +64,11 @@ jobs:
             /lib64/ld-linux-x86-64.so.2 ./bin/apt-get update
             echo "loader exit=$?"
             echo "== lists after update =="; ls -la var/lib/apt/lists | head -20
-          } > inspect.log 2>&1
-          tail -c 4000 inspect.log
+          } > "$WORK/inspect.log" 2>&1
+          tail -c 4000 "$WORK/inspect.log"
+          # The exported Termux LD_LIBRARY_PATH breaks the runner's own git
+          # and python (incompatible libdl/ssl); drop it before publishing.
+          unset LD_LIBRARY_PATH APT_CONFIG PREFIX TMPDIR HOME
           # The build sandbox cannot download CI logs or artifacts, so publish
           # the inspection log on a diagnostics branch using the checkout
           # action's own credentials.
