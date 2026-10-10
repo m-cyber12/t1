@@ -3,6 +3,7 @@ package io.mcyber12.codingharness.core;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -38,6 +39,25 @@ public final class HarnessEnvironment {
             try (FileOutputStream sources = new FileOutputStream(sourcesList)) {
                 sources.write("deb https://packages-cf.termux.dev/apt/termux-main/ stable main\n"
                     .getBytes(StandardCharsets.UTF_8));
+            }
+        }
+
+        // The bootstrap does not ship ca-certificates, and Termux's OpenSSL
+        // has the official cert store path compiled in. Without a readable
+        // bundle every TLS handshake fails certificate verification and apt
+        // cannot download any index, so install a standard Mozilla bundle
+        // (bundled as a Java resource) and let create() export SSL_CERT_FILE.
+        File certBundle = new File(config.prefix, "etc/tls/cert.pem");
+        if (!certBundle.isFile()) {
+            ensureDirectory(certBundle.getParentFile());
+            try (InputStream bundle = HarnessEnvironment.class.getResourceAsStream("cacert.pem")) {
+                if (bundle != null) {
+                    try (FileOutputStream out = new FileOutputStream(certBundle)) {
+                        byte[] buffer = new byte[8192];
+                        int count;
+                        while ((count = bundle.read(buffer)) != -1) out.write(buffer, 0, count);
+                    }
+                }
             }
         }
         ensureDirectory(new File(config.prefix, "var/lib/apt/lists/partial"));
@@ -159,10 +179,9 @@ public final class HarnessEnvironment {
                 ? "" : File.pathSeparator + existingLibraries));
 
         // Termux's OpenSSL/curl/git have the CA store compiled in for the
-        // official prefix (/data/data/com.termux/files/usr/etc/tls/cert.pem),
-        // which does not exist in this relocated prefix; without the override
-        // every TLS handshake dies with "Error in the certificate
-        // verification" and apt cannot download any index.
+        // official prefix, which does not exist here. prepare() installs the
+        // bundled Mozilla bundle at <prefix>/etc/tls/cert.pem; exporting it
+        // makes apt's https method, curl and git verify TLS successfully.
         File certBundle = new File(config.prefix, "etc/tls/cert.pem");
         if (certBundle.isFile()) environment.put("SSL_CERT_FILE", certBundle.getAbsolutePath());
         for (String candidate : new String[] {"etc/tls/certs", "etc/ssl/certs"}) {
