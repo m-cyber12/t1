@@ -1,0 +1,73 @@
++ set +e
++ curl -fsSL -o bs.zip https://github.com/termux/termux-packages/releases/download/bootstrap-2026.02.12-r1%2Bapt.android-7/bootstrap-x86_64.zip
++ echo 'curl exit=0'
+curl exit=0
++ mkdir rootfs
++ cd rootfs
++ unzip -q ../bs.zip
++ P=/tmp/tmp.3JYzKRwmtG/rootfs
++ echo '== etc/apt =='
+== etc/apt ==
++ ls -la etc/apt
+total 24
+drwx------ 5 runner runner 4096 Aug 27  2025 .
+drwx------ 7 runner runner 4096 Feb  4  2026 ..
+drwxr-xr-x 2 runner runner 4096 Feb 12  2026 apt.conf.d
+drwxr-xr-x 2 runner runner 4096 Feb 12  2026 preferences.d
+-rw------- 1 runner runner  234 Aug 27  2025 sources.list
+drwx------ 2 runner runner 4096 Feb 12  2026 trusted.gpg.d
++ echo '== sources.list =='
+== sources.list ==
++ cat etc/apt/sources.list
+# The main termux repository, with cloudflare cache
+deb https://packages-cf.termux.dev/apt/termux-main/ stable main
+# The main termux repository, without cloudflare cache
+# deb https://packages.termux.dev/apt/termux-main/ stable main
++ echo '== sources.list.d =='
+== sources.list.d ==
++ ls -la etc/apt/sources.list.d
+ls: cannot access 'etc/apt/sources.list.d': No such file or directory
++ echo '== trusted.gpg.d =='
+== trusted.gpg.d ==
++ ls -la etc/apt/trusted.gpg.d
+total 8
+drwx------ 2 runner runner 4096 Feb 12  2026 .
+drwx------ 5 runner runner 4096 Aug 27  2025 ..
++ echo '== methods =='
+== methods ==
++ ls lib/apt/methods
+copy
+file
+gpgv
+http
+rsh
+store
++ echo '== dpkg status =='
+== dpkg status ==
++ head -4 var/lib/dpkg/status
+Package: pcre2
+Architecture: x86_64
+Installed-Size: 4528
+Maintainer: @termux
++ printf '%s\n' 'Apt::Architecture "x86_64";' 'Acquire::Retries "2";' 'Dir "/tmp/tmp.3JYzKRwmtG/rootfs";' 'Dir::State "var/lib/apt";' 'Dir::Cache "var/cache/apt";' 'Dir::Cache::archives "archives";' 'Dir::Etc "etc/apt";' 'Dir::Etc::sourcelist "sources.list";' 'Dir::Etc::sourceparts "sources.list.d";' 'Dir::Etc::main "apt.conf";' 'Dir::Etc::parts "apt.conf.d";' 'Dir::Log "var/log/apt";' 'Dir::Bin::dpkg "bin/dpkg";' 'Dir::Bin::methods "lib/apt/methods";'
++ export APT_CONFIG=/tmp/tmp.3JYzKRwmtG/rootfs/harness-apt.conf
++ APT_CONFIG=/tmp/tmp.3JYzKRwmtG/rootfs/harness-apt.conf
++ export LD_LIBRARY_PATH=/tmp/tmp.3JYzKRwmtG/rootfs/lib
++ LD_LIBRARY_PATH=/tmp/tmp.3JYzKRwmtG/rootfs/lib
++ export HOME=/tmp/tmp.3JYzKRwmtG/rootfs/home TMPDIR=/tmp/tmp.3JYzKRwmtG/rootfs/tmp PREFIX=/tmp/tmp.3JYzKRwmtG/rootfs
++ HOME=/tmp/tmp.3JYzKRwmtG/rootfs/home
++ TMPDIR=/tmp/tmp.3JYzKRwmtG/rootfs/tmp
++ PREFIX=/tmp/tmp.3JYzKRwmtG/rootfs
++ mkdir -p home tmp
++ chmod +x bin/addpart bin/am bin/apt bin/apt-cache bin/apt-config bin/apt-get bin/apt-key bin/apt-mark bin/arp bin/attr bin/bash bin/bits bin/blkpr bin/blockdev bin/bzdiff bin/bzgrep bin/bzip2 bin/bzip2recover bin/bzmore bin/cal bin/captest bin/chacl bin/chcpu bin/choom bin/chrt bin/chsh bin/clear bin/cmd bin/cmp bin/col bin/colcrt bin/colrm bin/column bin/coresched bin/coreutils bin/ctrlaltdel bin/curl bin/curl-config bin/dalvikvm bin/dash bin/delpart bin/df bin/dialog bin/diff bin/diff3 bin/dmesg bin/dnsdomainname bin/dos2unix bin/dpkg bin/dpkg-buildapi bin/dpkg-buildtree bin/dpkg-deb bin/dpkg-divert bin/dpkg-fsys-usrunmess bin/dpkg-query bin/dpkg-realpath bin/dpkg-split bin/dpkg-trigger bin/dumpsexp bin/ed bin/egrep bin/enosys bin/exch bin/fadvise bin/fallocate bin/fgrep bin/filecap bin/fincore bin/find bin/flock bin/free bin/fsck.cramfs bin/fsck.minix bin/fsfreeze bin/ftp bin/funzip bin/fuser bin/gawk bin/getfacl bin/getfattr bin/getopt bin/getprop bin/gpg-error bin/gpg-error-config bin/gpgrt-config bin/gpgv bin/grep bin/gunzip bin/gzexe bin/gzip bin/hardlink bin/hexdump bin/hmac256 bin/hostname bin/hwclock bin/idn2 bin/ifconfig bin/ionice bin/ipmaddr bin/iptunnel bin/irqtop bin/ischroot bin/isosize bin/killall bin/ldattach bin/less bin/lessecho bin/lesskey bin/libassuan-config bin/libgcrypt-config bin/logcat bin/logger bin/login bin/look bin/losetup bin/lsclocks bin/lscpu bin/lsfd bin/lsipc bin/lsirq bin/lsof bin/lzmadec bin/lzmainfo bin/mcookie bin/mii-tool bin/mkfs bin/mkfs.bfs bin/mkfs.cramfs bin/mkfs.minix bin/more bin/mpicalc bin/namei bin/nameif bin/nano bin/ncursesw6-config bin/netcap bin/netstat bin/npth-config bin/nsenter bin/patch bin/pcre2-config bin/pgrep bin/pidof bin/ping bin/ping6 bin/pipesz bin/pkg bin/pkill bin/plipconfig bin/pm bin/pmap bin/prlimit bin/prtstat bin/ps bin/pscap bin/pslog bin/pstree bin/pwait bin/pwdx bin/rarp bin/readprofile bin/red bin/rename bin/renice bin/resizepart bin/rev bin/route bin/rtcwake bin/run-parts bin/savelog bin/script bin/scriptlive bin/scriptreplay bin/sdiff bin/sed bin/setarch bin/setfacl bin/setfattr bin/setpgid bin/setpriv bin/setsid bin/setterm bin/settings bin/slattach bin/start-stop-daemon bin/su bin/sysctl bin/tar bin/taskset bin/telnet bin/tempfile bin/termux-am bin/termux-am-socket bin/termux-apps-info-app-version-name bin/termux-apps-info-app-version-name.bash bin/termux-apps-info-app-version-name.sh bin/termux-apps-info-env-variable bin/termux-apps-info-env-variable.bash bin/termux-apps-info-env-variable.sh bin/termux-backup bin/termux-change-repo bin/termux-exec-ld-preload-lib bin/termux-exec-system-linker-exec bin/termux-fix-shebang bin/termux-info bin/termux-open bin/termux-open-url bin/termux-reload-settings bin/termux-reset bin/termux-restore bin/termux-scoped-env-variable bin/termux-scoped-env-variable.bash bin/termux-scoped-env-variable.sh bin/termux-setup-package-manager bin/termux-setup-storage bin/termux-wake-lock bin/termux-wake-unlock bin/tftp bin/tload bin/top bin/tset bin/uclampset bin/ul bin/uncompress bin/unix2dos bin/unshare bin/unzip bin/unzipsfx bin/update-alternatives bin/uptime bin/vmstat bin/waitpid bin/watch bin/wcurl bin/wdctl bin/whereis bin/xargs bin/xxhsum bin/xz bin/xzdec bin/xzdiff bin/xzgrep bin/xzless bin/xzmore bin/yat2m bin/zcat bin/zcmp bin/zdiff bin/zegrep bin/zfgrep bin/zforce bin/zgrep bin/zipgrep bin/zmore bin/znew bin/zramctl bin/zstd bin/zstdgrep bin/zstdless lib/apt/methods/copy lib/apt/methods/file lib/apt/methods/gpgv lib/apt/methods/http lib/apt/methods/rsh lib/apt/methods/store
++ echo '== apt-get update (linux loader) =='
+== apt-get update (linux loader) ==
++ /lib64/ld-linux-x86-64.so.2 ./bin/apt-get update
+./bin/apt-get: error while loading shared libraries: /lib/x86_64-linux-gnu/libm.so: invalid ELF header
++ echo 'loader exit=127'
+loader exit=127
++ echo '== lists after update =='
+== lists after update ==
++ ls -la var/lib/apt/lists
++ head -20
+ls: cannot access 'var/lib/apt/lists': No such file or directory
