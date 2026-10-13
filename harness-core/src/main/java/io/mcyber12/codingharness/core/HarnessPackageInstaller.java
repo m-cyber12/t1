@@ -58,11 +58,11 @@ public final class HarnessPackageInstaller {
             if (!packageListsAreFresh(config)) {
                 HarnessCommandRunner.CommandResult update = runner.run("apt-get", "update");
                 if (!update.isSuccess()) {
-                    return new InstallResult(false, "apt-get update failed: " + compact(update.output));
+                    return new InstallResult(false, "apt-get update failed [" + diagnostics(config)
+                        + "]: " + compact(update.output));
                 }
-                updateSummary = "ok, " + countPackageLists(config) + " lists, cert "
-                    + new File(config.prefix, "etc/tls/cert.pem").length()
-                    + "B: " + tail(update.output, 160);
+                updateSummary = "ok, " + countPackageLists(config) + " lists, " + diagnostics(config)
+                    + ": " + tail(update.output, 160);
             }
 
             String[] packageArgs = new String[CODING_PACKAGES.size() + 2];
@@ -88,6 +88,16 @@ public final class HarnessPackageInstaller {
             Thread.currentThread().interrupt();
             return new InstallResult(false, "package setup was interrupted");
         }
+    }
+
+    /** One-line on-device state check shown in the setup dialog. */
+    private static String diagnostics(HarnessConfig config) {
+        File aptKey = new File(config.prefix, "bin/apt-key");
+        File[] keys = new File(config.prefix, "etc/apt/trusted.gpg.d")
+            .listFiles((dir, name) -> name.endsWith(".gpg"));
+        return "cert " + new File(config.prefix, "etc/tls/cert.pem").length() + "B"
+            + ", apt-key " + (aptKey.isFile() ? aptKey.length() + "B" : "MISSING")
+            + ", keys " + (keys == null ? 0 : keys.length);
     }
 
     private static int countPackageLists(HarnessConfig config) {

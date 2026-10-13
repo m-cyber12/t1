@@ -139,6 +139,39 @@ public final class HarnessBootstrap {
         }
     }
 
+    /**
+     * Installs the Termux repository signing keys from APK assets. The raw
+     * bootstrap has an empty etc/apt/trusted.gpg.d (termux-keyring creates
+     * its links only at package build time), so without this apt reports
+     * "repository is not signed" even after a successful download.
+     */
+    public static void ensureKeyring(Context context, HarnessConfig config) throws IOException {
+        String[] keys;
+        try {
+            keys = context.getAssets().list("termux-keyring");
+        } catch (IOException e) {
+            keys = null;
+        }
+        if (keys == null) return;
+        File trusted = new File(config.prefix, "etc/apt/trusted.gpg.d");
+        if (!trusted.isDirectory() && !trusted.mkdirs() && !trusted.isDirectory()) {
+            throw new IOException("Unable to create trusted keyring directory: " + trusted);
+        }
+        for (String key : keys) {
+            if (!key.endsWith(".gpg")) continue;
+            File target = new File(trusted, key);
+            if (target.isFile() && target.length() > 0) continue;
+            try (InputStream input = context.getAssets().open("termux-keyring/" + key,
+                     android.content.res.AssetManager.ACCESS_STREAMING);
+                 FileOutputStream output = new FileOutputStream(target)) {
+                byte[] buffer = new byte[8192];
+                int count;
+                while ((count = input.read(buffer)) != -1) output.write(buffer, 0, count);
+            }
+            target.setReadable(true, false);
+        }
+    }
+
     public static String assetName() throws IOException {
         for (String abi : Build.SUPPORTED_ABIS) {
             if ("arm64-v8a".equals(abi)) return "bootstrap-aarch64.zip";

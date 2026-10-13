@@ -32,6 +32,29 @@ public class HarnessEnvironmentTest {
     }
 
     @Test
+    public void aptConfigRelocatesAptKeyAndPrepareInstallsKeyring() throws Exception {
+        File prefix = new File("/tmp/harness-test/usr");
+        HarnessConfig config = new HarnessConfig.Builder()
+            .workspace(new File("/tmp/harness-test/workspace"))
+            .home(new File("/tmp/harness-test/home"))
+            .prefix(prefix)
+            .toolDirectory(new File(prefix, "bin"))
+            .libraryDirectory(new File(prefix, "lib"))
+            .shellPath("/system/bin/sh")
+            .build();
+
+        HarnessEnvironment.prepare(config);
+
+        String aptConf = new String(java.nio.file.Files.readAllBytes(
+            new File(prefix, "etc/apt/harness-apt.conf").toPath()), java.nio.charset.StandardCharsets.UTF_8);
+        assertTrue(aptConf.contains("Dir::Bin::apt-key \"/tmp/harness-test/usr/bin/apt-key\""));
+        assertTrue(aptConf.contains("Dir::Bin::dpkg \"/tmp/harness-test/usr/bin/dpkg\""));
+        File[] keys = new File(prefix, "etc/apt/trusted.gpg.d")
+            .listFiles((dir, name) -> name.endsWith(".gpg"));
+        assertEquals(8, keys == null ? 0 : keys.length);
+    }
+
+    @Test
     public void codingPackagesIncludeTheLanguageRuntimes() {
         assertTrue(HarnessPackageInstaller.CODING_PACKAGES.contains("python"));
         assertTrue(HarnessPackageInstaller.CODING_PACKAGES.contains("nodejs"));

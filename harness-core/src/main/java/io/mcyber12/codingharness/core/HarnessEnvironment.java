@@ -14,6 +14,13 @@ import java.util.Map;
 public final class HarnessEnvironment {
     private static final String APT_CONFIG_NAME = "harness-apt.conf";
 
+    /** Public keys from termux-packages' termux-keyring (all but the pacman key). */
+    private static final String[] TERMUX_KEYRING_KEYS = {
+        "2096779623.gpg", "agnostic-apollo.gpg", "grimler.gpg", "kcubeterm.gpg",
+        "landfillbaby.gpg", "mradityaalok.gpg", "termux-autobuilds.gpg",
+        "thunder-coding.gpg"
+    };
+
     private HarnessEnvironment() {}
 
     /**
@@ -60,6 +67,30 @@ public final class HarnessEnvironment {
                 }
             }
         }
+        // The bootstrap's etc/apt/trusted.gpg.d is EMPTY: termux-keyring only
+        // creates its symlinks when the .deb is built/installed, so a raw
+        // bootstrap extraction has no keys and apt rejects the signed
+        // InRelease ("repository is not signed"). Install the bundled
+        // termux-keyring public keys as regular files, mirroring
+        // packages/termux-keyring/build.sh (which links every key except
+        // termux-pacman.gpg into trusted.gpg.d).
+        File trustedParts = new File(aptDirectory, "trusted.gpg.d");
+        ensureDirectory(trustedParts);
+        File sharedKeyring = new File(config.prefix, "share/termux-keyring");
+        ensureDirectory(sharedKeyring);
+        for (String key : TERMUX_KEYRING_KEYS) {
+            copyResourceIfMissing("termux-keyring/" + key, new File(trustedParts, key));
+            copyResourceIfMissing("termux-keyring/" + key, new File(sharedKeyring, key));
+        }
+
+        // apt 2.8.1's ExecGPGV executes Dir::Bin::apt-key, whose compiled-in
+        // default is the official prefix path that does not exist here
+        // ("Couldn't execute /data/data/com.termux/files/usr/bin/apt-key").
+        // The config below points it at the relocated binary; also rewrite
+        // the script's own shebang (which names the official /bin/sh) so
+        // execution does not depend on termux-exec shebang interception.
+        rewriteAptKeyShebang(config);
+
         ensureDirectory(new File(config.prefix, "var/lib/apt/lists/partial"));
         ensureDirectory(new File(config.prefix, "var/cache/apt/archives/partial"));
         ensureDirectory(new File(config.prefix, "var/log/apt"));
@@ -111,10 +142,61 @@ public final class HarnessEnvironment {
             "Dir::Etc::main \"apt.conf\";\n" +
             "Dir::Etc::parts \"apt.conf.d\";\n" +
             "Dir::Log \"var/log/apt\";\n" +
-            "Dir::Bin::dpkg \"bin/dpkg\";\n" +
+            // Dir::Bin::* values below are read with plain Find() (not
+            // FindFile) by ExecGPGV (apt-key), debSystem::Score (dpkg) and
+            // the compressor table (gzip/...), so they must be ABSOLUTE
+            // relocated paths; the compiled-in defaults point at the
+            // official Termux prefix, which does not exist in this app.
+            // FindFile() treats a leading '/' as absolute, so this is also
+            // safe for the callers that resolve through Dir.
+            "Dir::Bin::dpkg \"" + prefix + "/bin/dpkg\";\n" +
+            "Dir::Bin::apt-key \"" + prefix + "/bin/apt-key\";\n" +
+            "Dir::Bin::gzip \"" + prefix + "/bin/gzip\";\n" +
+            "Dir::Bin::bzip2 \"" + prefix + "/bin/bzip2\";\n" +
+            "Dir::Bin::xz \"" + prefix + "/bin/xz\";\n" +
+            "Dir::Bin::lz4 \"" + prefix + "/bin/lz4\";\n" +
+            "Dir::Bin::zstd \"" + prefix + "/bin/zstd\";\n" +
+            "Dir::Bin::lzma \"" + prefix + "/bin/xz\";\n" +
             "Dir::Bin::methods \"lib/apt/methods\";\n";
         try (FileOutputStream output = new FileOutputStream(aptConfig)) {
             output.write(content.getBytes(StandardCharsets.UTF_8));
+        }
+    }
+
+    private static void copyResourceIfMissing(String resource, File target) throws IOException {
+        if (target.isFile() && target.length() > 0) return;
+        try (InputStream input = HarnessEnvironment.class.getResourceAsStream(resource)) {
+            if (input == null) throw new IOException("Missing bundled resource: " + resource);
+            try (FileOutputStream out = new FileOutputStream(target)) {
+                byte[] buffer = new byte[8192];
+                int count;
+                while ((count = input.read(buffer)) != -1) out.write(buffer, 0, count);
+            }
+        }
+        // Keyrings must be readable by the gpgv/apt-key child processes.
+        target.setReadable(true, false);
+    }
+
+    private static void rewriteAptKeyShebang(HarnessConfig config) {
+        File aptKey = new File(config.prefix, "bin/apt-key");
+        if (!aptKey.isFile()) return;
+        try {
+            byte[] all = java.nio.file.Files.readAllBytes(aptKey.toPath());
+            int newline = -1;
+            for (int i = 0; i < all.length && i < 256; i++) {
+                if (all[i] == '\n') { newline = i; break; }
+            }
+            if (newline < 0) return;
+            String firstLine = new String(all, 0, newline, StandardCharsets.UTF_8);
+            if (!firstLine.startsWith("#!") || !firstLine.contains("com.termux")) return;
+            String shebang = "#!" + config.prefix.getAbsolutePath() + "/bin/sh\n";
+            try (FileOutputStream out = new FileOutputStream(aptKey)) {
+                out.write(shebang.getBytes(StandardCharsets.UTF_8));
+                out.write(all, newline + 1, all.length - newline - 1);
+            }
+            aptKey.setExecutable(true, false);
+        } catch (IOException ignored) {
+            // termux-exec shebang interception remains as fallback.
         }
     }
 
