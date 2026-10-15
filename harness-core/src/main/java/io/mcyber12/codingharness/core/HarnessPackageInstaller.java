@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -66,7 +67,8 @@ public final class HarnessPackageInstaller {
                 } catch (Exception ignored) {
                     probe = ", tp=probe-failed";
                 }
-                HarnessCommandRunner.CommandResult update = runner.run("apt-get", "update");
+                HarnessCommandRunner.CommandResult update = runner.run(
+                    Arrays.asList("apt-get", "update"), 30 * 60_000L);
                 if (!update.isSuccess()) {
                     return new InstallResult(false, "apt-get update failed [" + diagnostics(config)
                         + probe + "]: " + compact(update.output));
@@ -75,13 +77,12 @@ public final class HarnessPackageInstaller {
                     + probe + ": " + tail(update.output, 160);
             }
 
-            String[] packageArgs = new String[CODING_PACKAGES.size() + 2];
-            packageArgs[0] = "-y";
-            packageArgs[1] = "install";
-            for (int i = 0; i < CODING_PACKAGES.size(); i++) {
-                packageArgs[i + 2] = CODING_PACKAGES.get(i);
-            }
-            HarnessCommandRunner.CommandResult install = runner.run("apt-get", packageArgs);
+            List<String> installCommand = new ArrayList<>();
+            installCommand.add("apt-get");
+            installCommand.add("-y");
+            installCommand.add("install");
+            installCommand.addAll(CODING_PACKAGES);
+            HarnessCommandRunner.CommandResult install = runner.run(installCommand, 45 * 60_000L);
             if (!install.isSuccess()) {
                 return new InstallResult(false,
                     "install failed (update " + updateSummary + "): " + compact(install.output));

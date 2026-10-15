@@ -27,8 +27,9 @@ android {
         applicationId "io.mcyber12.codingharness"
         minSdk rootProject.ext.minSdkVersion
         targetSdk rootProject.ext.targetSdkVersion
-        versionCode 17
-        versionName "0.17.0"
+        versionCode 18
+        versionName "0.18.0"
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
     sourceSets {
@@ -101,4 +102,9 @@ tasks.matching { it.name in ["preDebugBuild", "preReleaseBuild"] }.configureEach
 dependencies {
     implementation project(":harness-core")
     implementation project(":terminal-view")
+
+    androidTestImplementation "junit:junit:4.13.2"
+    androidTestImplementation "androidx.test:core:1.6.1"
+    androidTestImplementation "androidx.test:runner:1.6.2"
+    androidTestImplementation "androidx.test.ext:junit:1.2.1"
 }

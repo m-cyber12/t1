@@ -1,0 +1,95 @@
+name: Emulator setup E2E
+
+# Runs the REAL app in an Android emulator and proves the whole first-run
+# setup works end to end: bootstrap extraction, apt-get update against the
+# Termux repository (TLS + signature verification included), installation of
+# Python/Node/npm/Perl/Ruby/Git/ripgrep/Clang/CMake, and execution of every
+# tool. This replaces manual on-device testing for setup regressions.
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ["arena/**"]
+    paths:
+      - "app/**"
+      - "harness-core/**"
+      - ".github/workflows/emulator-setup-e2e.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  emulator-e2e:
+    name: Android emulator / full setup E2E
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: gradle
+
+      - name: Set up Android SDK command-line tools
+        uses: android-actions/setup-android@v3
+        with:
+          packages: 'platform-tools platforms;android-35 build-tools;35.0.0 ndk;27.2.12479018'
+
+      - name: Enable KVM for emulator hardware acceleration
+        shell: bash
+        run: |
+          echo 'KERNEL=="KVM", GROUP="KVM", MODE="0666", OPTIONS+="static_node=KVM"' | sudo tee /etc/udev/rules.d/99-KVM.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=KVM
+          ls -l /dev/KVM
+
+      - name: Build app and tests (fail fast before booting emulator)
+        shell: bash
+        run: |
+          set -o pipefail
+          ./gradlew --no-daemon --stacktrace :app:assembleDebug :app:assembleDebugAndroidTest 2>&1 | tee gradle-assemble.log
+
+      - name: Run full setup E2E on emulator
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          target: google_apis
+          arch: x86_64
+          profile: pixel_6
+          disk-size: 8192M
+          ram-size: 4096M
+          heap-size: 512M
+          disable-animations: true
+          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot-save -noaudio -no-boot-anim
+          script: |
+            set +e
+            ./gradlew --no-daemon --stacktrace :app:connectedDebugAndroidTest
+            rc=$?
+            echo "connectedDebugAndroidTest exit=$rc"
+            echo "================ setup-e2e-report.txt ================"
+            adb shell cat /sdcard/Android/data/io.mcyber12.codingharness/files/setup-e2e-report.txt || true
+            adb pull /sdcard/Android/data/io.mcyber12.codingharness/files/setup-e2e-report.txt ./setup-e2e-report.txt || true
+            echo "================ bootstrap-error.log ================"
+            adb shell run-as io.mcyber12.codingharness cat files/coding-harness/bootstrap-error.log || true
+            echo "================ harness-command.log (tail) ================"
+            adb shell run-as io.mcyber12.codingharness cat files/coding-harness/usr/var/log/harness-command.log | tail -c 8000 || true
+            echo "================ logcat (tail) ================"
+            adb logcat -d | tail -n 400 || true
+            exit $rc
+
+      - name: Upload E2E results and reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: emulator-setup-e2e-results
+          path: |
+            setup-e2e-report.txt
+            app/build/outputs/androidTest-results/
+            app/build/reports/androidTests/
+            gradle-assemble.log
+          if-no-files-found: warn

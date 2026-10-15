@@ -1,0 +1,182 @@
+package io.mcyber12.codingharness;
+
+import android.content.Context;
+import android.content.Intent;
+
+import androidx.test.core.app.ApplicationProvider;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
+
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+import io.mcyber12.codingharness.core.HarnessCommandRunner;
+import io.mcyber12.codingharness.core.HarnessConfig;
+import io.mcyber12.codingharness.core.HarnessPackageInstaller;
+import io.mcyber12.codingharness.core.HarnessPaths;
+
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
+/**
+ * Full on-device (emulator) end-to-end test: launches the real MainActivity,
+ * which extracts the Termux bootstrap and automatically runs apt-get update +
+ * toolchain installation, then asserts every required tool actually executes.
+ *
+ * Progress and diagnostics are appended to setup-e2e-report.txt in the app's
+ * external files directory so the CI workflow can print/pull it even when the
+ * test fails. This is the test that would have caught the relocated-prefix
+ * TLS, apt-key and NO_PUBKEY failures without a physical device.
+ */
+@RunWith(AndroidJUnit4.class)
+public class CodingHarnessE2eTest {
+    private static final long SETUP_DEADLINE_MS = 45 * 60_000L;
+    private static final long POLL_MS = 15_000L;
+
+    private static final String[][] VERSION_COMMANDS = {
+        {"python", "--version"},
+        {"python", "-c", "import ssl, json, sqlite3; print('py-ssl', ssl.OPENSSL_VERSION)"},
+        {"node", "--version"},
+        {"node", "-e", "console.log('node-ok', process.version)"},
+        {"npm", "--version"},
+        {"perl", "-e", "print $^V"},
+        {"ruby", "--version"},
+        {"git", "--version"},
+        {"rg", "--version"},
+        {"clang", "--version"},
+        {"cmake", "--version"},
+        {"make", "--version"},
+    };
+
+    private File reportFile;
+
+    @Test
+    public void fullSetupInstallsWorkingToolchain() throws Exception {
+        Context context = ApplicationProvider.getApplicationContext();
+        File external = context.getExternalFilesDir(null);
+        reportFile = new File(external != null ? external : context.getFilesDir(),
+            "setup-e2e-report.txt");
+        report("e2e start");
+
+        HarnessPaths paths = HarnessPaths.forApp(context);
+        HarnessConfig config = HarnessConfig.builder(context)
+            .workspace(paths.workspace())
+            .home(paths.home())
+            .prefix(paths.prefix())
+            .toolDirectory(paths.bin())
+            .libraryDirectory(paths.lib())
+            .nativeLibraryDirectory(new File(context.getApplicationInfo().nativeLibraryDir))
+            .shellPath(paths.defaultShell())
+            .build();
+        report("prefix=" + config.prefix.getAbsolutePath());
+
+        Intent launch = new Intent(context, MainActivity.class);
+        launch.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        context.startActivity(launch);
+        report("MainActivity launched; waiting for automatic setup");
+
+        long deadline = System.currentTimeMillis() + SETUP_DEADLINE_MS;
+        boolean ready = false;
+        while (System.currentTimeMillis() < deadline) {
+            if (HarnessPackageInstaller.isCodingToolchainReady(config)) {
+                ready = true;
+                break;
+            }
+            report("waiting… ready=" + readinessSummary(config));
+            Thread.sleep(POLL_MS);
+        }
+        if (!ready) {
+            String diagnostics = collectDiagnostics(config);
+            report("SETUP TIMEOUT\n" + diagnostics);
+            fail("Coding toolchain was not installed within "
+                + (SETUP_DEADLINE_MS / 60000) + " minutes.\n" + diagnostics);
+        }
+        report("toolchain executables present; verifying each tool runs");
+
+        HarnessCommandRunner runner = new HarnessCommandRunner(config);
+        List<String> failures = new ArrayList<>();
+        for (String[] command : VERSION_COMMANDS) {
+            HarnessCommandRunner.CommandResult result =
+                runner.run(Arrays.asList(command), 180_000L);
+            String line = String.join(" ", command) + " -> exit " + result.exitCode
+                + " : " + oneLine(result.output);
+            report(line);
+            if (!result.isSuccess() || oneLine(result.output).isEmpty()) {
+                failures.add(line);
+            }
+        }
+        assertTrue("Some tools failed to run:\n" + String.join("\n", failures),
+            failures.isEmpty());
+        report("E2E SUCCESS: all tools execute");
+    }
+
+    private String readinessSummary(HarnessConfig config) {
+        String[] commands = {"bash", "git", "rg", "python", "node", "npm", "perl", "ruby", "curl"};
+        StringBuilder out = new StringBuilder();
+        for (String command : commands) {
+            File exe = new File(config.toolDirectory, command);
+            out.append(command).append(exe.isFile() && exe.canExecute() ? "=Y " : "=n ");
+        }
+        return out.toString().trim();
+    }
+
+    private String collectDiagnostics(HarnessConfig config) {
+        StringBuilder out = new StringBuilder();
+        try {
+            File prefix = config.prefix;
+            out.append("apt-get exists=").append(new File(prefix, "bin/apt-get").isFile())
+                .append(", apt-key=").append(new File(prefix, "bin/apt-key").length())
+                .append(", cert=").append(new File(prefix, "etc/tls/cert.pem").length())
+                .append('\n');
+            File[] keys = new File(prefix, "etc/apt/trusted.gpg.d")
+                .listFiles((dir, name) -> name.endsWith(".gpg"));
+            out.append("trusted keys=").append(keys == null ? 0 : keys.length).append('\n');
+            out.append("--- sources.list ---\n")
+                .append(readTail(new File(prefix, "etc/apt/sources.list"), 2000)).append('\n');
+            out.append("--- harness-apt.conf ---\n")
+                .append(readTail(new File(prefix, "etc/apt/harness-apt.conf"), 3000)).append('\n');
+            out.append("--- harness-command.log (tail) ---\n")
+                .append(readTail(new File(prefix, "var/log/harness-command.log"), 6000)).append('\n');
+            out.append("--- bootstrap-error.log (tail) ---\n")
+                .append(readTail(new File(config.prefix.getParentFile(), "bootstrap-error.log"), 3000)).append('\n');
+            File[] lists = new File(prefix, "var/lib/apt/lists").listFiles();
+            out.append("apt lists entries=").append(lists == null ? 0 : lists.length).append('\n');
+        } catch (Exception e) {
+            out.append("diagnostics failed: ").append(e).append('\n');
+        }
+        return out.toString();
+    }
+
+    private static String readTail(File file, int maxChars) {
+        try {
+            if (!file.isFile()) return "(missing: " + file.getAbsolutePath() + ")";
+            String text = new String(Files.readAllBytes(file.toPath()), StandardCharsets.UTF_8);
+            return text.length() <= maxChars ? text : text.substring(text.length() - maxChars);
+        } catch (Exception e) {
+            return "(unreadable " + file.getAbsolutePath() + ": " + e.getMessage() + ")";
+        }
+    }
+
+    private static String oneLine(String output) {
+        if (output == null) return "";
+        String normalized = output.replace('\n', ' ').replace('\r', ' ').trim();
+        return normalized.length() <= 300 ? normalized : normalized.substring(0, 300);
+    }
+
+    private synchronized void report(String line) {
+        String entry = "[" + System.currentTimeMillis() + "] " + line + "\n";
+        try (FileOutputStream out = new FileOutputStream(reportFile, true)) {
+            out.write(entry.getBytes(StandardCharsets.UTF_8));
+        } catch (Exception ignored) {
+            // Reporting must never fail the test.
+        }
+        System.out.println("HARNESS-E2E " + line);
+    }
+}
