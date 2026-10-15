@@ -69,6 +69,9 @@ public class HarnessEnvironmentTest {
         File prefix = new File("/tmp/harness-test-links/usr");
         File trusted = new File(prefix, "etc/apt/trusted.gpg.d");
         trusted.mkdirs();
+        // deleteIfExists: debug and release unit-test variants share /tmp,
+        // and a previous variant may already have replaced the link.
+        java.nio.file.Files.deleteIfExists(new File(trusted, "termux-autobuilds.gpg").toPath());
         java.nio.file.Files.createSymbolicLink(
             new File(trusted, "termux-autobuilds.gpg").toPath(),
             new File("/data/data/com.termux/files/usr/share/termux-keyring/termux-autobuilds.gpg").toPath());
