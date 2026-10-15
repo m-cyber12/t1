@@ -127,11 +127,23 @@ jobs:
           grep -q "assets/bootstrap-x86_64.zip" apk-contents.txt
           echo "APK contents verified: cacert.pem, 8 termux keys, both bootstraps"
 
+      - name: Publish test results on failure
+        if: failure()
+        shell: bash
+        run: |
+          mkdir -p diagnostics-tests
+          find . -path '*test-results*' -name '*.xml' -exec cp {} diagnostics-tests/ \; 2>/dev/null || true
+          find . -path '*test-results*' -name '*.txt' -exec cp {} diagnostics-tests/ \; 2>/dev/null || true
+          ls diagnostics-tests/ || true
+          git add diagnostics-tests/ || true
+          git -c user.email=ci@invalid -c user.name=ci-tests commit -qm "test results ${GITHUB_RUN_ID} [ci]" || true
+          git push origin "HEAD:refs/heads/diagnostics/builder" --force || true
+
       - name: Annotate Gradle failure
         if: failure()
         shell: bash
         run: |
-          report=$(grep -h -m1 -A12 '<failure' terminal-emulator/build/test-results/testDebugUnitTest/*.xml 2>/dev/null | tr '\n' ' ' | cut -c1-8000 || true)
+          report=$(grep -h -m1 -A12 '<failure' terminal-emulator/build/test-results/testDebugUnitTest/*.xml harness-core/build/test-results/test/*.xml 2>/dev/null | tr '\n' ' ' | cut -c1-8000 || true)
           if [ -n "$report" ]; then
             report=${report//%/%25}
             report=${report//$'\r'/%0D}
