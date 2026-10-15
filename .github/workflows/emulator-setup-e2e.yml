@@ -16,7 +16,7 @@ on:
       - ".github/workflows/emulator-setup-e2e.yml"
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   emulator-e2e:
@@ -105,6 +105,19 @@ jobs:
             echo "connected exit=$rc" >> diagnostics/e2e-status.txt 2>/dev/null || true
             publish_progress
             exit $rc
+
+      - name: Publish E2E diagnostics branch
+        if: always()
+        shell: bash
+        run: |
+          mkdir -p diagnostics
+          cp ./setup-e2e-report.txt diagnostics/setup-e2e-report.txt 2>/dev/null || echo "no setup-e2e-report.txt pulled" > diagnostics/setup-e2e-report.txt
+          for x in app/build/outputs/androidTest-results/connected/*.xml app/build/outputs/androidTest-results/*.xml; do [ -f "$x" ] && cp "$x" diagnostics/; done
+          ls -la diagnostics/
+          date -u +"e2e finished %Y-%m-%dT%H:%M:%SZ run=${GITHUB_RUN_ID}" > diagnostics/e2e-status.txt
+          git add diagnostics/
+          git -c user.email=ci@invalid -c user.name=ci-e2e commit -qm "e2e results ${GITHUB_RUN_ID} [ci]" || true
+          git push origin "HEAD:refs/heads/diagnostics/e2e" --force
 
       - name: Upload E2E results and reports
         if: always()
