@@ -52,15 +52,31 @@ yes | "$SDKMANAGER" --licenses > e2e-logs/licenses.log 2>&1 || true
 if [ $? -ne 0 ]; then phase "system-image-failed"; tail -50 e2e-logs/sysimg.log; exit 1; fi
 
 phase "create-avd"
+# avdmanager and emulator must agree on the AVD home; newer cmdline-tools
+# otherwise create under a location emulator does not search
+# ("Unknown AVD name [e2e]").
+export ANDROID_AVD_HOME="${ANDROID_AVD_HOME:-$HOME/.android/avd}"
+mkdir -p "$ANDROID_AVD_HOME"
+echo "ANDROID_AVD_HOME=$ANDROID_AVD_HOME" >> e2e-logs/phases.log
 echo no | "$AVDMANAGER" create avd -n e2e -k "system-images;android-34;google_apis;x86_64" -d pixel_6 --force > e2e-logs/avd.log 2>&1
 if [ $? -ne 0 ]; then phase "create-avd-failed"; tail -50 e2e-logs/avd.log; exit 1; fi
+ls -la "$ANDROID_AVD_HOME" >> e2e-logs/phases.log 2>&1
+if ! "$EMU_BIN" -list-avds 2>/dev/null | grep -qx e2e; then
+  phase "create-avd-invisible"
+  "$EMU_BIN" -list-avds >> e2e-logs/avd.log 2>&1 || true
+  exit 1
+fi
 
 phase "launch-emulator"
 "$EMU_BIN" -avd e2e -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim -memory 4096 -cores 4 -partition-size 8192 > e2e-logs/emulator.log 2>&1 &
 EMU_PID=$!
-"$ADB" wait-for-device >> e2e-logs/phases.log 2>&1
+timeout 180 "$ADB" wait-for-device >> e2e-logs/phases.log 2>&1 || true
 booted=""
 for i in $(seq 1 60); do
+  if ! kill -0 "$EMU_PID" >/dev/null 2>&1; then
+    echo "emulator process died during boot" >> e2e-logs/phases.log
+    break
+  fi
   if [ "$("$ADB" shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')" = "1" ]; then booted=1; break; fi
   sleep 10
 done
