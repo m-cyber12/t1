@@ -48,7 +48,7 @@ PUBLISHER_PID=$!
 phase "install-system-image"
 echo "SDK=$SDK"; ls "$SDK" >> e2e-logs/phases.log 2>&1
 yes | "$SDKMANAGER" --licenses > e2e-logs/licenses.log 2>&1 || true
-"$SDKMANAGER" "emulator" "system-images;android-34;google_apis;arm64-v8a" > e2e-logs/sysimg.log 2>&1
+"$SDKMANAGER" "emulator" "system-images;android-34;google_apis;x86_64" > e2e-logs/sysimg.log 2>&1
 if [ $? -ne 0 ]; then phase "system-image-failed"; tail -50 e2e-logs/sysimg.log; exit 1; fi
 
 phase "create-avd"
@@ -58,7 +58,7 @@ phase "create-avd"
 export ANDROID_AVD_HOME="${ANDROID_AVD_HOME:-$HOME/.android/avd}"
 mkdir -p "$ANDROID_AVD_HOME"
 echo "ANDROID_AVD_HOME=$ANDROID_AVD_HOME" >> e2e-logs/phases.log
-echo no | "$AVDMANAGER" create avd -n e2e -k "system-images;android-34;google_apis;arm64-v8a" -d pixel_6 --force > e2e-logs/avd.log 2>&1
+echo no | "$AVDMANAGER" create avd -n e2e -k "system-images;android-34;google_apis;x86_64" -d pixel_6 --force > e2e-logs/avd.log 2>&1
 if [ $? -ne 0 ]; then phase "create-avd-failed"; tail -50 e2e-logs/avd.log; exit 1; fi
 ls -la "$ANDROID_AVD_HOME" >> e2e-logs/phases.log 2>&1
 if ! "$EMU_BIN" -list-avds 2>/dev/null | grep -qx e2e; then
@@ -68,7 +68,23 @@ if ! "$EMU_BIN" -list-avds 2>/dev/null | grep -qx e2e; then
 fi
 
 phase "launch-emulator"
-"$EMU_BIN" -avd e2e -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim -memory 4096 -cores 4 -partition-size 8192 > e2e-logs/emulator.log 2>&1 &
+if [ "$(uname)" = "Linux" ] && [ -e /dev/KVM ]; then
+  {
+    echo "-- KVM probe --"
+    ls -l /dev/KVM; id
+    sudo chmod 666 /dev/KVM || true
+    sudo usermod -aG KVM "$(id -un)" || true
+    ls -l /dev/KVM
+    python3 -c 'import os,fcntl; fd=os.open("/dev/KVM", os.O_RDWR); print("KVM_GET_API_VERSION =", fcntl.ioctl(fd, 0xAE00, 0))' || true
+  } >> e2e-logs/phases.log 2>&1
+fi
+# Launch under the KVM group when possible so the emulator process itself
+# carries KVM group membership, not just device-node writability.
+if [ "$(uname)" = "Linux" ] && command -v sg >/dev/null 2>&1 && getent group KVM >/dev/null 2>&1; then
+  sg KVM -c "\"$EMU_BIN\" -avd e2e -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim -memory 4096 -cores 4 -partition-size 8192" > e2e-logs/emulator.log 2>&1 &
+else
+  "$EMU_BIN" -avd e2e -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim -memory 4096 -cores 4 -partition-size 8192 > e2e-logs/emulator.log 2>&1 &
+fi
 EMU_PID=$!
 # No wait-for-device here (GNU timeout is unavailable on macOS and an
 # unbounded wait hangs forever if the emulator dies); the poll loop below

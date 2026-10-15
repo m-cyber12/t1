@@ -22,10 +22,7 @@ permissions:
 jobs:
   emulator-e2e:
     name: Android emulator / full setup E2E
-    # Apple Silicon runner + arm64 system image = native Hypervisor
-    # acceleration (Linux runners block /dev/KVM for the hosted user) and
-    # it exercises the aarch64 bootstrap that real phones actually use.
-    runs-on: macos-14
+    runs-on: ubuntu-latest
     timeout-minutes: 150
 
     steps:
