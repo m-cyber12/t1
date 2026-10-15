@@ -1,0 +1,24 @@
+[20:09:45] phase=install-system-image
+build-tools
+cmake
+cmdline-tools
+extras
+licenses
+ndk
+packages-list.txt
+platform-tools
+platforms
+repositories.cfg
+[20:10:49] phase=create-avd
+ANDROID_AVD_HOME=/home/runner/.android/avd
+total 16
+drwxr-xr-x 3 runner runner 4096 Oct 15 20:10 .
+drwxr-xr-x 3 runner runner 4096 Oct 15 20:10 ..
+drwxr-xr-x 2 runner runner 4096 Oct 15 20:10 e2e.avd
+-rw-r--r-- 1 runner runner   80 Oct 15 20:10 e2e.ini
+[20:10:52] phase=launch-emulator
+KVM unavailable; using -no-accel (software emulation)
+[20:24:30] phase=network-check
+[20:30:44] phase=connected-test
+connectedDebugAndroidTest exit=1
+adb: error: failed to stat remote object '/sdcard/Android/data/io.mcyber12.codingharness/files/setup-e2e-report.txt': Input/output error
