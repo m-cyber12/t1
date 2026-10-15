@@ -157,18 +157,26 @@ public final class HarnessBootstrap {
         if (!trusted.isDirectory() && !trusted.mkdirs() && !trusted.isDirectory()) {
             throw new IOException("Unable to create trusted keyring directory: " + trusted);
         }
+        // Canonical Termux location (share/termux-keyring), mirrored so any
+        // tool looking there finds the same keys as trusted.gpg.d.
+        File shared = new File(config.prefix, "share/termux-keyring");
+        if (!shared.isDirectory() && !shared.mkdirs() && !shared.isDirectory()) {
+            throw new IOException("Unable to create shared keyring directory: " + shared);
+        }
         for (String key : keys) {
             if (!key.endsWith(".gpg")) continue;
-            File target = new File(trusted, key);
-            if (target.isFile() && target.length() > 0) continue;
-            try (InputStream input = context.getAssets().open("termux-keyring/" + key,
-                     android.content.res.AssetManager.ACCESS_STREAMING);
-                 FileOutputStream output = new FileOutputStream(target)) {
-                byte[] buffer = new byte[8192];
-                int count;
-                while ((count = input.read(buffer)) != -1) output.write(buffer, 0, count);
+            for (File directory : new File[] {trusted, shared}) {
+                File target = new File(directory, key);
+                if (target.isFile() && target.length() > 0) continue;
+                try (InputStream input = context.getAssets().open("termux-keyring/" + key,
+                         android.content.res.AssetManager.ACCESS_STREAMING);
+                     FileOutputStream output = new FileOutputStream(target)) {
+                    byte[] buffer = new byte[8192];
+                    int count;
+                    while ((count = input.read(buffer)) != -1) output.write(buffer, 0, count);
+                }
+                target.setReadable(true, false);
             }
-            target.setReadable(true, false);
         }
     }
 

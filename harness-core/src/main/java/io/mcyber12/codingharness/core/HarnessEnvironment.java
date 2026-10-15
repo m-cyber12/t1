@@ -41,11 +41,34 @@ public final class HarnessEnvironment {
         // fetching nothing and every install then reports "Unable to locate
         // package". The official bootstrap ships this file; recreate it if a
         // partial extraction ever left it missing or empty.
+        // The managed sources line pins the repository signing key with
+        // Signed-By. Without it, apt's gpgv method asks apt-key to merge
+        // etc/apt/trusted.gpg.d, which first resolves Dir::Etc::TrustedParts
+        // through a nested `apt-config shell` call inside a dumped temp
+        // config; on-device that resolution fell back to the compiled-in
+        // Termux path, merged zero keys and failed with
+        // "NO_PUBKEY 5A897D96E57CF20C" even though the key was installed.
+        // With an absolute Signed-By path the gpgv method passes the key
+        // file to apt-key as an explicit --keyring instead. Rewrite any
+        // earlier sources.list that lacks it so existing installs upgrade.
+        String signingKey = new File(aptDirectory, "trusted.gpg.d/termux-autobuilds.gpg")
+            .getAbsolutePath();
+        String managedSources = "deb [signed-by=" + signingKey + "] "
+            + "https://packages-cf.termux.dev/apt/termux-main/ stable main\n";
         File sourcesList = new File(aptDirectory, "sources.list");
-        if (!sourcesList.isFile() || sourcesList.length() == 0) {
+        boolean needsSources = true;
+        if (sourcesList.isFile() && sourcesList.length() > 0) {
+            try {
+                String current = new String(java.nio.file.Files.readAllBytes(sourcesList.toPath()),
+                    StandardCharsets.UTF_8);
+                needsSources = !current.contains("signed-by=");
+            } catch (IOException ignored) {
+                needsSources = true;
+            }
+        }
+        if (needsSources) {
             try (FileOutputStream sources = new FileOutputStream(sourcesList)) {
-                sources.write("deb https://packages-cf.termux.dev/apt/termux-main/ stable main\n"
-                    .getBytes(StandardCharsets.UTF_8));
+                sources.write(managedSources.getBytes(StandardCharsets.UTF_8));
             }
         }
 
@@ -141,6 +164,8 @@ public final class HarnessEnvironment {
             "Dir::Etc::sourceparts \"sources.list.d\";\n" +
             "Dir::Etc::main \"apt.conf\";\n" +
             "Dir::Etc::parts \"apt.conf.d\";\n" +
+            "Dir::Etc::trusted \"trusted.gpg\";\n" +
+            "Dir::Etc::trustedparts \"trusted.gpg.d\";\n" +
             "Dir::Log \"var/log/apt\";\n" +
             // Dir::Bin::* values below are read with plain Find() (not
             // FindFile) by ExecGPGV (apt-key), debSystem::Score (dpkg) and

@@ -49,6 +49,11 @@ public class HarnessEnvironmentTest {
             new File(prefix, "etc/apt/harness-apt.conf").toPath()), java.nio.charset.StandardCharsets.UTF_8);
         assertTrue(aptConf.contains("Dir::Bin::apt-key \"/tmp/harness-test/usr/bin/apt-key\""));
         assertTrue(aptConf.contains("Dir::Bin::dpkg \"/tmp/harness-test/usr/bin/dpkg\""));
+        assertTrue(aptConf.contains("Dir::Etc::trustedparts \"trusted.gpg.d\""));
+        String sources = new String(java.nio.file.Files.readAllBytes(
+            new File(prefix, "etc/apt/sources.list").toPath()), java.nio.charset.StandardCharsets.UTF_8);
+        assertTrue(sources.contains("signed-by=/tmp/harness-test/usr/etc/apt/trusted.gpg.d/termux-autobuilds.gpg"));
+        assertTrue(sources.contains("https://packages-cf.termux.dev/apt/termux-main/ stable main"));
         File[] keys = new File(prefix, "etc/apt/trusted.gpg.d")
             .listFiles((dir, name) -> name.endsWith(".gpg"));
         assertEquals(8, keys == null ? 0 : keys.length);

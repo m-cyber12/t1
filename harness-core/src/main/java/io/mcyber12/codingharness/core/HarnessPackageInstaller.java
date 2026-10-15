@@ -56,13 +56,23 @@ public final class HarnessPackageInstaller {
             HarnessCommandRunner runner = new HarnessCommandRunner(config);
             String updateSummary = "skipped (lists fresh)";
             if (!packageListsAreFresh(config)) {
+                // Probe how apt-config itself resolves the trusted keyring
+                // directory on-device; shown verbatim in the failure dialog.
+                String probe = "";
+                try {
+                    HarnessCommandRunner.CommandResult tp = runner.run(
+                        "apt-config", "shell", "TP", "Dir::Etc::TrustedParts/d");
+                    probe = ", tp=" + tail(tp.output, 110);
+                } catch (Exception ignored) {
+                    probe = ", tp=probe-failed";
+                }
                 HarnessCommandRunner.CommandResult update = runner.run("apt-get", "update");
                 if (!update.isSuccess()) {
                     return new InstallResult(false, "apt-get update failed [" + diagnostics(config)
-                        + "]: " + compact(update.output));
+                        + probe + "]: " + compact(update.output));
                 }
                 updateSummary = "ok, " + countPackageLists(config) + " lists, " + diagnostics(config)
-                    + ": " + tail(update.output, 160);
+                    + probe + ": " + tail(update.output, 160);
             }
 
             String[] packageArgs = new String[CODING_PACKAGES.size() + 2];
