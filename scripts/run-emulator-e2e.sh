@@ -68,29 +68,25 @@ if ! "$EMU_BIN" -list-avds 2>/dev/null | grep -qx e2e; then
 fi
 
 phase "launch-emulator"
-if [ "$(uname)" = "Linux" ] && [ -e /dev/KVM ]; then
-  {
-    echo "-- KVM probe --"
-    ls -l /dev/KVM; id
-    sudo chmod 666 /dev/KVM || true
-    sudo usermod -aG KVM "$(id -un)" || true
-    ls -l /dev/KVM
-    python3 -c 'import os,fcntl; fd=os.open("/dev/KVM", os.O_RDWR); print("KVM_GET_API_VERSION =", fcntl.ioctl(fd, 0xAE00, 0))' || true
-  } >> e2e-logs/phases.log 2>&1
+ACCEL_ARGS=""
+if [ "$(uname)" = "Linux" ]; then
+  if [ -e /dev/KVM ] && python3 -c 'import os,fcntl; fd=os.open("/dev/KVM", os.O_RDWR); assert fcntl.ioctl(fd, 0xAE00, 0) > 0' 2>/dev/null; then
+    echo "KVM usable; hardware acceleration on" >> e2e-logs/phases.log
+  else
+    # GitHub-hosted runners here expose no /dev/KVM at all, and macOS
+    # runners are nested (HVF unsupported). Software emulation (TCG) is
+    # slow but works; budgets below are sized for it.
+    echo "KVM unavailable; using -no-accel (software emulation)" >> e2e-logs/phases.log
+    ACCEL_ARGS="-no-accel"
+  fi
 fi
-# Launch under the KVM group when possible so the emulator process itself
-# carries KVM group membership, not just device-node writability.
-if [ "$(uname)" = "Linux" ] && command -v sg >/dev/null 2>&1 && getent group KVM >/dev/null 2>&1; then
-  sg KVM -c "\"$EMU_BIN\" -avd e2e -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim -memory 4096 -cores 4 -partition-size 8192" > e2e-logs/emulator.log 2>&1 &
-else
-  "$EMU_BIN" -avd e2e -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim -memory 4096 -cores 4 -partition-size 8192 > e2e-logs/emulator.log 2>&1 &
-fi
+"$EMU_BIN" -avd e2e -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim $ACCEL_ARGS -memory 4096 -cores 4 -partition-size 8192 > e2e-logs/emulator.log 2>&1 &
 EMU_PID=$!
 # No wait-for-device here (GNU timeout is unavailable on macOS and an
 # unbounded wait hangs forever if the emulator dies); the poll loop below
 # is bounded and also watches the emulator process itself.
 booted=""
-for i in $(seq 1 60); do
+for i in $(seq 1 180); do
   if ! kill -0 "$EMU_PID" >/dev/null 2>&1; then
     echo "emulator process died during boot" >> e2e-logs/phases.log
     break

@@ -40,7 +40,7 @@ import static org.junit.Assert.fail;
 @RunWith(AndroidJUnit4.class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class CodingHarnessE2eTest {
-    private static final long SETUP_DEADLINE_MS = 60 * 60_000L;
+    private static final long SETUP_DEADLINE_MS = 150 * 60_000L;
     private static final long POLL_MS = 15_000L;
 
     private static final String[][] VERSION_COMMANDS = {
