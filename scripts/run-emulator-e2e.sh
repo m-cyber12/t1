@@ -83,7 +83,10 @@ if [ "$(uname)" = "Linux" ]; then
     ACCEL_ARGS="-no-accel"
   fi
 fi
-"$EMU_BIN" -avd e2e -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim $ACCEL_ARGS -memory 4096 -cores 4 -partition-size 8192 > e2e-logs/emulator.log 2>&1 &
+# Explicit DNS servers: the emulator's default DNS proxy forwards to the
+# runner host's nameservers, which failed here with apt reporting
+# "No address associated with hostname" for the Termux repository.
+"$EMU_BIN" -avd e2e -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim -dns-server 8.8.8.8,1.1.1.1 $ACCEL_ARGS -memory 4096 -cores 4 -partition-size 8192 > e2e-logs/emulator.log 2>&1 &
 EMU_PID=$!
 # No wait-for-device here (GNU timeout is unavailable on macOS and an
 # unbounded wait hangs forever if the emulator dies); the poll loop below

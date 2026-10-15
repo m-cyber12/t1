@@ -99,7 +99,31 @@ public class CodingHarnessE2eTest {
         io.mcyber12.codingharness.core.HarnessBootstrap.ensureKeyring(context, config);
         report("a01 bootstrap + cert + keyring installed");
 
+        // Network probes first: distinguish emulator DNS problems (CI-only)
+        // from harness problems. Java-side resolution, then the Termux curl
+        // binary through the same environment apt will use.
+        try {
+            java.net.InetAddress[] addresses =
+                java.net.InetAddress.getAllByName("packages-cf.termux.dev");
+            StringBuilder ips = new StringBuilder();
+            for (java.net.InetAddress address : addresses) ips.append(address.getHostAddress()).append(' ');
+            report("a01 java DNS: " + ips.toString().trim());
+        } catch (Exception e) {
+            report("a01 java DNS FAILED: " + e);
+        }
         HarnessCommandRunner runner = new HarnessCommandRunner(config);
+        try {
+            HarnessCommandRunner.CommandResult curlProbe = runner.run(Arrays.asList(
+                "curl", "-s", "-o", "/dev/null", "-w", "%{http_code}",
+                "--max-time", "90",
+                "https://packages-cf.termux.dev/apt/termux-main/dists/stable/InRelease"),
+                120_000L);
+            report("a01 termux curl probe exit=" + curlProbe.exitCode
+                + " http=" + oneLine(curlProbe.output));
+        } catch (Exception e) {
+            report("a01 termux curl probe FAILED: " + e);
+        }
+
         HarnessCommandRunner.CommandResult update =
             runner.run(Arrays.asList("apt-get", "update"), 30 * 60_000L);
         report("a01 apt-get update exit=" + update.exitCode + " : " + oneLine(update.output));
