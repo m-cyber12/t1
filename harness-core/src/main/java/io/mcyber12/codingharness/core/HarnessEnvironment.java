@@ -163,18 +163,27 @@ public final class HarnessEnvironment {
         }
     }
 
-    private static void copyResourceIfMissing(String resource, File target) throws IOException {
+    private static void copyResourceIfMissing(String resource, File target) {
+        // Best-effort only: Android library builds do not reliably package
+        // src/main/resources for getResourceAsStream (it works on the JVM
+        // unit-test classpath but can return null on-device). The
+        // authoritative copy is installed from APK assets by
+        // HarnessBootstrap.ensureKeyring/ensureCertificates, so a missing
+        // classpath resource must never abort prepare() — an earlier build
+        // threw here and broke session startup ("bootstrap failed").
         if (target.isFile() && target.length() > 0) return;
         try (InputStream input = HarnessEnvironment.class.getResourceAsStream(resource)) {
-            if (input == null) throw new IOException("Missing bundled resource: " + resource);
+            if (input == null) return;
             try (FileOutputStream out = new FileOutputStream(target)) {
                 byte[] buffer = new byte[8192];
                 int count;
                 while ((count = input.read(buffer)) != -1) out.write(buffer, 0, count);
             }
+            // Keyrings must be readable by the gpgv/apt-key child processes.
+            target.setReadable(true, false);
+        } catch (IOException ignored) {
+            // Asset-based installation remains authoritative.
         }
-        // Keyrings must be readable by the gpgv/apt-key child processes.
-        target.setReadable(true, false);
     }
 
     private static void rewriteAptKeyShebang(HarnessConfig config) {

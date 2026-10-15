@@ -127,12 +127,22 @@ public final class MainActivity extends Activity {
             try {
                 setStatus("installing base runtime...");
                 HarnessBootstrap.ensureInstalled(this, harnessConfig);
+            } catch (Exception e) {
+                logBootstrapError("ensureInstalled", e);
+                setStatus("bootstrap failed: " + shortMessage(e));
+                runOnUiThread(() -> showBootstrapFailure(e));
+                return;
+            }
+            // Certificate/keyring provisioning is also retried on the SETUP
+            // path and self-reported by the installer diagnostics; a failure
+            // here must not prevent the terminal from starting.
+            try {
                 HarnessBootstrap.ensureCertificates(this, harnessConfig);
                 HarnessBootstrap.ensureKeyring(this, harnessConfig);
-                runOnUiThread(this::attachTerminal);
             } catch (Exception e) {
-                setStatus("bootstrap failed: " + shortMessage(e));
+                logBootstrapError("ensureCertificates/ensureKeyring", e);
             }
+            runOnUiThread(this::attachTerminal);
         }, "coding-harness-bootstrap").start();
     }
 
@@ -163,6 +173,14 @@ public final class MainActivity extends Activity {
 
         setStatus("installing Python / Node/npm / Perl / Ruby...");
         new Thread(() -> {
+            // Retry asset-based provisioning on the setup path itself, so it
+            // does not depend on the startup thread having succeeded.
+            try {
+                HarnessBootstrap.ensureCertificates(this, harnessConfig);
+                HarnessBootstrap.ensureKeyring(this, harnessConfig);
+            } catch (Exception e) {
+                logBootstrapError("setup provisioning", e);
+            }
             HarnessPackageInstaller.InstallResult result =
                 HarnessPackageInstaller.installCodingToolchain(harnessConfig);
             setupRunning.set(false);
@@ -173,6 +191,40 @@ public final class MainActivity extends Activity {
                 runOnUiThread(() -> showSetupFailure(result.message));
             }
         }, "coding-harness-packages").start();
+    }
+
+    /** Full, actionable bootstrap failure: dialog + persistent log file. */
+    private void showBootstrapFailure(Throwable throwable) {
+        if (isFinishing()) return;
+        StringBuilder chain = new StringBuilder();
+        for (Throwable cause = throwable; cause != null; cause = cause.getCause()) {
+            if (chain.length() > 0) chain.append("\ncaused by: ");
+            chain.append(cause.getClass().getSimpleName())
+                .append(": ")
+                .append(cause.getMessage() == null ? "(no message)" : cause.getMessage());
+        }
+        chain.append("\n\nFull stack trace saved to coding-harness/bootstrap-error.log");
+        new android.app.AlertDialog.Builder(this)
+            .setTitle("Bootstrap failed")
+            .setMessage(chain.toString())
+            .setPositiveButton("Close", null)
+            .show();
+    }
+
+    private void logBootstrapError(String step, Throwable throwable) {
+        try {
+            java.io.File log = new java.io.File(
+                new java.io.File(getFilesDir(), "coding-harness"), "bootstrap-error.log");
+            java.io.File parent = log.getParentFile();
+            if (parent != null) parent.mkdirs();
+            try (java.io.FileOutputStream out = new java.io.FileOutputStream(log, true)) {
+                String entry = step + " @ " + System.currentTimeMillis() + "\n"
+                    + android.util.Log.getStackTraceString(throwable) + "\n";
+                out.write(entry.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+            }
+        } catch (Exception ignored) {
+            // Logging must never mask the original failure.
+        }
     }
 
     private void showSetupFailure(String message) {
@@ -215,8 +267,10 @@ public final class MainActivity extends Activity {
     }
 
     private String shortMessage(Throwable throwable) {
-        String message = throwable.getMessage();
-        return message == null ? throwable.getClass().getSimpleName() : message;
+        Throwable root = throwable;
+        while (root.getCause() != null) root = root.getCause();
+        String message = root.getMessage();
+        return root.getClass().getSimpleName() + ": " + (message == null ? "(no message)" : message);
     }
 
     private int dp(int value) {

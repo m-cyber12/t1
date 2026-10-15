@@ -112,6 +112,21 @@ jobs:
           set -o pipefail
           ./gradlew --no-daemon --stacktrace test :app:assembleDebug 2>&1 | tee gradle-build.log
 
+      - name: Verify APK contents
+        shell: bash
+        run: |
+          set -e
+          APK=$(ls app/build/outputs/apk/debug/*.apk | head -1)
+          echo "APK=$APK"
+          unzip -l "$APK" > apk-contents.txt
+          grep -q "assets/cacert.pem" apk-contents.txt
+          for k in 2096779623 agnostic-apollo grimler kcubeterm landfillbaby mradityaalok termux-autobuilds thunder-coding; do
+            grep -q "assets/termux-keyring/$k.gpg" apk-contents.txt || { echo "MISSING assets/termux-keyring/$k.gpg"; exit 1; }
+          done
+          grep -q "assets/bootstrap-aarch64.zip" apk-contents.txt
+          grep -q "assets/bootstrap-x86_64.zip" apk-contents.txt
+          echo "APK contents verified: cacert.pem, 8 termux keys, both bootstraps"
+
       - name: Annotate Gradle failure
         if: failure()
         shell: bash
