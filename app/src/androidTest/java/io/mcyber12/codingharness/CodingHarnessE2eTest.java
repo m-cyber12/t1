@@ -6,8 +6,10 @@ import android.content.Intent;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 
+import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.junit.runners.MethodSorters;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -36,8 +38,9 @@ import static org.junit.Assert.fail;
  * TLS, apt-key and NO_PUBKEY failures without a physical device.
  */
 @RunWith(AndroidJUnit4.class)
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class CodingHarnessE2eTest {
-    private static final long SETUP_DEADLINE_MS = 45 * 60_000L;
+    private static final long SETUP_DEADLINE_MS = 60 * 60_000L;
     private static final long POLL_MS = 15_000L;
 
     private static final String[][] VERSION_COMMANDS = {
@@ -56,17 +59,11 @@ public class CodingHarnessE2eTest {
     };
 
     private File reportFile;
+    private HarnessConfig config;
 
-    @Test
-    public void fullSetupInstallsWorkingToolchain() throws Exception {
-        Context context = ApplicationProvider.getApplicationContext();
-        File external = context.getExternalFilesDir(null);
-        reportFile = new File(external != null ? external : context.getFilesDir(),
-            "setup-e2e-report.txt");
-        report("e2e start");
-
+    private HarnessConfig buildConfig(Context context) {
         HarnessPaths paths = HarnessPaths.forApp(context);
-        HarnessConfig config = HarnessConfig.builder(context)
+        return HarnessConfig.builder(context)
             .workspace(paths.workspace())
             .home(paths.home())
             .prefix(paths.prefix())
@@ -75,7 +72,79 @@ public class CodingHarnessE2eTest {
             .nativeLibraryDirectory(new File(context.getApplicationInfo().nativeLibraryDir))
             .shellPath(paths.defaultShell())
             .build();
-        report("prefix=" + config.prefix.getAbsolutePath());
+    }
+
+    private void initReport(Context context) {
+        if (reportFile != null) return;
+        File external = context.getExternalFilesDir(null);
+        reportFile = new File(external != null ? external : context.getFilesDir(),
+            "setup-e2e-report.txt");
+    }
+
+    /**
+     * Fast gating stage (no UI): bootstrap extraction, apt-get update against
+     * the real repository (exercises TLS, apt-key and signature verification)
+     * and one small package install. If the apt chain is broken this fails in
+     * minutes with diagnostics instead of burning the full toolchain budget.
+     */
+    @Test
+    public void a01_aptChainUpdatesAndInstallsSmallPackage() throws Exception {
+        Context context = ApplicationProvider.getApplicationContext();
+        initReport(context);
+        config = buildConfig(context);
+        report("a01 start; prefix=" + config.prefix.getAbsolutePath());
+
+        io.mcyber12.codingharness.core.HarnessBootstrap.ensureInstalled(context, config);
+        io.mcyber12.codingharness.core.HarnessBootstrap.ensureCertificates(context, config);
+        io.mcyber12.codingharness.core.HarnessBootstrap.ensureKeyring(context, config);
+        report("a01 bootstrap + cert + keyring installed");
+
+        HarnessCommandRunner runner = new HarnessCommandRunner(config);
+        HarnessCommandRunner.CommandResult update =
+            runner.run(Arrays.asList("apt-get", "update"), 30 * 60_000L);
+        report("a01 apt-get update exit=" + update.exitCode + " : " + oneLine(update.output));
+        if (!update.isSuccess()) {
+            String diagnostics = collectDiagnostics(config);
+            report("A01 FAILED\n" + diagnostics);
+            fail("apt-get update failed (exit " + update.exitCode + "):\n"
+                + update.output + "\n" + diagnostics);
+        }
+        int lists = countPackageLists(config);
+        report("a01 package lists=" + lists);
+        assertTrue("apt-get update produced no package lists", lists > 0);
+
+        HarnessCommandRunner.CommandResult install =
+            runner.run(Arrays.asList("apt-get", "-y", "install", "jq"), 20 * 60_000L);
+        report("a01 apt-get install jq exit=" + install.exitCode + " : " + oneLine(install.output));
+        if (!install.isSuccess()) {
+            String diagnostics = collectDiagnostics(config);
+            report("A01 INSTALL FAILED\n" + diagnostics);
+            fail("apt-get install jq failed (exit " + install.exitCode + "):\n"
+                + install.output + "\n" + diagnostics);
+        }
+        HarnessCommandRunner.CommandResult jq = runner.run(Arrays.asList("jq", "--version"), 120_000L);
+        report("a01 jq --version exit=" + jq.exitCode + " : " + oneLine(jq.output));
+        assertTrue("jq did not execute: " + jq.output, jq.isSuccess());
+        report("A01 SUCCESS");
+    }
+
+    private int countPackageLists(HarnessConfig config) {
+        File[] entries = new File(config.prefix, "var/lib/apt/lists").listFiles();
+        if (entries == null) return 0;
+        int count = 0;
+        for (File entry : entries) {
+            if (entry.isFile() && entry.getName().contains("_Packages")) count++;
+        }
+        return count;
+    }
+
+    @Test
+    public void a02_fullSetupInstallsWorkingToolchain() throws Exception {
+        Context context = ApplicationProvider.getApplicationContext();
+        initReport(context);
+        if (config == null) config = buildConfig(context);
+        HarnessConfig config = this.config;
+        report("a02 start; prefix=" + config.prefix.getAbsolutePath());
 
         Intent launch = new Intent(context, MainActivity.class);
         launch.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);

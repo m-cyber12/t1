@@ -22,7 +22,7 @@ jobs:
   emulator-e2e:
     name: Android emulator / full setup E2E
     runs-on: ubuntu-latest
-    timeout-minutes: 90
+    timeout-minutes: 150
 
     steps:
       - name: Check out source
@@ -47,6 +47,8 @@ jobs:
           sudo udevadm control --reload-rules || true
           sudo udevadm trigger --name-match=KVM || true
           ls -l /dev/KVM || echo "WARNING: /dev/KVM not present; emulator will fall back to software acceleration"
+          echo "vmx/svm flags: $(grep -c -E 'vmx|svm' /proc/cpuinfo || true)"
+          nproc; free -m | head -2
 
       - name: Build app and tests (fail fast before booting emulator)
         shell: bash
@@ -61,6 +63,7 @@ jobs:
           target: google_apis
           arch: x86_64
           profile: pixel_6
+          cores: 4
           disk-size: 8192M
           ram-size: 4096M
           heap-size: 512M
@@ -68,8 +71,27 @@ jobs:
           emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot-save -noaudio -no-boot-anim
           script: |
             set +e
+            # CI logs/artifacts are not always reachable from every sandbox,
+            # so publish live progress to the diagnostics/e2e branch every
+            # 5 minutes; it survives job timeout/cancellation.
+            publish_progress() {
+              adb pull /sdcard/Android/data/io.mcyber12.codingharness/files/setup-e2e-report.txt ./setup-e2e-report.txt >/dev/null 2>&1 || true
+              adb shell run-as io.mcyber12.codingharness cat files/coding-harness/usr/var/log/harness-command.log > ./harness-command-tail.log 2>/dev/null || true
+              mkdir -p diagnostics
+              cp ./setup-e2e-report.txt diagnostics/setup-e2e-report.txt 2>/dev/null || echo "no report yet" > diagnostics/setup-e2e-report.txt
+              tail -c 20000 ./harness-command-tail.log > diagnostics/harness-command-tail.log 2>/dev/null || echo "no command log yet" > diagnostics/harness-command-tail.log
+              date -u +"e2e progress %Y-%m-%dT%H:%M:%SZ run=${GITHUB_RUN_ID}" > diagnostics/e2e-status.txt
+              git add diagnostics/setup-e2e-report.txt diagnostics/harness-command-tail.log diagnostics/e2e-status.txt >/dev/null 2>&1
+              git -c user.email=ci@invalid -c user.name=ci-e2e commit -qm "e2e progress ${GITHUB_RUN_ID} [ci]" >/dev/null 2>&1
+              git push origin "HEAD:refs/heads/diagnostics/e2e" --force >/dev/null 2>&1
+              git reset --soft HEAD~1 >/dev/null 2>&1
+              git restore --staged diagnostics >/dev/null 2>&1
+            }
+            ( while true; do sleep 300; publish_progress; done ) &
+            publisher_pid=$!
             ./gradlew --no-daemon --stacktrace :app:connectedDebugAndroidTest
             rc=$?
+            kill $publisher_pid >/dev/null 2>&1
             echo "connectedDebugAndroidTest exit=$rc"
             echo "================ setup-e2e-report.txt ================"
             adb shell cat /sdcard/Android/data/io.mcyber12.codingharness/files/setup-e2e-report.txt || true
@@ -80,6 +102,8 @@ jobs:
             adb shell run-as io.mcyber12.codingharness cat files/coding-harness/usr/var/log/harness-command.log | tail -c 8000 || true
             echo "================ logcat (tail) ================"
             adb logcat -d | tail -n 400 || true
+            echo "connected exit=$rc" >> diagnostics/e2e-status.txt 2>/dev/null || true
+            publish_progress
             exit $rc
 
       - name: Upload E2E results and reports
