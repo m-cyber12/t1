@@ -28,7 +28,7 @@ publish() {
   git add diagnostics/ >/dev/null 2>&1 || return 0
   git diff --cached --quiet >/dev/null 2>&1 && return 0
   git -c user.email=ci@invalid -c user.name=ci-e2e commit -qm "e2e $PHASE ${GITHUB_RUN_ID:-local} [ci]" >/dev/null 2>&1 || return 0
-  git push origin "HEAD:refs/heads/diagnostics/e2e" --force >/dev/null 2>&1 || true
+  git push origin "HEAD:refs/heads/diagnostics/e2e-${GITHUB_RUN_ID:-local}" --force >/dev/null 2>&1 || true
   git reset --soft HEAD~1 >/dev/null 2>&1 || true
   git restore --staged diagnostics >/dev/null 2>&1 || true
 }
