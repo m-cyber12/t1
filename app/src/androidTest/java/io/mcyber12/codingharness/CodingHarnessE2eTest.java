@@ -111,7 +111,12 @@ public class CodingHarnessE2eTest {
         }
         int lists = countPackageLists(config);
         report("a01 package lists=" + lists);
-        assertTrue("apt-get update produced no package lists", lists > 0);
+        if (lists == 0) {
+            String diagnostics = collectDiagnostics(config);
+            report("A01 NO LISTS\nupdate output:\n" + update.output + "\n" + diagnostics);
+            fail("apt-get update exited 0 but produced no package lists.\nupdate output:\n"
+                + update.output + "\n" + diagnostics);
+        }
 
         HarnessCommandRunner.CommandResult install =
             runner.run(Arrays.asList("apt-get", "-y", "install", "jq"), 20 * 60_000L);
@@ -217,6 +222,19 @@ public class CodingHarnessE2eTest {
                 .append(readTail(new File(config.prefix.getParentFile(), "bootstrap-error.log"), 3000)).append('\n');
             File[] lists = new File(prefix, "var/lib/apt/lists").listFiles();
             out.append("apt lists entries=").append(lists == null ? 0 : lists.length).append('\n');
+            if (lists != null) {
+                for (File list : lists) {
+                    out.append("  list: ").append(list.getName())
+                        .append(" (").append(list.length()).append("B)\n");
+                }
+            }
+            File[] partial = new File(prefix, "var/lib/apt/lists/partial").listFiles();
+            if (partial != null) {
+                for (File p : partial) {
+                    out.append("  partial: ").append(p.getName())
+                        .append(" (").append(p.length()).append("B)\n");
+                }
+            }
         } catch (Exception e) {
             out.append("diagnostics failed: ").append(e).append('\n');
         }

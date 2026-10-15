@@ -15,6 +15,9 @@ PHASE="init"
 EMU_PID=""
 
 publish() {
+  "$ADB" pull /sdcard/Android/data/io.mcyber12.codingharness/files/setup-e2e-report.txt ./setup-e2e-report.txt >/dev/null 2>&1 || true
+  "$ADB" shell run-as io.mcyber12.codingharness cat files/coding-harness/usr/var/log/harness-command.log > ./harness-command-live.log 2>/dev/null || true
+  tail -c 20000 ./harness-command-live.log > diagnostics/harness-command-tail.log 2>/dev/null || true
   cp ./setup-e2e-report.txt diagnostics/setup-e2e-report.txt 2>/dev/null || echo "no setup-e2e-report.txt yet" > diagnostics/setup-e2e-report.txt
   rm -rf diagnostics/e2e-logs
   cp -r e2e-logs diagnostics/e2e-logs 2>/dev/null || true
