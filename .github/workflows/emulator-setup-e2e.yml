@@ -22,7 +22,10 @@ permissions:
 jobs:
   emulator-e2e:
     name: Android emulator / full setup E2E
-    runs-on: ubuntu-latest
+    # Apple Silicon runner + arm64 system image = native Hypervisor
+    # acceleration (Linux runners block /dev/KVM for the hosted user) and
+    # it exercises the aarch64 bootstrap that real phones actually use.
+    runs-on: macos-14
     timeout-minutes: 150
 
     steps:
@@ -42,6 +45,7 @@ jobs:
           packages: 'platform-tools platforms;android-35 build-tools;35.0.0 ndk;27.2.12479018'
 
       - name: Enable KVM for emulator hardware acceleration
+        if: runner.os == 'Linux'
         shell: bash
         run: |
           echo 'KERNEL=="KVM", GROUP="KVM", MODE="0666", OPTIONS+="static_node=KVM"' | sudo tee /etc/udev/rules.d/99-KVM.rules
