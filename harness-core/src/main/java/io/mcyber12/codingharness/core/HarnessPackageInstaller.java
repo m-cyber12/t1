@@ -104,11 +104,20 @@ public final class HarnessPackageInstaller {
     /** One-line on-device state check shown in the setup dialog. */
     private static String diagnostics(HarnessConfig config) {
         File aptKey = new File(config.prefix, "bin/apt-key");
-        File[] keys = new File(config.prefix, "etc/apt/trusted.gpg.d")
+        File[] entries = new File(config.prefix, "etc/apt/trusted.gpg.d")
             .listFiles((dir, name) -> name.endsWith(".gpg"));
+        int usableKeys = 0;
+        if (entries != null) {
+            for (File entry : entries) {
+                // isFile() follows symlinks: dangling bootstrap links to the
+                // official prefix do not count (they caused NO_PUBKEY while
+                // a naive name count misleadingly reported all keys present).
+                if (entry.isFile() && entry.length() > 0) usableKeys++;
+            }
+        }
         return "cert " + new File(config.prefix, "etc/tls/cert.pem").length() + "B"
             + ", apt-key " + (aptKey.isFile() ? aptKey.length() + "B" : "MISSING")
-            + ", keys " + (keys == null ? 0 : keys.length);
+            + ", keys " + usableKeys + "/" + (entries == null ? 0 : entries.length);
     }
 
     private static int countPackageLists(HarnessConfig config) {

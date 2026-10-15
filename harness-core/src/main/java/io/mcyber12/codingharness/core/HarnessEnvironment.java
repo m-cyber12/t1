@@ -78,6 +78,13 @@ public final class HarnessEnvironment {
         // cannot download any index, so install a standard Mozilla bundle
         // (bundled as a Java resource) and let create() export SSL_CERT_FILE.
         File certBundle = new File(config.prefix, "etc/tls/cert.pem");
+        try {
+            if (java.nio.file.Files.isSymbolicLink(certBundle.toPath())) {
+                java.nio.file.Files.delete(certBundle.toPath());
+            }
+        } catch (IOException ignored) {
+            // Fall through to the write attempt below.
+        }
         if (!certBundle.isFile()) {
             ensureDirectory(certBundle.getParentFile());
             try (InputStream bundle = HarnessEnvironment.class.getResourceAsStream("cacert.pem")) {
@@ -196,7 +203,20 @@ public final class HarnessEnvironment {
         // HarnessBootstrap.ensureKeyring/ensureCertificates, so a missing
         // classpath resource must never abort prepare() — an earlier build
         // threw here and broke session startup ("bootstrap failed").
+        // Also replace any bootstrap SYMLINKS.txt symlink at the target:
+        // those links point at the official prefix, dangle here, and make
+        // FileOutputStream fail with ENOENT while apt reports NO_PUBKEY.
+        try {
+            if (java.nio.file.Files.isSymbolicLink(target.toPath())
+                || (target.exists() && !target.isFile())) {
+                java.nio.file.Files.delete(target.toPath());
+            }
+        } catch (IOException ignored) {
+            // Fall through to the write attempt below.
+        }
         if (target.isFile() && target.length() > 0) return;
+        File parent = target.getParentFile();
+        if (parent != null && !parent.isDirectory()) parent.mkdirs();
         try (InputStream input = HarnessEnvironment.class.getResourceAsStream(resource)) {
             if (input == null) return;
             try (FileOutputStream out = new FileOutputStream(target)) {

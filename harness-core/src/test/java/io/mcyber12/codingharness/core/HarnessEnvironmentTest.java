@@ -60,6 +60,35 @@ public class HarnessEnvironmentTest {
     }
 
     @Test
+    public void prepareReplacesDanglingBootstrapKeySymlinks() throws Exception {
+        // The Termux bootstrap's SYMLINKS.txt leaves dangling symlinks in
+        // trusted.gpg.d (targets under the official prefix). prepare() must
+        // replace them with regular key files, otherwise writes fail with
+        // ENOENT and apt reports NO_PUBKEY. Reproduces the emulator E2E
+        // failure of a01_aptChainUpdatesAndInstallsSmallPackage.
+        File prefix = new File("/tmp/harness-test-links/usr");
+        File trusted = new File(prefix, "etc/apt/trusted.gpg.d");
+        trusted.mkdirs();
+        java.nio.file.Files.createSymbolicLink(
+            new File(trusted, "termux-autobuilds.gpg").toPath(),
+            new File("/data/data/com.termux/files/usr/share/termux-keyring/termux-autobuilds.gpg").toPath());
+        HarnessConfig config = new HarnessConfig.Builder()
+            .workspace(new File("/tmp/harness-test-links/workspace"))
+            .home(new File("/tmp/harness-test-links/home"))
+            .prefix(prefix)
+            .toolDirectory(new File(prefix, "bin"))
+            .libraryDirectory(new File(prefix, "lib"))
+            .shellPath("/system/bin/sh")
+            .build();
+
+        HarnessEnvironment.prepare(config);
+
+        File key = new File(trusted, "termux-autobuilds.gpg");
+        assertTrue(!java.nio.file.Files.isSymbolicLink(key.toPath()));
+        assertTrue(key.isFile() && key.length() > 0);
+    }
+
+    @Test
     public void codingPackagesIncludeTheLanguageRuntimes() {
         assertTrue(HarnessPackageInstaller.CODING_PACKAGES.contains("python"));
         assertTrue(HarnessPackageInstaller.CODING_PACKAGES.contains("nodejs"));

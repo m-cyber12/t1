@@ -131,12 +131,39 @@ public final class HarnessBootstrap {
         if (!directory.isDirectory() && !directory.mkdirs() && !directory.isDirectory()) {
             throw new IOException("Unable to create certificate directory: " + directory);
         }
-        try (InputStream input = context.getAssets().open("cacert.pem", android.content.res.AssetManager.ACCESS_STREAMING);
-             FileOutputStream output = new FileOutputStream(certBundle)) {
+        writeAssetFile(context, "cacert.pem", certBundle);
+    }
+
+    /**
+     * Writes an asset as a REGULAR file. The Termux bootstrap's SYMLINKS.txt
+     * creates symlinks at some of these locations (e.g. every entry of
+     * etc/apt/trusted.gpg.d points at share/termux-keyring under the official
+     * /data/data/com.termux prefix). In this relocated prefix those links
+     * dangle: isFile() is false, and FileOutputStream then follows the dead
+     * link and fails with ENOENT (or, worse, apt silently finds no usable
+     * key and reports NO_PUBKEY). Delete any link/non-regular entry first.
+     */
+    private static void writeAssetFile(Context context, String asset, File target) throws IOException {
+        try {
+            if (Files.isSymbolicLink(target.toPath())
+                || (target.exists() && !target.isFile())) {
+                Files.delete(target.toPath());
+            }
+        } catch (IOException ignored) {
+            // Fall through; the write below surfaces any real problem.
+        }
+        if (target.isFile() && target.length() > 0) return;
+        File parent = target.getParentFile();
+        if (parent != null && !parent.isDirectory() && !parent.mkdirs() && !parent.isDirectory()) {
+            throw new IOException("Unable to create directory: " + parent);
+        }
+        try (InputStream input = context.getAssets().open(asset, android.content.res.AssetManager.ACCESS_STREAMING);
+             FileOutputStream output = new FileOutputStream(target)) {
             byte[] buffer = new byte[8192];
             int count;
             while ((count = input.read(buffer)) != -1) output.write(buffer, 0, count);
         }
+        target.setReadable(true, false);
     }
 
     /**
@@ -166,16 +193,7 @@ public final class HarnessBootstrap {
         for (String key : keys) {
             if (!key.endsWith(".gpg")) continue;
             for (File directory : new File[] {trusted, shared}) {
-                File target = new File(directory, key);
-                if (target.isFile() && target.length() > 0) continue;
-                try (InputStream input = context.getAssets().open("termux-keyring/" + key,
-                         android.content.res.AssetManager.ACCESS_STREAMING);
-                     FileOutputStream output = new FileOutputStream(target)) {
-                    byte[] buffer = new byte[8192];
-                    int count;
-                    while ((count = input.read(buffer)) != -1) output.write(buffer, 0, count);
-                }
-                target.setReadable(true, false);
+                writeAssetFile(context, "termux-keyring/" + key, new File(directory, key));
             }
         }
     }
