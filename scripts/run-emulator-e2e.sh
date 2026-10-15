@@ -110,6 +110,29 @@ fi
 "$ADB" shell settings put global transition_animation_scale 0 >/dev/null 2>&1 || true
 "$ADB" shell settings put global animator_duration_scale 0 >/dev/null 2>&1 || true
 
+phase "network-check"
+# The guest had no working DNS at all in earlier runs (even Java-side
+# InetAddress failed), which makes every apt fetch fail resolving the
+# repository hostname. Log the guest network state, try to enable data,
+# and wait briefly for connectivity before spending the test budget.
+"$ADB" shell cmd connectivity airplane-mode disable >> e2e-logs/network.log 2>&1 || true
+"$ADB" shell svc data enable >> e2e-logs/network.log 2>&1 || true
+{
+  echo "--- ip addr ---"; "$ADB" shell ip addr 2>&1 | head -40
+  echo "--- net props ---"; "$ADB" shell getprop 2>&1 | grep -i -E "dns|net\." | head -20
+  echo "--- connectivity ---"; "$ADB" shell dumpsys connectivity 2>&1 | head -60
+} >> e2e-logs/network.log 2>&1
+for i in $(seq 1 30); do
+  if "$ADB" shell ping -c 1 -W 3 8.8.8.8 >> e2e-logs/network.log 2>&1; then
+    echo "guest ping 8.8.8.8 OK (attempt $i)" >> e2e-logs/network.log
+    break
+  fi
+  echo "guest ping attempt $i failed" >> e2e-logs/network.log
+  sleep 10
+done
+"$ADB" shell ping -c 1 -W 5 packages-cf.termux.dev >> e2e-logs/network.log 2>&1 || true
+publish
+
 phase "connected-test"
 ./gradlew --no-daemon --stacktrace :app:connectedDebugAndroidTest > e2e-logs/connected-test.log 2>&1
 RC=$?
