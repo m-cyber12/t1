@@ -122,12 +122,33 @@ phase "network-check"
   echo "--- net props ---"; "$ADB" shell getprop 2>&1 | grep -i -E "dns|net\." | head -20
   echo "--- connectivity ---"; "$ADB" shell dumpsys connectivity 2>&1 | head -60
 } >> e2e-logs/network.log 2>&1
-for i in $(seq 1 30); do
+for i in $(seq 1 6); do
   if "$ADB" shell ping -c 1 -W 3 8.8.8.8 >> e2e-logs/network.log 2>&1; then
     echo "guest ping 8.8.8.8 OK (attempt $i)" >> e2e-logs/network.log
     break
   fi
   echo "guest ping attempt $i failed" >> e2e-logs/network.log
+  sleep 10
+done
+# If no network came up by itself, try the emulator's virtual WiFi AP,
+# which is the data path on recent google_apis images when cellular is idle.
+{
+  echo "--- enabling wifi + VirtWifi ---"
+  "$ADB" shell svc wifi enable 2>&1
+  "$ADB" shell cmd wifi set-wifi-enabled enabled 2>&1
+  sleep 10
+  "$ADB" shell cmd wifi connect-network VirtWifi open -x 2>&1
+  "$ADB" shell cmd wifi connect-network AndroidWifi open -x 2>&1
+  sleep 15
+  echo "--- ip addr after wifi ---"; "$ADB" shell ip addr 2>&1 | grep -A2 -E "eth0|wlan0"
+  echo "--- default network after wifi ---"; "$ADB" shell dumpsys connectivity 2>&1 | grep -m1 "Active default network"
+} >> e2e-logs/network.log 2>&1
+for i in $(seq 1 24); do
+  if "$ADB" shell ping -c 1 -W 3 8.8.8.8 >> e2e-logs/network.log 2>&1; then
+    echo "guest ping 8.8.8.8 OK after wifi (attempt $i)" >> e2e-logs/network.log
+    break
+  fi
+  echo "guest ping after wifi attempt $i failed" >> e2e-logs/network.log
   sleep 10
 done
 "$ADB" shell ping -c 1 -W 5 packages-cf.termux.dev >> e2e-logs/network.log 2>&1 || true
