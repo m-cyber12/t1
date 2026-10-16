@@ -200,6 +200,7 @@ public class CodingHarnessE2eTest {
                         + "echo DEB=$deb; rm -rf $PREFIX/tmp/njctrl; mkdir -p $PREFIX/tmp/njctrl; "
                         + "dpkg-deb -e \"$deb\" $PREFIX/tmp/njctrl && echo CONTROL-EXTRACTED; "
                         + "ls -la $PREFIX/tmp/njctrl; echo ---preinst---; cat $PREFIX/tmp/njctrl/preinst; "
+                        + "chmod 755 $PREFIX/tmp/njctrl/preinst; "
                         + "echo ---run---; cd $PREFIX/tmp/njctrl && ./preinst install; echo PREINST_EXIT=$?"),
                 120_000L);
             report("a01 nodejs preinst probe exit=" + preinst.exitCode + " : "
