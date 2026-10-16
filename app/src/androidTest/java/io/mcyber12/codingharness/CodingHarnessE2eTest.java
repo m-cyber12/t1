@@ -98,6 +98,37 @@ public class CodingHarnessE2eTest {
         io.mcyber12.codingharness.core.HarnessBootstrap.ensureCertificates(context, config);
         io.mcyber12.codingharness.core.HarnessBootstrap.ensureKeyring(context, config);
         report("a01 bootstrap + cert + keyring installed");
+        // dpkg refuses to run unless sh/rm/tar/diff/dpkg-deb/start-stop-daemon
+        // are executable via PATH; probe exactly what dpkg would find so a
+        // failure names the broken entry instead of guessing afterwards.
+        try {
+            StringBuilder probe = new StringBuilder("a01 bin probe:");
+            for (String name : new String[] {"sh", "rm", "tar", "diff", "dpkg-deb",
+                    "start-stop-daemon", "bash", "coreutils", "apt-get", "dpkg"}) {
+                File entry = new File(prefix, "bin/" + name);
+                probe.append(' ').append(name).append('=');
+                try {
+                    if (Files.isSymbolicLink(entry.toPath())) {
+                        probe.append("link->").append(Files.readSymbolicLink(entry.toPath()));
+                    }
+                } catch (Exception ignored) { }
+                probe.append("[exists=").append(entry.exists())
+                    .append(",exec=").append(entry.canExecute())
+                    .append(",len=").append(entry.length()).append(']');
+            }
+            report(probe.toString());
+            HarnessCommandRunner probeRunner = new HarnessCommandRunner(config);
+            HarnessCommandRunner.CommandResult pathProbe = probeRunner.run(
+                Arrays.asList("bash", "-c",
+                    "echo PATH=$PATH; command -v sh rm tar diff dpkg-deb start-stop-daemon; "
+                        + "ls -la $PREFIX/bin/sh $PREFIX/bin/rm $PREFIX/bin/tar "
+                        + "$PREFIX/bin/dpkg-deb $PREFIX/bin/start-stop-daemon 2>&1 | head -8"),
+                60_000L);
+            report("a01 PATH probe exit=" + pathProbe.exitCode + " : "
+                + oneLine(pathProbe.output));
+        } catch (Exception probeFailure) {
+            report("a01 bin probe FAILED: " + probeFailure);
+        }
 
         // Network probes first: distinguish emulator DNS problems (CI-only)
         // from harness problems. Java-side resolution, then the Termux curl
