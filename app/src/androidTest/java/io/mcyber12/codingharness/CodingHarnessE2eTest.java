@@ -186,6 +186,27 @@ public class CodingHarnessE2eTest {
         report("a01 jq --version exit=" + jq.exitCode + " : " + oneLine(jq.output));
         assertTrue("jq did not execute: " + jq.output, jq.isSuccess());
         report("A01 SUCCESS");
+        // Maintainer-script probe: nodejs 26.4.0-1's preinst exits 2 under
+        // dpkg and blocks the whole a02 toolchain install. Reproduce it
+        // faithfully (same env, same shebang interception dpkg relies on)
+        // and capture what the script actually is and says.
+        try {
+            HarnessCommandRunner probe = new HarnessCommandRunner(config);
+            probe.run(Arrays.asList("apt-get", "install", "-y", "--download-only", "nodejs"),
+                10 * 60_000L);
+            HarnessCommandRunner.CommandResult preinst = probe.run(
+                Arrays.asList("bash", "-c",
+                    "deb=$(ls $PREFIX/var/cache/apt/archives/nodejs_*.deb | head -1); "
+                        + "echo DEB=$deb; rm -rf $PREFIX/tmp/njctrl; mkdir -p $PREFIX/tmp/njctrl; "
+                        + "dpkg-deb -e \"$deb\" $PREFIX/tmp/njctrl && echo CONTROL-EXTRACTED; "
+                        + "ls -la $PREFIX/tmp/njctrl; echo ---preinst---; cat $PREFIX/tmp/njctrl/preinst; "
+                        + "echo ---run---; cd $PREFIX/tmp/njctrl && ./preinst install; echo PREINST_EXIT=$?"),
+                120_000L);
+            report("a01 nodejs preinst probe exit=" + preinst.exitCode + " : "
+                + preinst.output);
+        } catch (Exception probeFailure) {
+            report("a01 nodejs preinst probe FAILED: " + probeFailure);
+        }
     }
 
     private int countPackageLists(HarnessConfig config) {
