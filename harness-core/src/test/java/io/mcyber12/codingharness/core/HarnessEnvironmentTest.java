@@ -58,11 +58,11 @@ public class HarnessEnvironmentTest {
         // under dpkg's fsys root (DPKG_ROOT); the synthetic root links it
         // onto this prefix and maintainer scripts must not chroot.
         assertTrue(aptConf.contains("DPkg::Options:: \"--force-script-chrootless\""));
-        java.nio.file.Path rootfsUsr = new File(
-            "/tmp/harness-test/rootfs/data/data/com.termux/files/usr").toPath();
-        assertTrue(java.nio.file.Files.isSymbolicLink(rootfsUsr));
-        assertTrue("../../../../usr".equals(
-            java.nio.file.Files.readSymbolicLink(rootfsUsr).toString()));
+        // The chain down to the (here legacy-layout) prefix tail must exist
+        // as REAL directories: dpkg refuses to create package-owned
+        // directories over symlinks ("trying to overwrite .../usr").
+        assertTrue(new File(
+            "/tmp/harness-test/rootfs/data/data/com.termux/files").isDirectory());
         java.util.Map<String, String> environment = HarnessEnvironment.create(config);
         assertTrue("/tmp/harness-test/rootfs".equals(environment.get("DPKG_ROOT")));
         String sources = new String(java.nio.file.Files.readAllBytes(

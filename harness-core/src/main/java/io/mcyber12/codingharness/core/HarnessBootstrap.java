@@ -32,8 +32,15 @@ public final class HarnessBootstrap {
 
     private HarnessBootstrap() {}
 
+    /** Directory holding the install marker and staging area (the harness root, NOT a prefix ancestor). */
+    private static File harnessRoot(HarnessConfig config) {
+        File dpkgRoot = HarnessEnvironment.dpkgRoot(config);
+        File parent = dpkgRoot.getParentFile();
+        return parent != null ? parent : dpkgRoot;
+    }
+
     public static boolean isInstalled(HarnessConfig config) {
-        File marker = new File(config.prefix.getParentFile(), MARKER);
+        File marker = new File(harnessRoot(config), MARKER);
         File apt = new File(config.prefix, "bin/apt-get");
         if (!marker.isFile() || !apt.isFile()) return false;
         try (FileInputStream input = new FileInputStream(marker)) {
@@ -51,7 +58,7 @@ public final class HarnessBootstrap {
         if (isInstalled(config)) return;
 
         String assetName = assetName();
-        File root = config.prefix.getParentFile();
+        File root = harnessRoot(config);
         File staging = new File(root, "usr-staging");
         deleteRecursively(staging);
         if (!staging.mkdirs() && !staging.isDirectory()) {
@@ -108,6 +115,11 @@ public final class HarnessBootstrap {
         }
 
         File oldPrefix = config.prefix;
+        File prefixParent = oldPrefix.getParentFile();
+        if (prefixParent != null && !prefixParent.isDirectory() && !prefixParent.mkdirs()
+            && !prefixParent.isDirectory()) {
+            throw new IOException("Unable to create bootstrap prefix parent: " + prefixParent);
+        }
         deleteRecursively(oldPrefix);
         if (!staging.renameTo(oldPrefix)) {
             throw new IOException("Unable to activate extracted bootstrap");

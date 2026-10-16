@@ -7,6 +7,7 @@ import java.io.File;
 /** App-private Termux-style paths used by the harness runtime. */
 public final class HarnessPaths {
     private final File root;
+    private final File rootfs;
     private final File prefix;
     private final File workspace;
     private final File home;
@@ -23,7 +24,17 @@ public final class HarnessPaths {
         // Termux packages expect PREFIX/bin, PREFIX/lib, PREFIX/etc and
         // PREFIX/var. Keeping this layout means package scripts work without
         // rewriting paths when this module is integrated into the main app.
-        prefix = new File(root, "usr");
+        //
+        // The prefix sits at the tail of a dpkg fsys root: every Termux
+        // .deb contains the literal tree data/data/com.termux/files/usr/...,
+        // and dpkg unpacks it below its fsys dir (DPKG_ROOT). Official
+        // Termux relies on that absolute path being its own app directory;
+        // here rootfs/data/data/com.termux/files/usr is a REAL directory
+        // whose tail is our prefix, so dpkg's writes land in the harness
+        // with no symlink trickery (dpkg refuses to create its owned
+        // directories over symlinks).
+        rootfs = new File(root, "rootfs");
+        prefix = new File(rootfs, "data/data/com.termux/files/usr");
         workspace = new File(root, "workspace");
         home = new File(root, "home");
         tmp = new File(prefix, "tmp");
@@ -43,6 +54,7 @@ public final class HarnessPaths {
 
     public void ensure() {
         mkdir(root);
+        mkdir(rootfs);
         mkdir(prefix);
         mkdir(workspace);
         mkdir(home);
@@ -65,6 +77,7 @@ public final class HarnessPaths {
     }
 
     public File root() { return root; }
+    public File rootfs() { return rootfs; }
     public File prefix() { return prefix; }
     public File workspace() { return workspace; }
     public File home() { return home; }

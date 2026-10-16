@@ -16,6 +16,8 @@ public final class HarnessConfig {
     public final File workspace;
     public final File home;
     public final File prefix;
+    /** dpkg fsys root (DPKG_ROOT); null means derive from the prefix. */
+    public final File rootfs;
     public final File toolDirectory;
     public final File libraryDirectory;
     public final File nativeLibraryDirectory;
@@ -26,6 +28,7 @@ public final class HarnessConfig {
         this.workspace = builder.workspace;
         this.home = builder.home;
         this.prefix = builder.prefix;
+        this.rootfs = builder.rootfs;
         this.toolDirectory = builder.toolDirectory;
         this.libraryDirectory = builder.libraryDirectory;
         this.nativeLibraryDirectory = builder.nativeLibraryDirectory;
@@ -39,6 +42,7 @@ public final class HarnessConfig {
             .workspace(paths.workspace())
             .home(paths.home())
             .prefix(paths.prefix())
+            .rootfs(paths.rootfs())
             .toolDirectory(paths.bin())
             .libraryDirectory(paths.lib())
             .nativeLibraryDirectory(new File(context.getApplicationInfo().nativeLibraryDir))
@@ -49,6 +53,7 @@ public final class HarnessConfig {
         private File workspace;
         private File home;
         private File prefix;
+        private File rootfs;
         private File toolDirectory;
         private File libraryDirectory;
         private File nativeLibraryDirectory;
@@ -58,6 +63,7 @@ public final class HarnessConfig {
         public Builder workspace(File value) { workspace = value; return this; }
         public Builder home(File value) { home = value; return this; }
         public Builder prefix(File value) { prefix = value; return this; }
+        public Builder rootfs(File value) { rootfs = value; return this; }
         public Builder toolDirectory(File value) { toolDirectory = value; return this; }
         public Builder libraryDirectory(File value) { libraryDirectory = value; return this; }
         public Builder nativeLibraryDirectory(File value) { nativeLibraryDirectory = value; return this; }
