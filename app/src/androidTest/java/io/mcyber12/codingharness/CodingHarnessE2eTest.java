@@ -186,6 +186,22 @@ public class CodingHarnessE2eTest {
         report("a01 jq --version exit=" + jq.exitCode + " : " + oneLine(jq.output));
         assertTrue("jq did not execute: " + jq.output, jq.isSuccess());
         report("A01 SUCCESS");
+        // Interception probe: is libharness-exec actually preloaded, and
+        // does an official-prefix shebang script execute through it?
+        try {
+            HarnessCommandRunner runner2 = new HarnessCommandRunner(config);
+            HarnessCommandRunner.CommandResult preload = runner2.run(
+                Arrays.asList("bash", "-c",
+                    "echo LD_PRELOAD=$LD_PRELOAD; "
+                        + "grep -E 'harness-exec|termux-exec' /proc/self/maps | head -3; "
+                        + "ls $PREFIX/lib/libtermux-exec* $PREFIX/lib/libharness-exec* 2>&1; "
+                        + "printf '#!/data/data/com.termux/files/usr/bin/sh\\necho SCRIPT-RAN-OK\\n' > $PREFIX/tmp/t.sh; "
+                        + "chmod 755 $PREFIX/tmp/t.sh; $PREFIX/tmp/t.sh; echo SCRIPT_EXIT=$?"),
+                60_000L);
+            report("a01 preload probe: " + preload.output);
+        } catch (Exception probeFailure) {
+            report("a01 preload probe FAILED: " + probeFailure);
+        }
         // Maintainer-script probe: nodejs 26.4.0-1's preinst exits 2 under
         // dpkg and blocks the whole a02 toolchain install. Reproduce it
         // faithfully (same env, same shebang interception dpkg relies on)
