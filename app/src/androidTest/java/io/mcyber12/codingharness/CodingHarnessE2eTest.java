@@ -218,6 +218,15 @@ public class CodingHarnessE2eTest {
                 ready = true;
                 break;
             }
+            // Fail fast if the app itself already recorded a setup failure
+            // (MainActivity persists it); polling to the deadline would
+            // just burn emulator time without adding information.
+            String setupResult = readSetupResult(context);
+            if (setupResult != null && setupResult.startsWith("FAILED")) {
+                String diagnostics = collectDiagnostics(config);
+                report("SETUP FAILED (app-reported): " + setupResult + "\n" + diagnostics);
+                fail("App-reported setup failure: " + setupResult + "\n" + diagnostics);
+            }
             report("waiting… ready=" + readinessSummary(config));
             Thread.sleep(POLL_MS);
         }
@@ -294,6 +303,17 @@ public class CodingHarnessE2eTest {
             out.append("diagnostics failed: ").append(e).append('\n');
         }
         return out.toString();
+    }
+
+    private static String readSetupResult(Context context) {
+        try {
+            File file = new File(new File(context.getFilesDir(), "coding-harness"),
+                "setup-result.txt");
+            if (!file.isFile()) return null;
+            return readTail(file, 4000).trim();
+        } catch (Exception ignored) {
+            return null;
+        }
     }
 
     private static String readTail(File file, int maxChars) {

@@ -16,7 +16,7 @@ EMU_PID=""
 
 publish() {
   "$ADB" pull /sdcard/Android/data/io.mcyber12.codingharness/files/setup-e2e-report.txt ./setup-e2e-report.txt >/dev/null 2>&1 || true
-  "$ADB" shell run-as io.mcyber12.codingharness cat files/coding-harness/usr/var/log/harness-command.log > ./harness-command-live.log 2>/dev/null || true
+  "$ADB" shell run-as io.mcyber12.codingharness cat files/coding-harness/rootfs/data/data/com.termux/files/usr/var/log/harness-command.log > ./harness-command-live.log 2>/dev/null || true
   tail -c 20000 ./harness-command-live.log > diagnostics/harness-command-tail.log 2>/dev/null || true
   cp ./setup-e2e-report.txt diagnostics/setup-e2e-report.txt 2>/dev/null || echo "no setup-e2e-report.txt yet" > diagnostics/setup-e2e-report.txt
   rm -rf diagnostics/e2e-logs
@@ -62,6 +62,12 @@ export ANDROID_AVD_HOME="${ANDROID_AVD_HOME:-$HOME/.android/avd}"
 mkdir -p "$ANDROID_AVD_HOME"
 echo "ANDROID_AVD_HOME=$ANDROID_AVD_HOME" >> e2e-logs/phases.log
 echo no | "$AVDMANAGER" create avd -n e2e -k "system-images;android-34;aosp_atd;x86_64" -d pixel_6 --force > e2e-logs/avd.log 2>&1
+# The full coding toolchain (clang/llvm, rust-free) unpacks several GB;
+# the pixel_6 default data partition can fill up mid-install (ENOSPC
+# leaves dpkg half-configured and straggler binaries missing).
+sed -i 's/^disk.dataPartition.size=.*/disk.dataPartition.size=16384M/' "$ANDROID_AVD_HOME/e2e.avd/config.ini" 2>/dev/null || true
+grep -q '^disk.dataPartition.size=' "$ANDROID_AVD_HOME/e2e.avd/config.ini" 2>/dev/null || echo 'disk.dataPartition.size=16384M' >> "$ANDROID_AVD_HOME/e2e.avd/config.ini"
+echo "dataPartition: $(grep '^disk.dataPartition.size=' "$ANDROID_AVD_HOME/e2e.avd/config.ini" 2>/dev/null)" >> e2e-logs/phases.log
 if [ $? -ne 0 ]; then phase "create-avd-failed"; tail -50 e2e-logs/avd.log; exit 1; fi
 ls -la "$ANDROID_AVD_HOME" >> e2e-logs/phases.log 2>&1
 if ! "$EMU_BIN" -list-avds 2>/dev/null | grep -qx e2e; then
@@ -174,7 +180,8 @@ echo "connectedDebugAndroidTest exit=$RC" | tee -a e2e-logs/phases.log
 "$ADB" shell cat /sdcard/Android/data/io.mcyber12.codingharness/files/setup-e2e-report.txt > e2e-logs/device-report.log 2>&1 || true
 "$ADB" pull /sdcard/Android/data/io.mcyber12.codingharness/files/setup-e2e-report.txt ./setup-e2e-report.txt >> e2e-logs/phases.log 2>&1 || true
 "$ADB" shell run-as io.mcyber12.codingharness cat files/coding-harness/bootstrap-error.log > e2e-logs/bootstrap-error.log 2>&1 || true
-"$ADB" shell run-as io.mcyber12.codingharness cat files/coding-harness/usr/var/log/harness-command.log > e2e-logs/harness-command.log 2>&1 || true
+"$ADB" shell run-as io.mcyber12.codingharness cat files/coding-harness/setup-result.txt > e2e-logs/setup-result.log 2>&1 || true
+"$ADB" shell run-as io.mcyber12.codingharness cat files/coding-harness/rootfs/data/data/com.termux/files/usr/var/log/harness-command.log > e2e-logs/harness-command.log 2>&1 || true
 "$ADB" logcat -d > e2e-logs/logcat.log 2>&1 || true
 
 kill "$PUBLISHER_PID" >/dev/null 2>&1

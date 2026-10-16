@@ -184,6 +184,7 @@ public final class MainActivity extends Activity {
             HarnessPackageInstaller.InstallResult result =
                 HarnessPackageInstaller.installCodingToolchain(harnessConfig);
             setupRunning.set(false);
+            writeSetupResult(result);
             if (result.success) {
                 setStatus(result.message);
             } else {
@@ -191,6 +192,27 @@ public final class MainActivity extends Activity {
                 runOnUiThread(() -> showSetupFailure(result.message));
             }
         }, "coding-harness-packages").start();
+    }
+
+    /**
+     * Persist the setup outcome so it survives the dialog (and so the
+     * emulator E2E can tell "still installing" from "installation died"
+     * instead of polling the toolchain forever): coding-harness/
+     * setup-result.txt contains OK or FAILED plus the full message.
+     */
+    private void writeSetupResult(HarnessPackageInstaller.InstallResult result) {
+        try {
+            java.io.File file = new java.io.File(
+                new java.io.File(getFilesDir(), "coding-harness"), "setup-result.txt");
+            java.io.File parent = file.getParentFile();
+            if (parent != null) parent.mkdirs();
+            String entry = (result.success ? "OK " : "FAILED ") + result.message + "\n";
+            try (java.io.FileOutputStream out = new java.io.FileOutputStream(file)) {
+                out.write(entry.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+            }
+        } catch (Exception ignored) {
+            // Status persistence must never affect setup itself.
+        }
     }
 
     /** Full, actionable bootstrap failure: dialog + persistent log file. */
