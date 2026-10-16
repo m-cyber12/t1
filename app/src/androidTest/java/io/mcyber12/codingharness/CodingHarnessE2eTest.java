@@ -105,7 +105,7 @@ public class CodingHarnessE2eTest {
             StringBuilder probe = new StringBuilder("a01 bin probe:");
             for (String name : new String[] {"sh", "rm", "tar", "diff", "dpkg-deb",
                     "start-stop-daemon", "bash", "coreutils", "apt-get", "dpkg"}) {
-                File entry = new File(prefix, "bin/" + name);
+                File entry = new File(config.prefix, "bin/" + name);
                 probe.append(' ').append(name).append('=');
                 try {
                     if (Files.isSymbolicLink(entry.toPath())) {
