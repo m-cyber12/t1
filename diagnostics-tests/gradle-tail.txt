@@ -1,0 +1,294 @@
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/9.2.1/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build 
+
+> Configure project :app
+WARNING: minSdkVersion (29) is greater than targetSdkVersion (28) for variant "debug". Please change the values such that minSdkVersion is less than or equal to targetSdkVersion.
+WARNING: minSdkVersion (29) is greater than targetSdkVersion (28) for variant "release". Please change the values such that minSdkVersion is less than or equal to targetSdkVersion.
+
+> Configure project :harness-core
+WARNING: minSdkVersion (29) is greater than targetSdkVersion (28) for variant "debug". Please change the values such that minSdkVersion is less than or equal to targetSdkVersion.
+WARNING: minSdkVersion (29) is greater than targetSdkVersion (28) for variant "release". Please change the values such that minSdkVersion is less than or equal to targetSdkVersion.
+
+> Configure project :terminal-emulator
+WARNING: minSdkVersion (29) is greater than targetSdkVersion (28) for variant "debug". Please change the values such that minSdkVersion is less than or equal to targetSdkVersion.
+WARNING: minSdkVersion (29) is greater than targetSdkVersion (28) for variant "release". Please change the values such that minSdkVersion is less than or equal to targetSdkVersion.
+
+> Configure project :terminal-view
+WARNING: minSdkVersion (29) is greater than targetSdkVersion (28) for variant "debug". Please change the values such that minSdkVersion is less than or equal to targetSdkVersion.
+WARNING: minSdkVersion (29) is greater than targetSdkVersion (28) for variant "release". Please change the values such that minSdkVersion is less than or equal to targetSdkVersion.
+
+> Task :terminal-view:preBuild UP-TO-DATE
+> Task :harness-core:preBuild UP-TO-DATE
+> Task :terminal-emulator:preBuild UP-TO-DATE
+> Task :terminal-view:preDebugBuild UP-TO-DATE
+> Task :harness-core:preDebugBuild UP-TO-DATE
+> Task :terminal-emulator:preDebugBuild UP-TO-DATE
+> Task :terminal-emulator:writeDebugAarMetadata
+> Task :terminal-view:writeDebugAarMetadata
+> Task :harness-core:writeDebugAarMetadata
+> Task :harness-core:processDebugNavigationResources
+> Task :terminal-view:processDebugNavigationResources
+> Task :terminal-emulator:processDebugNavigationResources
+> Task :terminal-view:generateDebugResValues
+> Task :terminal-emulator:generateDebugResValues
+> Task :harness-core:generateDebugResValues
+> Task :terminal-view:generateDebugResources
+> Task :terminal-emulator:generateDebugResources
+> Task :harness-core:generateDebugResources
+> Task :terminal-emulator:packageDebugResources
+> Task :harness-core:packageDebugResources
+> Task :terminal-emulator:extractDeepLinksDebug
+> Task :harness-core:extractDeepLinksDebug FROM-CACHE
+> Task :terminal-view:packageDebugResources
+> Task :terminal-view:extractDeepLinksDebug FROM-CACHE
+> Task :harness-core:processDebugManifest
+> Task :terminal-emulator:processDebugManifest
+> Task :terminal-view:processDebugManifest
+> Task :harness-core:compileDebugLibraryResources
+> Task :terminal-emulator:compileDebugLibraryResources
+
+> Task :app:downloadHarnessBootstrap
+Downloading Termux bootstrap for aarch64
+Downloading Termux bootstrap for x86_64
+
+> Task :app:preBuild UP-TO-DATE
+> Task :app:preDebugBuild
+> Task :app:javaPreCompileDebug
+> Task :terminal-view:compileDebugLibraryResources
+> Task :terminal-view:parseDebugLocalResources
+> Task :harness-core:parseDebugLocalResources
+> Task :terminal-emulator:parseDebugLocalResources
+> Task :terminal-view:generateDebugRFile
+> Task :terminal-emulator:generateDebugRFile
+> Task :harness-core:generateDebugRFile
+> Task :terminal-view:javaPreCompileDebug FROM-CACHE
+> Task :harness-core:javaPreCompileDebug FROM-CACHE
+> Task :terminal-emulator:javaPreCompileDebug FROM-CACHE
+> Task :terminal-view:processDebugJavaRes NO-SOURCE
+> Task :terminal-view:preReleaseBuild UP-TO-DATE
+> Task :terminal-view:writeReleaseAarMetadata
+> Task :terminal-view:processReleaseNavigationResources FROM-CACHE
+> Task :terminal-view:generateReleaseResValues FROM-CACHE
+> Task :terminal-view:generateReleaseResources FROM-CACHE
+> Task :harness-core:processDebugJavaRes
+> Task :harness-core:preReleaseBuild UP-TO-DATE
+> Task :harness-core:writeReleaseAarMetadata
+> Task :terminal-view:packageReleaseResources
+> Task :harness-core:processReleaseNavigationResources FROM-CACHE
+> Task :terminal-view:extractDeepLinksRelease FROM-CACHE
+> Task :harness-core:generateReleaseResValues FROM-CACHE
+> Task :harness-core:generateReleaseResources FROM-CACHE
+> Task :terminal-view:processReleaseManifest FROM-CACHE
+> Task :harness-core:packageReleaseResources
+> Task :harness-core:extractDeepLinksRelease FROM-CACHE
+> Task :terminal-view:compileReleaseLibraryResources
+> Task :harness-core:processReleaseManifest FROM-CACHE
+> Task :harness-core:compileReleaseLibraryResources
+> Task :terminal-view:parseReleaseLocalResources FROM-CACHE
+> Task :harness-core:parseReleaseLocalResources FROM-CACHE
+> Task :terminal-view:generateReleaseRFile FROM-CACHE
+> Task :terminal-view:javaPreCompileRelease FROM-CACHE
+> Task :terminal-view:processReleaseJavaRes NO-SOURCE
+> Task :terminal-view:preDebugUnitTestBuild UP-TO-DATE
+> Task :harness-core:generateReleaseRFile FROM-CACHE
+> Task :harness-core:javaPreCompileRelease FROM-CACHE
+> Task :harness-core:processReleaseJavaRes
+> Task :harness-core:preDebugUnitTestBuild UP-TO-DATE
+> Task :harness-core:generateDebugUnitTestStubRFile
+> Task :app:processDebugNavigationResources
+> Task :app:checkDebugAarMetadata
+> Task :app:generateDebugResValues FROM-CACHE
+> Task :app:mapDebugSourceSetPaths
+> Task :terminal-view:generateDebugUnitTestStubRFile
+> Task :harness-core:javaPreCompileDebugUnitTest FROM-CACHE
+> Task :app:generateDebugResources
+> Task :harness-core:processDebugUnitTestJavaRes NO-SOURCE
+> Task :harness-core:preReleaseUnitTestBuild UP-TO-DATE
+> Task :app:compileDebugNavigationResources
+> Task :terminal-view:javaPreCompileDebugUnitTest FROM-CACHE
+> Task :harness-core:javaPreCompileReleaseUnitTest FROM-CACHE
+> Task :harness-core:processReleaseUnitTestJavaRes NO-SOURCE
+> Task :terminal-view:processDebugUnitTestJavaRes NO-SOURCE
+> Task :terminal-view:preReleaseUnitTestBuild UP-TO-DATE
+> Task :terminal-view:javaPreCompileReleaseUnitTest FROM-CACHE
+> Task :terminal-view:processReleaseUnitTestJavaRes NO-SOURCE
+> Task :terminal-view:mergeDebugShaders
+> Task :terminal-view:compileDebugShaders NO-SOURCE
+> Task :terminal-view:generateDebugAssets UP-TO-DATE
+> Task :harness-core:mergeDebugShaders
+> Task :harness-core:compileDebugShaders NO-SOURCE
+> Task :harness-core:generateDebugAssets UP-TO-DATE
+> Task :terminal-view:mergeDebugAssets
+> Task :harness-core:mergeDebugAssets
+> Task :harness-core:mergeDebugJniLibFolders
+> Task :harness-core:mergeDebugNativeLibs NO-SOURCE
+> Task :app:packageDebugResources
+> Task :harness-core:copyDebugJniLibsProjectOnly
+> Task :terminal-view:mergeDebugJniLibFolders
+> Task :app:createDebugCompatibleScreenManifests
+> Task :app:extractDeepLinksDebug
+> Task :app:parseDebugLocalResources
+> Task :terminal-view:mergeDebugNativeLibs NO-SOURCE
+> Task :terminal-view:copyDebugJniLibsProjectOnly
+> Task :app:mergeDebugResources
+> Task :app:processDebugMainManifest
+> Task :app:processDebugManifest
+> Task :app:preDebugUnitTestBuild UP-TO-DATE
+> Task :app:javaPreCompileDebugUnitTest FROM-CACHE
+> Task :app:processDebugJavaRes NO-SOURCE
+> Task :app:processDebugManifestForPackage
+> Task :app:processDebugUnitTestJavaRes NO-SOURCE
+> Task :app:preReleaseBuild
+> Task :app:javaPreCompileRelease FROM-CACHE
+> Task :app:generateReleaseResValues FROM-CACHE
+> Task :app:generateReleaseResources FROM-CACHE
+> Task :app:packageReleaseResources
+> Task :app:createReleaseCompatibleScreenManifests
+> Task :app:extractDeepLinksRelease FROM-CACHE
+> Task :app:preReleaseUnitTestBuild UP-TO-DATE
+> Task :app:javaPreCompileReleaseUnitTest FROM-CACHE
+> Task :app:processReleaseJavaRes NO-SOURCE
+> Task :app:processReleaseUnitTestJavaRes NO-SOURCE
+> Task :app:mergeDebugNativeDebugMetadata NO-SOURCE
+> Task :app:mergeDebugShaders
+> Task :app:compileDebugShaders NO-SOURCE
+> Task :app:generateDebugAssets UP-TO-DATE
+> Task :app:desugarDebugFileDependencies
+> Task :app:checkDebugDuplicateClasses
+> Task :app:mergeDebugJniLibFolders
+> Task :app:processDebugResources
+
+> Task :terminal-emulator:compileDebugJavaWithJavac
+Note: /home/runner/work/t1/t1/terminal-emulator/src/main/java/com/termux/terminal/TerminalSession.java uses or overrides a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+
+> Task :terminal-emulator:processDebugJavaRes NO-SOURCE
+> Task :terminal-emulator:preReleaseBuild UP-TO-DATE
+> Task :terminal-emulator:writeReleaseAarMetadata
+> Task :terminal-emulator:processReleaseNavigationResources FROM-CACHE
+> Task :terminal-emulator:generateReleaseResValues FROM-CACHE
+> Task :terminal-emulator:generateReleaseResources FROM-CACHE
+> Task :terminal-emulator:packageReleaseResources
+> Task :terminal-emulator:bundleLibRuntimeToJarDebug
+> Task :terminal-emulator:bundleLibCompileToJarDebug
+> Task :terminal-emulator:extractDeepLinksRelease FROM-CACHE
+> Task :terminal-emulator:processReleaseManifest FROM-CACHE
+> Task :terminal-emulator:compileReleaseLibraryResources FROM-CACHE
+> Task :terminal-emulator:parseReleaseLocalResources FROM-CACHE
+> Task :terminal-emulator:generateReleaseRFile FROM-CACHE
+> Task :terminal-emulator:javaPreCompileRelease FROM-CACHE
+> Task :terminal-emulator:compileReleaseJavaWithJavac FROM-CACHE
+> Task :terminal-emulator:bundleLibCompileToJarRelease
+> Task :terminal-emulator:bundleLibRuntimeToJarRelease
+> Task :terminal-emulator:processReleaseJavaRes NO-SOURCE
+> Task :terminal-emulator:preDebugUnitTestBuild UP-TO-DATE
+> Task :terminal-emulator:generateDebugUnitTestStubRFile
+> Task :terminal-emulator:javaPreCompileDebugUnitTest FROM-CACHE
+> Task :harness-core:compileDebugJavaWithJavac
+> Task :harness-core:bundleLibCompileToJarDebug
+> Task :harness-core:bundleLibRuntimeToJarDebug
+> Task :harness-core:compileReleaseJavaWithJavac FROM-CACHE
+> Task :harness-core:bundleLibCompileToJarRelease
+> Task :harness-core:bundleLibRuntimeToJarRelease
+
+> Task :terminal-view:compileDebugJavaWithJavac
+Note: /home/runner/work/t1/t1/terminal-view/src/main/java/com/termux/view/TerminalView.java uses or overrides a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+
+> Task :terminal-view:bundleLibCompileToJarDebug
+> Task :terminal-view:bundleLibRuntimeToJarDebug
+> Task :terminal-view:compileReleaseJavaWithJavac FROM-CACHE
+> Task :terminal-view:bundleLibCompileToJarRelease
+> Task :terminal-view:bundleLibRuntimeToJarRelease
+> Task :terminal-view:compileDebugUnitTestJavaWithJavac NO-SOURCE
+> Task :terminal-view:testDebugUnitTest NO-SOURCE
+> Task :terminal-view:generateReleaseUnitTestStubRFile FROM-CACHE
+> Task :terminal-view:compileReleaseUnitTestJavaWithJavac NO-SOURCE
+> Task :terminal-view:testReleaseUnitTest NO-SOURCE
+> Task :terminal-view:test UP-TO-DATE
+> Task :harness-core:compileDebugUnitTestJavaWithJavac
+> Task :terminal-emulator:compileDebugUnitTestJavaWithJavac
+> Task :terminal-emulator:processDebugUnitTestJavaRes NO-SOURCE
+> Task :terminal-view:bundleLibRuntimeToDirDebug
+
+> Task :app:compileDebugJavaWithJavac
+Note: /home/runner/work/t1/t1/app/src/main/java/io/mcyber12/codingharness/MainActivity.java uses or overrides a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+
+> Task :app:bundleDebugClassesToRuntimeJar
+> Task :app:bundleDebugClassesToCompileJar
+> Task :app:compileDebugUnitTestJavaWithJavac NO-SOURCE
+> Task :app:testDebugUnitTest NO-SOURCE
+> Task :app:checkReleaseAarMetadata
+> Task :app:processReleaseNavigationResources FROM-CACHE
+> Task :app:compileReleaseNavigationResources FROM-CACHE
+> Task :app:mapReleaseSourceSetPaths
+> Task :app:mergeReleaseResources
+> Task :app:parseReleaseLocalResources FROM-CACHE
+> Task :harness-core:testDebugUnitTest
+> Task :app:processReleaseMainManifest
+> Task :harness-core:generateReleaseUnitTestStubRFile FROM-CACHE
+> Task :app:processReleaseManifest
+> Task :app:processReleaseManifestForPackage
+> Task :harness-core:compileReleaseUnitTestJavaWithJavac FROM-CACHE
+> Task :app:processReleaseResources
+> Task :app:compileReleaseJavaWithJavac FROM-CACHE
+> Task :app:bundleReleaseClassesToRuntimeJar
+> Task :app:bundleReleaseClassesToCompileJar
+> Task :app:compileReleaseUnitTestJavaWithJavac NO-SOURCE
+> Task :app:testReleaseUnitTest NO-SOURCE
+> Task :app:test UP-TO-DATE
+> Task :app:dexBuilderDebug
+> Task :app:mergeDebugGlobalSynthetics
+> Task :app:mergeExtDexDebug
+> Task :app:mergeDebugJavaResource
+> Task :harness-core:testReleaseUnitTest
+> Task :harness-core:test
+> Task :app:mergeProjectDexDebug
+> Task :harness-core:bundleLibRuntimeToDirDebug
+> Task :app:validateSigningDebug
+> Task :app:writeDebugAppMetadata
+> Task :app:writeDebugSigningConfigVersions
+> Task :terminal-emulator:testDebugUnitTest
+> Task :terminal-emulator:preReleaseUnitTestBuild UP-TO-DATE
+> Task :terminal-emulator:generateReleaseUnitTestStubRFile FROM-CACHE
+> Task :terminal-emulator:javaPreCompileReleaseUnitTest FROM-CACHE
+> Task :terminal-emulator:compileReleaseUnitTestJavaWithJavac FROM-CACHE
+> Task :terminal-emulator:processReleaseUnitTestJavaRes NO-SOURCE
+> Task :terminal-emulator:testReleaseUnitTest
+> Task :terminal-emulator:test
+> Task :terminal-emulator:mergeDebugShaders
+> Task :terminal-emulator:compileDebugShaders NO-SOURCE
+> Task :terminal-emulator:generateDebugAssets UP-TO-DATE
+> Task :terminal-emulator:mergeDebugAssets
+> Task :terminal-emulator:bundleLibRuntimeToDirDebug
+> Task :app:mergeDebugAssets
+> Task :terminal-emulator:configureNdkBuildDebug[arm64-v8a]
+> Task :terminal-emulator:buildNdkBuildDebug[arm64-v8a]
+> Task :terminal-emulator:configureNdkBuildDebug[x86_64]
+> Task :terminal-emulator:buildNdkBuildDebug[x86_64]
+> Task :terminal-emulator:mergeDebugJniLibFolders
+> Task :app:mergeLibDexDebug
+> Task :terminal-emulator:mergeDebugNativeLibs
+> Task :terminal-emulator:copyDebugJniLibsProjectOnly
+> Task :app:mergeDebugNativeLibs
+
+> Task :app:stripDebugDebugSymbols
+Unable to strip the following libraries, packaging them as they are: libharness-exec.so, libtermux.so. Run with --info option to learn more.
+
+> Task :app:compressDebugAssets
+> Task :app:packageDebug
+> Task :app:createDebugApkListingFileRedirect
+> Task :app:assembleDebug
+
+[Incubating] Problems report is available at: file:///home/runner/work/t1/t1/build/reports/problems/problems-report.html
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 10.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+For more on this, please refer to https://docs.gradle.org/9.2.1/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+
+BUILD SUCCESSFUL in 1m 5s
+186 actionable tasks: 131 executed, 55 from cache
+Consider enabling configuration cache to speed up this build: https://docs.gradle.org/9.2.1/userguide/configuration_cache_enabling.html

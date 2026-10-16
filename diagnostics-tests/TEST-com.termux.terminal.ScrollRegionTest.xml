@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.termux.terminal.ScrollRegionTest" tests="17" skipped="0" failures="0" errors="0" timestamp="2026-10-16T17:18:05.435Z" hostname="runnervm8k3b6" time="0.003">
+  <properties/>
+  <testcase name="testScrollRegionResetWithOriginMode" classname="com.termux.terminal.ScrollRegionTest" time="0.0"/>
+  <testcase name="testScrollRegionTop" classname="com.termux.terminal.ScrollRegionTest" time="0.0"/>
+  <testcase name="testScrollRegionRight" classname="com.termux.terminal.ScrollRegionTest" time="0.0"/>
+  <testcase name="testScrollRegionOnAllSides" classname="com.termux.terminal.ScrollRegionTest" time="0.0"/>
+  <testcase name="testBackwardIndex" classname="com.termux.terminal.ScrollRegionTest" time="0.0"/>
+  <testcase name="testScrollRegionLeft" classname="com.termux.terminal.ScrollRegionTest" time="0.0"/>
+  <testcase name="testScrollRegionBottom" classname="com.termux.terminal.ScrollRegionTest" time="0.0"/>
+  <testcase name="testNELRespectsLeftMargin" classname="com.termux.terminal.ScrollRegionTest" time="0.0"/>
+  <testcase name="testSdRespectsLeftMargin" classname="com.termux.terminal.ScrollRegionTest" time="0.0"/>
+  <testcase name="testScrollDownBelowScrollRegion" classname="com.termux.terminal.ScrollRegionTest" time="0.001"/>
+  <testcase name="testForwardIndex" classname="com.termux.terminal.ScrollRegionTest" time="0.0"/>
+  <testcase name="testScrollRegionDoesNotLimitCursorMovement" classname="com.termux.terminal.ScrollRegionTest" time="0.0"/>
+  <testcase name="testRiRespectsLeftMargin" classname="com.termux.terminal.ScrollRegionTest" time="0.0"/>
+  <testcase name="testScrollDownWithScrollRegion" classname="com.termux.terminal.ScrollRegionTest" time="0.0"/>
+  <testcase name="testClearingWhenScrollingWithMargins" classname="com.termux.terminal.ScrollRegionTest" time="0.0"/>
+  <testcase name="testDECCOLMResetsScrollMargin" classname="com.termux.terminal.ScrollRegionTest" time="0.0"/>
+  <testcase name="testScrollOutsideVerticalRegion" classname="com.termux.terminal.ScrollRegionTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

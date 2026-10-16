@@ -1,0 +1,48 @@
+Archive:  app/build/outputs/apk/debug/app-debug.apk
+  Length      Date    Time    Name
+---------  ---------- -----   ----
+       57  1981-01-01 01:01   META-INF/com/android/build/gradle/app-metadata.properties
+  2340552  1981-01-01 01:01   classes.dex
+    16592  1981-01-01 01:01   classes2.dex
+    39124  1981-01-01 01:01   classes3.dex
+   156256  1981-01-01 01:01   classes4.dex
+     2444  1981-01-01 01:01   classes5.dex
+    21012  1981-01-01 01:01   classes6.dex
+    22376  1981-01-01 01:01   lib/arm64-v8a/libharness-exec.so
+    44848  1981-01-01 01:01   lib/arm64-v8a/libtermux.so
+    21312  1981-01-01 01:01   lib/x86_64/libharness-exec.so
+    43016  1981-01-01 01:01   lib/x86_64/libtermux.so
+ 30542758  1981-01-01 01:01   assets/bootstrap-aarch64.zip
+ 30393585  1981-01-01 01:01   assets/bootstrap-x86_64.zip
+   217186  1981-01-01 01:01   assets/cacert.pem
+     2879  1981-01-01 01:01   assets/termux-keyring/2096779623.gpg
+     4716  1981-01-01 01:01   assets/termux-keyring/agnostic-apollo.gpg
+    19990  1981-01-01 01:01   assets/termux-keyring/grimler.gpg
+     2961  1981-01-01 01:01   assets/termux-keyring/kcubeterm.gpg
+     4644  1981-01-01 01:01   assets/termux-keyring/landfillbaby.gpg
+     8188  1981-01-01 01:01   assets/termux-keyring/mradityaalok.gpg
+     2458  1981-01-01 01:01   assets/termux-keyring/termux-autobuilds.gpg
+      622  1981-01-01 01:01   assets/termux-keyring/thunder-coding.gpg
+     2428  1981-01-01 01:01   AndroidManifest.xml
+      816  1981-01-01 01:01   res/drawable/text_select_handle_left_material.xml
+      788  1981-01-01 01:01   res/drawable/text_select_handle_right_material.xml
+     1364  1981-01-01 01:01   resources.arsc
+    10175  1981-01-01 01:01   META-INF/androidx/annotation/annotation/LICENSE.txt
+   217186  1981-01-01 01:01   io/mcyber12/codingharness/core/cacert.pem
+     2879  1981-01-01 01:01   io/mcyber12/codingharness/core/termux-keyring/2096779623.gpg
+     4716  1981-01-01 01:01   io/mcyber12/codingharness/core/termux-keyring/agnostic-apollo.gpg
+    19990  1981-01-01 01:01   io/mcyber12/codingharness/core/termux-keyring/grimler.gpg
+     2961  1981-01-01 01:01   io/mcyber12/codingharness/core/termux-keyring/kcubeterm.gpg
+     4644  1981-01-01 01:01   io/mcyber12/codingharness/core/termux-keyring/landfillbaby.gpg
+     8188  1981-01-01 01:01   io/mcyber12/codingharness/core/termux-keyring/mradityaalok.gpg
+     2458  1981-01-01 01:01   io/mcyber12/codingharness/core/termux-keyring/termux-autobuilds.gpg
+      622  1981-01-01 01:01   io/mcyber12/codingharness/core/termux-keyring/thunder-coding.gpg
+      928  1981-01-01 01:01   kotlin/annotation/annotation.kotlin_builtins
+     3685  1981-01-01 01:01   kotlin/collections/collections.kotlin_builtins
+      200  1981-01-01 01:01   kotlin/coroutines/coroutines.kotlin_builtins
+      646  1981-01-01 01:01   kotlin/internal/internal.kotlin_builtins
+    18640  1981-01-01 01:01   kotlin/kotlin.kotlin_builtins
+     3399  1981-01-01 01:01   kotlin/ranges/ranges.kotlin_builtins
+     2426  1981-01-01 01:01   kotlin/reflect/reflect.kotlin_builtins
+---------                     -------
+ 64216715                     43 files

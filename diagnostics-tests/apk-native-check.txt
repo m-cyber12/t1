@@ -1,0 +1,8 @@
+== lib entries ==
+    22376  1981-01-01 01:01   lib/arm64-v8a/libharness-exec.so
+    44848  1981-01-01 01:01   lib/arm64-v8a/libtermux.so
+    21312  1981-01-01 01:01   lib/x86_64/libharness-exec.so
+    43016  1981-01-01 01:01   lib/x86_64/libtermux.so
+== unzip -v harness-exec ==
+   22376  Defl:N     9063  60% 1981-01-01 01:01 6b47b6d3  lib/arm64-v8a/libharness-exec.so
+   21312  Defl:N     8953  58% 1981-01-01 01:01 5790eafc  lib/x86_64/libharness-exec.so

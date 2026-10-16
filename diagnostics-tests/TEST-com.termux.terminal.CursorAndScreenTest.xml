@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.termux.terminal.CursorAndScreenTest" tests="13" skipped="0" failures="0" errors="0" timestamp="2026-10-16T17:17:59.498Z" hostname="runnervm8k3b6" time="0.118">
+  <properties/>
+  <testcase name="testReportCursorPosition" classname="com.termux.terminal.CursorAndScreenTest" time="0.059"/>
+  <testcase name="testDeleteCharacters" classname="com.termux.terminal.CursorAndScreenTest" time="0.014"/>
+  <testcase name="testCursorBack" classname="com.termux.terminal.CursorAndScreenTest" time="0.001"/>
+  <testcase name="testCursorDown" classname="com.termux.terminal.CursorAndScreenTest" time="0.0"/>
+  <testcase name="testDeleteLinesKeepsStyles" classname="com.termux.terminal.CursorAndScreenTest" time="0.009"/>
+  <testcase name="testCursorForward" classname="com.termux.terminal.CursorAndScreenTest" time="0.0"/>
+  <testcase name="testInsertMode" classname="com.termux.terminal.CursorAndScreenTest" time="0.005"/>
+  <testcase name="testCursorSaveRestoreTextStyle" classname="com.termux.terminal.CursorAndScreenTest" time="0.0"/>
+  <testcase name="testClearingOfAutowrap" classname="com.termux.terminal.CursorAndScreenTest" time="0.001"/>
+  <testcase name="testCursorUp" classname="com.termux.terminal.CursorAndScreenTest" time="0.0"/>
+  <testcase name="testCursorSaveRestoreLocation" classname="com.termux.terminal.CursorAndScreenTest" time="0.0"/>
+  <testcase name="testCursorHorizontalPositionAbsolute" classname="com.termux.terminal.CursorAndScreenTest" time="0.0"/>
+  <testcase name="testBackspaceAcrossWrappedLines" classname="com.termux.terminal.CursorAndScreenTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

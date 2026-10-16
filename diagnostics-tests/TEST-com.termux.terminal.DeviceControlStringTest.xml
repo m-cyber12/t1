@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.termux.terminal.DeviceControlStringTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2026-10-16T17:17:59.639Z" hostname="runnervm8k3b6" time="5.486">
+  <properties/>
+  <testcase name="testReportColorsAndName" classname="com.termux.terminal.DeviceControlStringTest" time="0.012"/>
+  <testcase name="testReallyLongDeviceControlString" classname="com.termux.terminal.DeviceControlStringTest" time="5.468"/>
+  <testcase name="testReportKeys" classname="com.termux.terminal.DeviceControlStringTest" time="0.001"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

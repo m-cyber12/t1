@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.termux.terminal.OperatingSystemControlTest" tests="7" skipped="0" failures="0" errors="0" timestamp="2026-10-16T17:18:05.135Z" hostname="runnervm8k3b6" time="0.048">
+  <properties/>
+  <testcase name="testSettingDynamicColors" classname="com.termux.terminal.OperatingSystemControlTest" time="0.001"/>
+  <testcase name="testReportSpecialColors" classname="com.termux.terminal.OperatingSystemControlTest" time="0.0"/>
+  <testcase name="testResettingTerminalResetsColor" classname="com.termux.terminal.OperatingSystemControlTest" time="0.001"/>
+  <testcase name="testTitleStack" classname="com.termux.terminal.OperatingSystemControlTest" time="0.0"/>
+  <testcase name="testResetColor" classname="com.termux.terminal.OperatingSystemControlTest" time="0.044"/>
+  <testcase name="testSetColor" classname="com.termux.terminal.OperatingSystemControlTest" time="0.001"/>
+  <testcase name="testSetTitle" classname="com.termux.terminal.OperatingSystemControlTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

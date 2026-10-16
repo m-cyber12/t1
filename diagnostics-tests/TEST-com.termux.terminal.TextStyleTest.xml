@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.termux.terminal.TextStyleTest" tests="5" skipped="0" failures="0" errors="0" timestamp="2026-10-16T17:18:05.517Z" hostname="runnervm8k3b6" time="0.039">
+  <properties/>
+  <testcase name="testEncodingSingle" classname="com.termux.terminal.TextStyleTest" time="0.038"/>
+  <testcase name="testEncodingCombinations" classname="com.termux.terminal.TextStyleTest" time="0.0"/>
+  <testcase name="testEncodingProtected" classname="com.termux.terminal.TextStyleTest" time="0.0"/>
+  <testcase name="testEncodingStrikeThrough" classname="com.termux.terminal.TextStyleTest" time="0.0"/>
+  <testcase name="testEncoding24Bit" classname="com.termux.terminal.TextStyleTest" time="0.001"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

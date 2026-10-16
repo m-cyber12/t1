@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.termux.terminal.RectangularAreasTest" tests="8" skipped="0" failures="0" errors="0" timestamp="2026-10-16T17:18:05.186Z" hostname="runnervm8k3b6" time="0.004">
+  <properties/>
+  <testcase name="testSelectiveEraseInDisplay" classname="com.termux.terminal.RectangularAreasTest" time="0.001"/>
+  <testcase name="testSelectiveEraseInLine" classname="com.termux.terminal.RectangularAreasTest" time="0.0"/>
+  <testcase name="testRectangularCopy" classname="com.termux.terminal.RectangularAreasTest" time="0.001"/>
+  <testcase name="testSelectiveEraseInRectangle" classname="com.termux.terminal.RectangularAreasTest" time="0.001"/>
+  <testcase name="testChangeAttributesInRectangularArea" classname="com.termux.terminal.RectangularAreasTest" time="0.0"/>
+  <testcase name="testReverseAttributesInRectangularArea" classname="com.termux.terminal.RectangularAreasTest" time="0.001"/>
+  <testcase name="testEraseRectangularArea" classname="com.termux.terminal.RectangularAreasTest" time="0.0"/>
+  <testcase name="testFillRectangularArea" classname="com.termux.terminal.RectangularAreasTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>
