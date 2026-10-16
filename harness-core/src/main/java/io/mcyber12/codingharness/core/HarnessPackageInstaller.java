@@ -163,13 +163,33 @@ public final class HarnessPackageInstaller {
         }
     }
 
-    /** Keeps the head and the tail: the first error explains the cause, the
-     *  last lines show where apt gave up. */
+    /**
+     * Keeps the head, any error-bearing lines (the actual cause usually
+     * sits in the middle of a long apt/dpkg log), and the tail (where apt
+     * gave up) within a small budget, so failure dialogs stay actionable
+     * instead of truncating away the one line that matters.
+     */
     private static String compact(String output) {
         if (output == null) return "no output";
-        String normalized = output.replace('\n', ' ').replace('\r', ' ').trim();
-        if (normalized.length() <= 900) return normalized;
-        return normalized.substring(0, 450) + " … " + normalized.substring(normalized.length() - 450);
+        String normalized = output.replace('\r', '\n');
+        if (normalized.length() <= 900) return normalized.replace('\n', ' ').trim();
+        StringBuilder errors = new StringBuilder();
+        for (String line : normalized.split("\n")) {
+            String candidate = line.trim();
+            String lower = candidate.toLowerCase(java.util.Locale.US);
+            if (lower.contains("error") || lower.contains("denied")
+                || lower.contains("cannot") || lower.contains("overwrite")
+                || lower.contains("no space") || lower.contains("failed")
+                || lower.startsWith("e:") || lower.startsWith("dpkg:")) {
+                if (errors.length() > 0) errors.append(" | ");
+                errors.append(candidate);
+                if (errors.length() >= 1100) break;
+            }
+        }
+        String flat = normalized.replace('\n', ' ').trim();
+        String head = flat.substring(0, 300);
+        String tailText = flat.substring(flat.length() - 300);
+        return head + " … " + errors + " … " + tailText;
     }
 
     public static final class InstallResult {
