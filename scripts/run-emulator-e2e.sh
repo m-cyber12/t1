@@ -51,7 +51,7 @@ PUBLISHER_PID=$!
 phase "install-system-image"
 echo "SDK=$SDK"; ls "$SDK" >> e2e-logs/phases.log 2>&1
 yes | "$SDKMANAGER" --licenses > e2e-logs/licenses.log 2>&1 || true
-"$SDKMANAGER" "emulator" "system-images;android-34;google_apis;x86_64" > e2e-logs/sysimg.log 2>&1
+"$SDKMANAGER" "emulator" "system-images;android-34;aosp_atd;x86_64" > e2e-logs/sysimg.log 2>&1
 if [ $? -ne 0 ]; then phase "system-image-failed"; tail -50 e2e-logs/sysimg.log; exit 1; fi
 
 phase "create-avd"
@@ -61,7 +61,7 @@ phase "create-avd"
 export ANDROID_AVD_HOME="${ANDROID_AVD_HOME:-$HOME/.android/avd}"
 mkdir -p "$ANDROID_AVD_HOME"
 echo "ANDROID_AVD_HOME=$ANDROID_AVD_HOME" >> e2e-logs/phases.log
-echo no | "$AVDMANAGER" create avd -n e2e -k "system-images;android-34;google_apis;x86_64" -d pixel_6 --force > e2e-logs/avd.log 2>&1
+echo no | "$AVDMANAGER" create avd -n e2e -k "system-images;android-34;aosp_atd;x86_64" -d pixel_6 --force > e2e-logs/avd.log 2>&1
 if [ $? -ne 0 ]; then phase "create-avd-failed"; tail -50 e2e-logs/avd.log; exit 1; fi
 ls -la "$ANDROID_AVD_HOME" >> e2e-logs/phases.log 2>&1
 if ! "$EMU_BIN" -list-avds 2>/dev/null | grep -qx e2e; then
@@ -134,23 +134,36 @@ done
 # which is the data path on recent google_apis images when cellular is idle.
 {
   echo "--- enabling wifi + VirtWifi ---"
+  "$ADB" root 2>&1 || true
+  sleep 3
   "$ADB" shell svc wifi enable 2>&1
   "$ADB" shell cmd wifi set-wifi-enabled enabled 2>&1
-  sleep 10
+  sleep 5
+  "$ADB" shell cmd wifi connect-network VirtWifi open 2>&1
   "$ADB" shell cmd wifi connect-network VirtWifi open -x 2>&1
-  "$ADB" shell cmd wifi connect-network AndroidWifi open -x 2>&1
-  sleep 15
-  echo "--- ip addr after wifi ---"; "$ADB" shell ip addr 2>&1 | grep -A2 -E "eth0|wlan0"
-  echo "--- default network after wifi ---"; "$ADB" shell dumpsys connectivity 2>&1 | grep -m1 "Active default network"
 } >> e2e-logs/network.log 2>&1
-for i in $(seq 1 24); do
+# Under software emulation the guest gets very little CPU, so give the
+# framework a long real-time window to associate and get DHCP, polling
+# for an actual default network instead of fixed short sleeps.
+net_ok=""
+for i in $(seq 1 45); do
+  default_net="$("$ADB" shell dumpsys connectivity 2>/dev/null | grep -m1 'Active default network:' || true)"
+  wlan_ip="$("$ADB" shell ip addr show wlan0 2>/dev/null | grep -m1 'inet ' || true)"
+  echo "net poll $i: $default_net | wlan: $wlan_ip" >> e2e-logs/network.log
+  case "$default_net" in
+    ""|*"none"*) ;;
+    *) net_ok=1; break ;;
+  esac
   if "$ADB" shell ping -c 1 -W 3 8.8.8.8 >> e2e-logs/network.log 2>&1; then
-    echo "guest ping 8.8.8.8 OK after wifi (attempt $i)" >> e2e-logs/network.log
-    break
+    echo "guest ping 8.8.8.8 OK (net poll $i)" >> e2e-logs/network.log
+    net_ok=1; break
   fi
-  echo "guest ping after wifi attempt $i failed" >> e2e-logs/network.log
-  sleep 10
+  sleep 20
 done
+{
+  echo "--- ip addr after wifi wait (net_ok=$net_ok) ---"; "$ADB" shell ip addr 2>&1 | grep -A2 -E "eth0|wlan0"
+  echo "--- wifi status ---"; "$ADB" shell cmd wifi status 2>&1 | head -20
+} >> e2e-logs/network.log 2>&1
 "$ADB" shell ping -c 1 -W 5 packages-cf.termux.dev >> e2e-logs/network.log 2>&1 || true
 publish
 
