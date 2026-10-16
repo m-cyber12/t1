@@ -107,6 +107,30 @@ public class HarnessEnvironmentTest {
     }
 
     @Test
+    public void extractsHarnessExecLibraryForPreload() throws Exception {
+        File directory = new File("/tmp/harness-lib-test");
+        File apk = new File(directory, "fake.apk");
+        File destination = new File(directory, "libharness-exec.so");
+        java.nio.file.Files.deleteIfExists(destination.toPath());
+        byte[] fakeLibrary = new byte[] {0x7f, 'E', 'L', 'F', 1, 2, 3, 4};
+        directory.mkdirs();
+        try (java.util.zip.ZipOutputStream zip = new java.util.zip.ZipOutputStream(
+                new java.io.FileOutputStream(apk))) {
+            zip.putNextEntry(new java.util.zip.ZipEntry("lib/x86_64/libharness-exec.so"));
+            zip.write(fakeLibrary);
+            zip.closeEntry();
+        }
+        HarnessBootstrap.extractHarnessExecLibrary(apk, "x86_64", destination);
+        assertTrue(destination.isFile());
+        org.junit.Assert.assertArrayEquals(fakeLibrary,
+            java.nio.file.Files.readAllBytes(destination.toPath()));
+        // Idempotent second call keeps the file.
+        HarnessBootstrap.extractHarnessExecLibrary(apk, "x86_64", destination);
+        org.junit.Assert.assertArrayEquals(fakeLibrary,
+            java.nio.file.Files.readAllBytes(destination.toPath()));
+    }
+
+    @Test
     public void codingPackagesIncludeTheLanguageRuntimes() {
         assertTrue(HarnessPackageInstaller.CODING_PACKAGES.contains("python"));
         assertTrue(HarnessPackageInstaller.CODING_PACKAGES.contains("nodejs"));

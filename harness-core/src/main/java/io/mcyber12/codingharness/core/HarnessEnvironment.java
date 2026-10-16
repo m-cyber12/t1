@@ -404,7 +404,14 @@ public final class HarnessEnvironment {
         // library name. Only export a path that is actually present, otherwise
         // Android's linker rejects every child process at startup.
         StringBuilder preload = new StringBuilder();
-        if (config.nativeLibraryDirectory != null) {
+        // Provisioned from the APK by HarnessBootstrap.ensureHarnessExecLibrary
+        // (modern AGP does not extract .so files to nativeLibraryDir, so a
+        // dlopen()able path must be produced by us). Native lib dir kept as
+        // fallback for packaging modes that do extract.
+        File provisionedExec = new File(root, "libharness-exec.so");
+        if (provisionedExec.isFile()) {
+            preload.append(provisionedExec.getAbsolutePath());
+        } else if (config.nativeLibraryDirectory != null) {
             File harnessExec = new File(config.nativeLibraryDirectory, "libharness-exec.so");
             if (harnessExec.isFile()) preload.append(harnessExec.getAbsolutePath());
         }

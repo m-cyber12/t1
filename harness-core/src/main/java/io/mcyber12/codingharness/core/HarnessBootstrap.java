@@ -55,6 +55,9 @@ public final class HarnessBootstrap {
 
     /** Install the ABI-specific bootstrap from the APK assets if it is absent. */
     public static void ensureInstalled(Context context, HarnessConfig config) throws IOException {
+        // Also provision on the fast path: installations from before the
+        // preload library existed must gain it without a reinstall.
+        ensureHarnessExecLibrary(context, config);
         if (isInstalled(config)) return;
 
         String assetName = assetName();
@@ -127,6 +130,64 @@ public final class HarnessBootstrap {
         File marker = new File(root, MARKER);
         try (FileOutputStream output = new FileOutputStream(marker)) {
             output.write(BOOTSTRAP_VERSION.getBytes(StandardCharsets.UTF_8));
+        }
+        ensureHarnessExecLibrary(context, config);
+    }
+
+    /**
+     * libharness-exec.so (the execve/shebang relocation preload) ships as a
+     * jniLib inside the APK, but modern AGP keeps it compressed there, so
+     * the absolute path LD_PRELOAD needs does not exist after install.
+     * Extract it next to the bootstrap marker (app-private, writable) the
+     * same way the bootstrap itself is provisioned.
+     */
+    public static void ensureHarnessExecLibrary(Context context, HarnessConfig config) {
+        try {
+            File destination = new File(harnessRoot(config), "libharness-exec.so");
+            String abi = null;
+            for (String candidate : Build.SUPPORTED_ABIS) {
+                if ("arm64-v8a".equals(candidate) || "x86_64".equals(candidate)) {
+                    abi = candidate;
+                    break;
+                }
+            }
+            if (abi == null) return;
+            extractHarnessExecLibrary(
+                new File(context.getPackageCodePath()), abi, destination);
+        } catch (Exception ignored) {
+            // Best effort: HarnessEnvironment only preloads the library if
+            // the file exists, and missing interception surfaces later as
+            // maintainer-script "bad interpreter" failures in diagnostics.
+        }
+    }
+
+    /** Pure-java extraction step (unit-testable without a Context). */
+    static void extractHarnessExecLibrary(File apk, String abi, File destination)
+            throws IOException {
+        String entryName = "lib/" + abi + "/libharness-exec.so";
+        try (java.util.zip.ZipFile zip = new java.util.zip.ZipFile(apk)) {
+            java.util.zip.ZipEntry entry = zip.getEntry(entryName);
+            if (entry == null) {
+                throw new IOException("APK has no " + entryName);
+            }
+            if (destination.isFile() && destination.length() == entry.getSize()) return;
+            File parent = destination.getParentFile();
+            if (parent != null && !parent.isDirectory() && !parent.mkdirs()
+                && !parent.isDirectory()) {
+                throw new IOException("Unable to create directory: " + parent);
+            }
+            try (InputStream input = zip.getInputStream(entry);
+                 FileOutputStream output = new FileOutputStream(destination)) {
+                byte[] buffer = new byte[8192];
+                int count;
+                while ((count = input.read(buffer)) != -1) output.write(buffer, 0, count);
+            }
+        }
+        try {
+            android.system.Os.chmod(destination.getAbsolutePath(), 0700);
+        } catch (Exception ignored) {
+            destination.setExecutable(true, true);
+            destination.setReadable(true, true);
         }
     }
 

@@ -27,8 +27,8 @@ android {
         applicationId "io.mcyber12.codingharness"
         minSdk rootProject.ext.minSdkVersion
         targetSdk rootProject.ext.targetSdkVersion
-        versionCode 23
-        versionName "0.23.0"
+        versionCode 24
+        versionName "0.24.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -38,15 +38,10 @@ android {
         }
     }
 
-    // Native libraries must be extracted onto disk: the harness hands
-    // libharness-exec.so to child processes via LD_PRELOAD (with an
-    // absolute path the Android linker dlopen()s), which cannot work
-    // while the .so only exists compressed inside the APK.
-    packaging {
-        jniLibs {
-            useLegacyPackaging true
-        }
-    }
+    // Note: no jniLibs packaging override - libharness-exec.so is extracted
+    // from the APK at bootstrap-provisioning time instead (see
+    // HarnessBootstrap.ensureHarnessExecLibrary), because modern AGP keeps
+    // .so files compressed and a dlopen() path cannot point into the APK.
 
     buildTypes {
         release {

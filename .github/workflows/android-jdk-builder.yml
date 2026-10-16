@@ -125,17 +125,10 @@ jobs:
           done
           grep -q "assets/bootstrap-aarch64.zip" apk-contents.txt
           grep -q "assets/bootstrap-x86_64.zip" apk-contents.txt
-          # libharness-exec.so must be EXTRACTED (stored, not deflated) so
-          # it exists as a real file for LD_PRELOAD in child processes.
-          {
-            echo "== lib entries =="
-            grep "lib/" apk-contents.txt || true
-            echo "== unzip -v harness-exec =="
-            unzip -v "$APK" | grep "harness-exec" || true
-          } > apk-native-check.txt
+          # libharness-exec.so must be present per ABI: the harness extracts
+          # it from the APK at provisioning time for LD_PRELOAD.
           grep -q "lib/arm64-v8a/libharness-exec.so" apk-contents.txt
           grep -q "lib/x86_64/libharness-exec.so" apk-contents.txt
-          unzip -v "$APK" | grep "libharness-exec.so" | grep -q " Stored " || { echo "libharness-exec.so is not stored uncompressed"; exit 1; }
           echo "APK contents verified: cacert.pem, 8 termux keys, both bootstraps, libharness-exec.so"
 
       - name: Publish test results on failure
