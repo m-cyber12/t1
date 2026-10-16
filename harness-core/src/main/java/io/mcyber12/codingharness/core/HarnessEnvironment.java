@@ -124,6 +124,7 @@ public final class HarnessEnvironment {
         ensureDirectory(new File(config.prefix, "var/lib/apt/lists/partial"));
         ensureDirectory(new File(config.prefix, "var/cache/apt/archives/partial"));
         ensureDirectory(new File(config.prefix, "var/log/apt"));
+        ensureDpkgRootfsLink(config);
 
         // The deb packaging system is auto-detected by apt only when a dpkg
         // status database and the dpkg binary exist. Never set
@@ -198,7 +199,13 @@ public final class HarnessEnvironment {
             // "@TERMUX_PREFIX@/bin" (0004-no-hardcoded-paths.patch); the
             // config-level equivalent is to set it explicitly, which the
             // CndSet default yields to.
-            "DPkg::Path \"" + prefix + "/bin\";\n";
+            "DPkg::Path \"" + prefix + "/bin\";\n" +
+            // dpkg would chroot() into the DPKG_ROOT fsys dir before running
+            // maintainer scripts; an app process has no such privilege.
+            // --force-script-chrootless is dpkg's supported mode for this:
+            // scripts run outside the chroot with DPKG_ROOT in their
+            // environment and the fsys root as working directory.
+            "DPkg::Options:: \"--force-script-chrootless\";\n";
         try (FileOutputStream output = new FileOutputStream(aptConfig)) {
             output.write(content.getBytes(StandardCharsets.UTF_8));
         }
@@ -269,6 +276,47 @@ public final class HarnessEnvironment {
         }
     }
 
+    /**
+     * Termux packages hard-code the official prefix
+     * {@code /data/data/com.termux/files/usr} inside every .deb archive.
+     * Official Termux never notices because that absolute path IS its own
+     * app data directory, so dpkg can unpack the literal tree at the
+     * filesystem root. This harness lives elsewhere, so give dpkg a
+     * synthetic fsys root (exported as DPKG_ROOT) containing
+     * {@code data/data/com.termux/files/usr} as a symlink to the real
+     * relocated prefix: dpkg then creates the official-looking tree, and
+     * every file physically lands in the harness prefix.
+     */
+    private static void ensureDpkgRootfsLink(HarnessConfig config) {
+        try {
+            File root = config.prefix.getParentFile();
+            if (root == null) return;
+            File filesDirectory = new File(root, "rootfs/data/data/com.termux/files");
+            ensureDirectory(filesDirectory);
+            File link = new File(filesDirectory, "usr");
+            String expectedTarget = "../../../../usr";
+            if (java.nio.file.Files.isSymbolicLink(link.toPath())) {
+                if (expectedTarget.equals(String.valueOf(
+                        java.nio.file.Files.readSymbolicLink(link.toPath())))) {
+                    return; // Already points at the live prefix.
+                }
+                java.nio.file.Files.delete(link.toPath());
+            } else if (link.exists()) {
+                return; // A real directory is in the way; never destroy data.
+            }
+            try {
+                android.system.Os.symlink(expectedTarget, link.getAbsolutePath());
+            } catch (Exception osFailure) {
+                java.nio.file.Files.createSymbolicLink(
+                    link.toPath(), java.nio.file.Paths.get(expectedTarget));
+            }
+        } catch (Exception ignored) {
+            // Best effort: dpkg installs will fail loudly with diagnostics
+            // if the link cannot be created, and prepare() must not break
+            // unrelated command execution paths.
+        }
+    }
+
     public static Map<String, String> create(HarnessConfig config) {
         Map<String, String> environment = new LinkedHashMap<>();
 
@@ -316,6 +364,13 @@ public final class HarnessEnvironment {
         environment.put("TERMUX__PREFIX", config.prefix.getAbsolutePath());
         environment.put("TERMUX__PROJECT_DIR", root.getAbsolutePath());
         environment.put("DPKG_ADMINDIR", new File(config.prefix, "var/lib/dpkg").getAbsolutePath());
+        // Termux .debs contain literal ./data/data/com.termux/files/usr/...
+        // paths and dpkg unpacks them under its fsys dir (DPKG_ROOT, dpkg's
+        // own relocation interface). Point it at a small synthetic root whose
+        // data/data/com.termux/files/usr symlink lands on this harness's
+        // prefix (see ensureDpkgRootfsLink in prepare), so unpacked files
+        // physically arrive here while dpkg bookkeeping stays consistent.
+        environment.put("DPKG_ROOT", new File(root, "rootfs").getAbsolutePath());
         File aptConfig = new File(config.prefix, "etc/apt/" + APT_CONFIG_NAME);
         if (aptConfig.isFile()) environment.put("APT_CONFIG", aptConfig.getAbsolutePath());
         environment.put("XDG_DATA_HOME", new File(root, "xdg/data").getAbsolutePath());
