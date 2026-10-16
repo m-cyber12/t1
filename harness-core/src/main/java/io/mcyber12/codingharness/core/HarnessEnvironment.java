@@ -189,7 +189,16 @@ public final class HarnessEnvironment {
             "Dir::Bin::lz4 \"" + prefix + "/bin/lz4\";\n" +
             "Dir::Bin::zstd \"" + prefix + "/bin/zstd\";\n" +
             "Dir::Bin::lzma \"" + prefix + "/bin/xz\";\n" +
-            "Dir::Bin::methods \"lib/apt/methods\";\n";
+            "Dir::Bin::methods \"lib/apt/methods\";\n" +
+            // apt defaults DPkg::Path to "/usr/sbin:/usr/bin:/sbin:/bin"
+            // (pkgInitConfig, CndSet) and pkgDPkgPM overwrites PATH with it
+            // for the dpkg child; dpkg then refuses to run because sh/rm/
+            // tar/diff/dpkg-deb/start-stop-daemon are not in those (nonexistent
+            // here) directories. Upstream Termux patches that default to
+            // "@TERMUX_PREFIX@/bin" (0004-no-hardcoded-paths.patch); the
+            // config-level equivalent is to set it explicitly, which the
+            // CndSet default yields to.
+            "DPkg::Path \"" + prefix + "/bin\";\n";
         try (FileOutputStream output = new FileOutputStream(aptConfig)) {
             output.write(content.getBytes(StandardCharsets.UTF_8));
         }

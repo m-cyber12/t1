@@ -50,6 +50,10 @@ public class HarnessEnvironmentTest {
         assertTrue(aptConf.contains("Dir::Bin::apt-key \"/tmp/harness-test/usr/bin/apt-key\""));
         assertTrue(aptConf.contains("Dir::Bin::dpkg \"/tmp/harness-test/usr/bin/dpkg\""));
         assertTrue(aptConf.contains("Dir::Etc::trustedparts \"trusted.gpg.d\""));
+        // apt would otherwise overwrite PATH for dpkg with its compiled-in
+        // "/usr/sbin:/usr/bin:/sbin:/bin" default and dpkg would refuse to
+        // run (its sh/rm/tar/... check fails in the relocated prefix).
+        assertTrue(aptConf.contains("DPkg::Path \"/tmp/harness-test/usr/bin\""));
         String sources = new String(java.nio.file.Files.readAllBytes(
             new File(prefix, "etc/apt/sources.list").toPath()), java.nio.charset.StandardCharsets.UTF_8);
         assertTrue(sources.contains("signed-by=/tmp/harness-test/usr/etc/apt/trusted.gpg.d/termux-autobuilds.gpg"));
