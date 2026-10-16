@@ -127,6 +127,12 @@ jobs:
           grep -q "assets/bootstrap-x86_64.zip" apk-contents.txt
           # libharness-exec.so must be EXTRACTED (stored, not deflated) so
           # it exists as a real file for LD_PRELOAD in child processes.
+          {
+            echo "== lib entries =="
+            grep "lib/" apk-contents.txt || true
+            echo "== unzip -v harness-exec =="
+            unzip -v "$APK" | grep "harness-exec" || true
+          } > apk-native-check.txt
           grep -q "lib/arm64-v8a/libharness-exec.so" apk-contents.txt
           grep -q "lib/x86_64/libharness-exec.so" apk-contents.txt
           unzip -v "$APK" | grep "libharness-exec.so" | grep -q " Stored " || { echo "libharness-exec.so is not stored uncompressed"; exit 1; }
@@ -138,6 +144,8 @@ jobs:
         run: |
           mkdir -p diagnostics-tests
           tail -c 40000 gradle-build.log > diagnostics-tests/gradle-tail.txt 2>/dev/null || true
+          cp apk-native-check.txt diagnostics-tests/ 2>/dev/null || true
+          cp apk-contents.txt diagnostics-tests/ 2>/dev/null || true
           find . -path '*test-results*' -name '*.xml' -exec cp {} diagnostics-tests/ \; 2>/dev/null || true
           find . -path '*test-results*' -name '*.txt' -exec cp {} diagnostics-tests/ \; 2>/dev/null || true
           ls diagnostics-tests/ || true
