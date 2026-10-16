@@ -372,6 +372,10 @@ public class CodingHarnessE2eTest {
 
     private synchronized void report(String line) {
         String entry = "[" + System.currentTimeMillis() + "] " + line + "\n";
+        // Mirror into logcat as an independent channel: the report file is
+        // pulled over flaky adb and wiped when Gradle uninstalls the app,
+        // while e2e-logs/logcat.log is captured straight from the device.
+        android.util.Log.i("CodingHarnessE2E", line);
         try (FileOutputStream out = new FileOutputStream(reportFile, true)) {
             out.write(entry.getBytes(StandardCharsets.UTF_8));
         } catch (Exception ignored) {
