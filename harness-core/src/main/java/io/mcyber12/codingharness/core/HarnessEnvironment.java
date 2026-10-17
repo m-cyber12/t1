@@ -205,7 +205,13 @@ public final class HarnessEnvironment {
             // --force-script-chrootless is dpkg's supported mode for this:
             // scripts run outside the chroot with DPKG_ROOT in their
             // environment and the fsys root as working directory.
-            "DPkg::Options:: \"--force-script-chrootless\";\n";
+            // --force-confold keeps upgrades non-interactive: without it
+            // dpkg stops at "*** bash.bashrc (Y/I/N/O/D/Z) ?" and the
+            // base-system upgrade (like any later user upgrade) dies on
+            // stdin EOF. Keeping the installed conffile is also the safe
+            // default once users have edited their shell configs.
+            "DPkg::Options:: \"--force-script-chrootless\";\n" +
+            "DPkg::Options:: \"--force-confold\";\n";
         try (FileOutputStream output = new FileOutputStream(aptConfig)) {
             output.write(content.getBytes(StandardCharsets.UTF_8));
         }

@@ -58,6 +58,7 @@ public class HarnessEnvironmentTest {
         // under dpkg's fsys root (DPKG_ROOT); the synthetic root links it
         // onto this prefix and maintainer scripts must not chroot.
         assertTrue(aptConf.contains("DPkg::Options:: \"--force-script-chrootless\""));
+        assertTrue(aptConf.contains("DPkg::Options:: \"--force-confold\""));
         // The chain down to the (here legacy-layout) prefix tail must exist
         // as REAL directories: dpkg refuses to create package-owned
         // directories over symlinks ("trying to overwrite .../usr").
