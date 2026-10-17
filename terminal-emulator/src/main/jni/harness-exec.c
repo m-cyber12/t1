@@ -124,6 +124,12 @@ static int execute_with_translated_shebang(
     char *end = interpreter;
     while (*end != '\0' && *end != ' ' && *end != '\t' && *end != '\r' && *end != '\n') end++;
     if (*end == '\0') return function(executable_path, argv, envp);
+    // *end is the first delimiter after the interpreter. If it is end-of-line
+    // the shebang has NO optional argument: end + 1 would land on the script
+    // body, and the interpreter would receive the script's first line as a
+    // filename ("sh: cannot open echo ..."). Only a space/tab delimiter is
+    // followed by an argument token.
+    bool end_of_line = (*end == '\r' || *end == '\n');
     *end = '\0';
 
     char translated_interpreter[PATH_MAX];
@@ -132,10 +138,14 @@ static int execute_with_translated_shebang(
     if (interpreter_path == NULL) return -1;
 
     char *shebang_argument = end + 1;
-    while (*shebang_argument == ' ' || *shebang_argument == '\t') shebang_argument++;
-    char *argument_end = shebang_argument;
-    while (*argument_end != '\0' && *argument_end != '\r' && *argument_end != '\n') argument_end++;
-    *argument_end = '\0';
+    if (end_of_line) {
+        shebang_argument = end; // Points at the '\0' written above: no argument.
+    } else {
+        while (*shebang_argument == ' ' || *shebang_argument == '\t') shebang_argument++;
+        char *argument_end = shebang_argument;
+        while (*argument_end != '\0' && *argument_end != '\r' && *argument_end != '\n') argument_end++;
+        *argument_end = '\0';
+    }
 
     size_t argc = argument_count(argv);
     char *translated_argv[argc + 4];
