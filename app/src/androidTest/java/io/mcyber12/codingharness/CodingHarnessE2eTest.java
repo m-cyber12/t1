@@ -98,38 +98,6 @@ public class CodingHarnessE2eTest {
         io.mcyber12.codingharness.core.HarnessBootstrap.ensureCertificates(context, config);
         io.mcyber12.codingharness.core.HarnessBootstrap.ensureKeyring(context, config);
         report("a01 bootstrap + cert + keyring installed");
-        // dpkg refuses to run unless sh/rm/tar/diff/dpkg-deb/start-stop-daemon
-        // are executable via PATH; probe exactly what dpkg would find so a
-        // failure names the broken entry instead of guessing afterwards.
-        try {
-            StringBuilder probe = new StringBuilder("a01 bin probe:");
-            for (String name : new String[] {"sh", "rm", "tar", "diff", "dpkg-deb",
-                    "start-stop-daemon", "bash", "coreutils", "apt-get", "dpkg"}) {
-                File entry = new File(config.prefix, "bin/" + name);
-                probe.append(' ').append(name).append('=');
-                try {
-                    if (Files.isSymbolicLink(entry.toPath())) {
-                        probe.append("link->").append(Files.readSymbolicLink(entry.toPath()));
-                    }
-                } catch (Exception ignored) { }
-                probe.append("[exists=").append(entry.exists())
-                    .append(",exec=").append(entry.canExecute())
-                    .append(",len=").append(entry.length()).append(']');
-            }
-            report(probe.toString());
-            HarnessCommandRunner probeRunner = new HarnessCommandRunner(config);
-            HarnessCommandRunner.CommandResult pathProbe = probeRunner.run(
-                Arrays.asList("bash", "-c",
-                    "echo PATH=$PATH; command -v sh rm tar diff dpkg-deb start-stop-daemon; "
-                        + "ls -la $PREFIX/bin/sh $PREFIX/bin/rm $PREFIX/bin/tar "
-                        + "$PREFIX/bin/dpkg-deb $PREFIX/bin/start-stop-daemon 2>&1 | head -8"),
-                60_000L);
-            report("a01 PATH probe exit=" + pathProbe.exitCode + " : "
-                + oneLine(pathProbe.output));
-        } catch (Exception probeFailure) {
-            report("a01 bin probe FAILED: " + probeFailure);
-        }
-
         // Network probes first: distinguish emulator DNS problems (CI-only)
         // from harness problems. Java-side resolution, then the Termux curl
         // binary through the same environment apt will use.
@@ -186,44 +154,6 @@ public class CodingHarnessE2eTest {
         report("a01 jq --version exit=" + jq.exitCode + " : " + oneLine(jq.output));
         assertTrue("jq did not execute: " + jq.output, jq.isSuccess());
         report("A01 SUCCESS");
-        // Interception probe: is libharness-exec actually preloaded, and
-        // does an official-prefix shebang script execute through it?
-        try {
-            HarnessCommandRunner runner2 = new HarnessCommandRunner(config);
-            HarnessCommandRunner.CommandResult preload = runner2.run(
-                Arrays.asList("bash", "-c",
-                    "echo LD_PRELOAD=$LD_PRELOAD; "
-                        + "grep -E 'harness-exec|termux-exec' /proc/self/maps | head -3; "
-                        + "ls $PREFIX/lib/libtermux-exec* $PREFIX/lib/libharness-exec* 2>&1; "
-                        + "printf '#!/data/data/com.termux/files/usr/bin/sh\\necho SCRIPT-RAN-OK\\n' > $PREFIX/tmp/t.sh; "
-                        + "chmod 755 $PREFIX/tmp/t.sh; $PREFIX/tmp/t.sh; echo SCRIPT_EXIT=$?"),
-                60_000L);
-            report("a01 preload probe: " + preload.output);
-        } catch (Exception probeFailure) {
-            report("a01 preload probe FAILED: " + probeFailure);
-        }
-        // Maintainer-script probe: nodejs 26.4.0-1's preinst exits 2 under
-        // dpkg and blocks the whole a02 toolchain install. Reproduce it
-        // faithfully (same env, same shebang interception dpkg relies on)
-        // and capture what the script actually is and says.
-        try {
-            HarnessCommandRunner probe = new HarnessCommandRunner(config);
-            probe.run(Arrays.asList("apt-get", "install", "-y", "--download-only", "nodejs"),
-                10 * 60_000L);
-            HarnessCommandRunner.CommandResult preinst = probe.run(
-                Arrays.asList("bash", "-c",
-                    "deb=$(ls $PREFIX/var/cache/apt/archives/nodejs_*.deb | head -1); "
-                        + "echo DEB=$deb; rm -rf $PREFIX/tmp/njctrl; mkdir -p $PREFIX/tmp/njctrl; "
-                        + "dpkg-deb -e \"$deb\" $PREFIX/tmp/njctrl && echo CONTROL-EXTRACTED; "
-                        + "ls -la $PREFIX/tmp/njctrl; echo ---preinst---; cat $PREFIX/tmp/njctrl/preinst; "
-                        + "chmod 755 $PREFIX/tmp/njctrl/preinst; "
-                        + "echo ---run---; cd $PREFIX/tmp/njctrl && ./preinst install; echo PREINST_EXIT=$?"),
-                120_000L);
-            report("a01 nodejs preinst probe exit=" + preinst.exitCode + " : "
-                + preinst.output);
-        } catch (Exception probeFailure) {
-            report("a01 nodejs preinst probe FAILED: " + probeFailure);
-        }
     }
 
     private int countPackageLists(HarnessConfig config) {
