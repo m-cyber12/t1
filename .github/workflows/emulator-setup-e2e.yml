@@ -13,6 +13,8 @@ on:
     paths:
       - "app/**"
       - "harness-core/**"
+      - "terminal-emulator/**"
+      - "terminal-view/**"
       - "scripts/**"
       - ".github/workflows/emulator-setup-e2e.yml"
 
