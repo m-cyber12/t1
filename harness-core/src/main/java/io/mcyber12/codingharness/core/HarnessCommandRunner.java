@@ -17,6 +17,89 @@ public final class HarnessCommandRunner {
         this.config = config;
     }
 
+    /**
+     * Many Termux tools are interpreter scripts (npm -> npm-cli.js, pip,
+     * gem, ...). Inside a shell their official-prefix shebang
+     * (#!/data/data/com.termux/files/usr/bin/...) is rewritten by the
+     * libharness-exec preload, but the JVM's ProcessBuilder exec is not
+     * covered by that preload and the kernel rejects the missing
+     * interpreter with ENOENT ("error=2"). Mirror the preload here: when
+     * the resolved executable is a script, exec its translated
+     * interpreter with the script path as the first argument, exactly
+     * like the kernel would have after relocation.
+     */
+    private List<String> resolveInterpreterIfScript(List<String> resolvedCommand) {
+        List<String> command = resolvedCommand;
+        for (int depth = 0; depth < 4; depth++) {
+            File executable = new File(command.get(0));
+            String shebang = readShebang(executable);
+            if (shebang == null) return command;
+            String[] parts = shebang.trim().split("\\s+", 2);
+            if (parts.length == 0 || parts[0].isEmpty()) return command;
+            String interpreter = translateInterpreter(parts[0]);
+            List<String> next = new ArrayList<>();
+            next.add(interpreter);
+            if (parts.length > 1 && !parts[1].trim().isEmpty()) next.add(parts[1].trim());
+            next.add(executable.getAbsolutePath());
+            next.addAll(command.subList(1, command.size()));
+            command = next;
+        }
+        return command;
+    }
+
+    private static String readShebang(File file) {
+        try {
+            if (!file.isFile()) return null;
+            byte[] head = new byte[256];
+            int length;
+            try (java.io.FileInputStream input = new java.io.FileInputStream(file)) {
+                length = input.read(head);
+            }
+            if (length < 3 || head[0] != '#' || head[1] != '!') return null;
+            int end = 2;
+            while (end < length && head[end] != '\n' && head[end] != '\r') end++;
+            return new String(head, 2, end - 2, StandardCharsets.UTF_8);
+        } catch (IOException ignored) {
+            return null;
+        }
+    }
+
+    /** Translate an interpreter path out of the official Termux layout. */
+    private String translateInterpreter(String interpreter) {
+        String prefix = config.prefix.getAbsolutePath();
+        String[] officialPrefixes = {
+            "/data/data/com.termux/files/usr",
+            "/data/user/0/com.termux/files/usr"
+        };
+        for (String official : officialPrefixes) {
+            if (interpreter.equals(official)) return prefix;
+            if (interpreter.startsWith(official + "/")) {
+                return prefix + interpreter.substring(official.length());
+            }
+        }
+        String[] officialFiles = {
+            "/data/data/com.termux/files",
+            "/data/user/0/com.termux/files"
+        };
+        File filesDirectory = config.prefix.getParentFile();
+        if (filesDirectory != null) {
+            for (String official : officialFiles) {
+                if (interpreter.startsWith(official + "/")) {
+                    return new File(filesDirectory,
+                        interpreter.substring(official.length() + 1)).getAbsolutePath();
+                }
+            }
+        }
+        // Android has no /usr/bin or /bin; the harness prefix provides env/sh.
+        if (interpreter.equals("/usr/bin/env") || interpreter.equals("/bin/env")) {
+            return new File(config.toolDirectory, "env").getAbsolutePath();
+        }
+        if (interpreter.equals("/bin/sh")) {
+            return new File(config.toolDirectory, "sh").getAbsolutePath();
+        }
+        return interpreter;
+    }
+
     public CommandResult run(List<String> command, long timeoutMillis) throws IOException, InterruptedException {
         if (command == null || command.isEmpty()) throw new IllegalArgumentException("command is empty");
         if (timeoutMillis <= 0) throw new IllegalArgumentException("timeoutMillis must be positive");
@@ -29,6 +112,7 @@ public final class HarnessCommandRunner {
                 resolvedCommand.set(0, bundledExecutable.getAbsolutePath());
             }
         }
+        resolvedCommand = resolveInterpreterIfScript(resolvedCommand);
 
         HarnessEnvironment.prepare(config);
         ProcessBuilder builder = new ProcessBuilder(resolvedCommand);
