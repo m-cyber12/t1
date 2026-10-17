@@ -77,6 +77,25 @@ public final class HarnessPackageInstaller {
                     + probe + ": " + tail(update.output, 160);
             }
 
+            // Bring the bootstrap-era base system to the repository state
+            // BEFORE installing on top of it. The bootstrap is a snapshot,
+            // but the package index is rolling: new packages are built
+            // against the CURRENT shared libraries (e.g. cmake 4.x needs a
+            // newer libc++_shared than the bundled one exports:
+            // __hash_memory), and most Depends: are unversioned, so apt
+            // would happily leave the stale runtime in place and produce
+            // binaries that cannot link. This mirrors Termux's own
+            // post-bootstrap guidance ("pkg upgrade"), and marking it
+            // distinctly keeps upgrade failures diagnosable.
+            HarnessCommandRunner.CommandResult upgrade = runner.run(
+                Arrays.asList("apt-get", "-y", "upgrade"), 45 * 60_000L);
+            if (!upgrade.isSuccess()) {
+                return new InstallResult(false,
+                    "base system upgrade failed (update " + updateSummary + "): "
+                        + compact(upgrade.output));
+            }
+            String upgradeSummary = tail(upgrade.output, 120);
+
             List<String> installCommand = new ArrayList<>();
             installCommand.add("apt-get");
             installCommand.add("-y");
@@ -92,7 +111,8 @@ public final class HarnessPackageInstaller {
                 return new InstallResult(false, "package command succeeded but a required executable is missing");
             }
             writeMarker(config);
-            return new InstallResult(true, "Python, Node/npm, Perl, Ruby and coding tools are ready");
+            return new InstallResult(true, "base upgraded (" + upgradeSummary
+                + "); Python, Node/npm, Perl, Ruby and coding tools are ready");
         } catch (IOException e) {
             return new InstallResult(false, "package setup I/O failed: " + e.getMessage());
         } catch (InterruptedException e) {
