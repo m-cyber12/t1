@@ -87,6 +87,19 @@ public final class HarnessPackageInstaller {
             // binaries that cannot link. This mirrors Termux's own
             // post-bootstrap guidance ("pkg upgrade"), and marking it
             // distinctly keeps upgrade failures diagnosable.
+            // A previous attempt may have died mid-transaction (e.g. the
+            // device-only symlink EACCES fixed in 0.30.0), leaving packages
+            // unpacked-but-unconfigured; dpkg then refuses further work
+            // until they are configured. Configure pending packages first —
+            // a quick no-op on a clean system. Same dpkg force options the
+            // apt config carries, passed explicitly for this direct call.
+            try {
+                runner.run(Arrays.asList("dpkg", "--force-script-chrootless",
+                    "--force-confold", "--configure", "-a"), 30 * 60_000L);
+            } catch (Exception ignored) {
+                // Best effort only; the upgrade below surfaces real errors.
+            }
+
             HarnessCommandRunner.CommandResult upgrade = runner.run(
                 Arrays.asList("apt-get", "-y", "upgrade"), 45 * 60_000L);
             if (!upgrade.isSuccess()) {

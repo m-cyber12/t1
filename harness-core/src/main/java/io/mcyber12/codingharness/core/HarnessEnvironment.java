@@ -29,6 +29,15 @@ public final class HarnessEnvironment {
      * management must be pointed at this app's private prefix explicitly.
      */
     public static void prepare(HarnessConfig config) throws IOException {
+        // Repair absolute symlinks that point into the official Termux data
+        // directory (bootstrap SYMLINKS.txt, and links laid down by package
+        // upgrades since the last run) BEFORE anything dereferences them:
+        // the kernel follows symlink targets itself, so no path-translation
+        // layer can save dpkg's stat() of such a link on a real device,
+        // where the other app's directory answers EACCES instead of ENOENT.
+        // prepare() runs ahead of every command, so each installer phase
+        // starts from a healed tree.
+        HarnessBootstrap.relocateOfficialPrefixSymlinks(config);
         File aptDirectory = new File(config.prefix, "etc/apt");
         if (!aptDirectory.isDirectory() && !aptDirectory.mkdirs() && !aptDirectory.isDirectory()) {
             throw new IOException("Unable to create apt configuration directory: " + aptDirectory);

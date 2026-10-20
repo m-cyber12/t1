@@ -181,7 +181,14 @@ done
 {
   echo "--- foreign-app dpkg config boundary ---"
   "$ADB" shell mkdir -p /data/data/com.termux/files/usr/etc/dpkg/dpkg.cfg.d 2>&1
-  "$ADB" shell chmod 000 /data/data/com.termux/files/usr/etc/dpkg/dpkg.cfg.d 2>&1
+  # Also mirror the keyring tree: the bootstrap's share/pacman/keyrings
+  # symlinks point at /data/data/com.termux/files/usr/share/termux-keyring,
+  # and dpkg dereferences them while upgrading termux-keyring. On a real
+  # phone that whole tree answers EACCES (not ENOENT); recreate that here
+  # so an unrepaired absolute symlink anywhere in the prefix fails loudly.
+  "$ADB" shell mkdir -p /data/data/com.termux/files/usr/share/termux-keyring 2>&1
+  "$ADB" shell 'echo foreign > /data/data/com.termux/files/usr/share/termux-keyring/2096779623.gpg' 2>&1
+  "$ADB" shell chmod -R 000 /data/data/com.termux/files 2>&1
   "$ADB" shell ls -ld /data/data/com.termux/files/usr/etc/dpkg/dpkg.cfg.d 2>&1
 } >> e2e-logs/network.log 2>&1
 publish

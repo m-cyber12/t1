@@ -108,6 +108,48 @@ public class HarnessEnvironmentTest {
     }
 
     @Test
+    public void relocateSymlinksRewritesOfficialPrefixTargets() throws Exception {
+        // Reproduces the real-device termux-keyring upgrade failure: the
+        // bootstrap ships share/pacman/keyrings/*.gpg as an ABSOLUTE symlink
+        // into /data/data/com.termux/...; dpkg's stat (dereference) of that
+        // link while unpacking gets EACCES on a stock phone and aborts.
+        File base = new File("/tmp/harness-test-relocate");
+        File prefix = new File(base, "rootfs/data/data/com.termux/files/usr");
+        File keyringDir = new File(prefix, "share/pacman/keyrings");
+        keyringDir.mkdirs();
+        File realKey = new File(prefix, "share/termux-keyring/2096779623.gpg");
+        realKey.getParentFile().mkdirs();
+        java.nio.file.Files.write(realKey.toPath(), new byte[] {1, 2, 3});
+        File link = new File(keyringDir, "2096779623.gpg");
+        java.nio.file.Files.deleteIfExists(link.toPath());
+        java.nio.file.Files.createSymbolicLink(link.toPath(),
+            new File("/data/data/com.termux/files/usr/share/termux-keyring/2096779623.gpg").toPath());
+        // A relative link and a non-Termux absolute link must be untouched.
+        File relativeLink = new File(keyringDir, "relative.gpg");
+        java.nio.file.Files.deleteIfExists(relativeLink.toPath());
+        java.nio.file.Files.createSymbolicLink(relativeLink.toPath(),
+            new File("../../termux-keyring/2096779623.gpg").toPath());
+        File systemLink = new File(keyringDir, "system.gpg");
+        java.nio.file.Files.deleteIfExists(systemLink.toPath());
+        java.nio.file.Files.createSymbolicLink(systemLink.toPath(),
+            new File("/system/etc/security/cacerts").toPath());
+
+        int rewritten = HarnessBootstrap.relocateSymlinks(
+            prefix, "/data/data/com.termux", new File(base, "rootfs/data/data/com.termux"));
+
+        assertEquals(1, rewritten);
+        String relocated = java.nio.file.Files.readSymbolicLink(link.toPath()).toString();
+        assertTrue(relocated.endsWith(
+            "rootfs/data/data/com.termux/files/usr/share/termux-keyring/2096779623.gpg"));
+        // And the relocated link now actually resolves to the key file.
+        assertTrue(link.isFile() && link.length() == 3);
+        assertTrue(java.nio.file.Files.readSymbolicLink(relativeLink.toPath())
+            .toString().contains(".."));
+        assertEquals("/system/etc/security/cacerts",
+            java.nio.file.Files.readSymbolicLink(systemLink.toPath()).toString());
+    }
+
+    @Test
     public void extractsHarnessExecLibraryForPreload() throws Exception {
         File directory = new File("/tmp/harness-lib-test");
         File apk = new File(directory, "fake.apk");

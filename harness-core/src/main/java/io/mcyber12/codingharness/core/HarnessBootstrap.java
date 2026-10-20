@@ -131,7 +131,73 @@ public final class HarnessBootstrap {
         try (FileOutputStream output = new FileOutputStream(marker)) {
             output.write(BOOTSTRAP_VERSION.getBytes(StandardCharsets.UTF_8));
         }
+        relocateOfficialPrefixSymlinks(config);
         ensureHarnessExecLibrary(context, config);
+    }
+
+    /** Official Termux data directory every bootstrap/.deb path is built for. */
+    private static final String OFFICIAL_DATA_DIR = "/data/data/com.termux";
+
+    /**
+     * Rewrites symlinks inside the prefix whose targets are absolute paths
+     * into the official Termux data directory so they point at the mirrored
+     * location inside this harness instead.
+     *
+     * <p>Bootstrap SYMLINKS.txt entries and Termux .debs contain absolute
+     * symlinks such as share/pacman/keyrings/*.gpg -&gt;
+     * /data/data/com.termux/files/usr/share/termux-keyring/*.gpg. Path
+     * translation in the preload library cannot help: the KERNEL follows a
+     * symlink's target, so when dpkg stats (dereferences) an existing link
+     * while unpacking an upgrade, a stock phone answers EACCES for the other
+     * app's private directory and dpkg aborts ("failed to stat (dereference)
+     * existing symlink ... Permission denied" — seen upgrading
+     * termux-keyring). Emulator filesystems return ENOENT for the missing
+     * target, which dpkg tolerates, so this only bites on real devices.
+     * Relocating the targets keeps the links working with official-Termux
+     * semantics. Best effort: never throws, returns the number of links
+     * rewritten.</p>
+     */
+    public static int relocateOfficialPrefixSymlinks(HarnessConfig config) {
+        try {
+            File mirror = new File(HarnessEnvironment.dpkgRoot(config),
+                "data/data/com.termux");
+            return relocateSymlinks(config.prefix, OFFICIAL_DATA_DIR, mirror);
+        } catch (Exception ignored) {
+            return 0;
+        }
+    }
+
+    /** Pure path-rewriting step (unit-testable without a Context). */
+    static int relocateSymlinks(File tree, String officialRoot, File relocatedRoot) {
+        int rewritten = 0;
+        List<File> pending = new ArrayList<>();
+        pending.add(tree);
+        while (!pending.isEmpty()) {
+            File current = pending.remove(pending.size() - 1);
+            if (Files.isSymbolicLink(current.toPath())) {
+                try {
+                    java.nio.file.Path target = Files.readSymbolicLink(current.toPath());
+                    String text = target.toString();
+                    if (text.equals(officialRoot) || text.startsWith(officialRoot + "/")) {
+                        String suffix = text.substring(officialRoot.length());
+                        while (suffix.startsWith("/")) suffix = suffix.substring(1);
+                        File relocated = suffix.isEmpty()
+                            ? relocatedRoot : new File(relocatedRoot, suffix);
+                        Files.delete(current.toPath());
+                        Files.createSymbolicLink(current.toPath(), relocated.toPath());
+                        rewritten++;
+                    }
+                } catch (Exception ignored) {
+                    // A single unreadable link must not block the repair pass.
+                }
+                continue; // Never descend through a symlink.
+            }
+            File[] children = current.listFiles();
+            if (children != null) {
+                for (File child : children) pending.add(child);
+            }
+        }
+        return rewritten;
     }
 
     /**
