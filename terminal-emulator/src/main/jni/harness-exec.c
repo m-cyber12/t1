@@ -1,5 +1,6 @@
 #define _GNU_SOURCE
 
+#include <dirent.h>
 #include <dlfcn.h>
 #include <errno.h>
 #include <fcntl.h>
@@ -160,6 +161,83 @@ static int execute_with_translated_shebang(
 
 int execve(const char *path, char *const argv[], char *const envp[]) {
     return execute_with_translated_shebang(path, (char *const *) argv, (char *const *) envp);
+}
+
+/*
+ * dpkg additionally reads its own configuration from a compile-time
+ * CONFIGDIR (the official prefix's etc/dpkg). dpkg tolerates that
+ * directory being absent (ENOENT) but treats any other error as fatal.
+ * In the official app the path is dpkg's own data; here it points into
+ * another app's private directory (or a nonexistent one behind an
+ * SELinux boundary), so a stock phone answers EACCES, not ENOENT, and
+ * every dpkg run dies with "error opening configuration directory ...
+ * Permission denied". Translate official-prefix paths for the open
+ * family dpkg (and friends) use, exactly as for exec: the relocated
+ * etc/dpkg/dpkg.cfg.d does not exist, scandir yields ENOENT, and dpkg
+ * proceeds - and if the relocated dpkg package ships config there, it
+ * is found, matching official semantics.
+ */
+typedef int (*scandir_function)(const char *, struct dirent ***,
+    int (*)(const struct dirent *),
+    int (*)(const struct dirent **, const struct dirent **));
+typedef int (*scandir64_function)(const char *, struct dirent64 ***,
+    int (*)(const struct dirent64 *),
+    int (*)(const struct dirent64 **, const struct dirent64 **));
+typedef DIR *(*opendir_function)(const char *);
+typedef FILE *(*fopen_function)(const char *, const char *);
+
+int scandir(const char *dirp, struct dirent ***namelist,
+    int (*filter)(const struct dirent *),
+    int (*compar)(const struct dirent **, const struct dirent **)) {
+    static scandir_function function;
+    if (function == NULL) function = (scandir_function) dlsym(RTLD_NEXT, "scandir");
+    if (function == NULL) { errno = ENOSYS; return -1; }
+    char translated[PATH_MAX];
+    const char *path = translate_path(dirp, translated, sizeof(translated));
+    if (path == NULL) return -1;
+    return function(path, namelist, filter, compar);
+}
+
+int scandir64(const char *dirp, struct dirent64 ***namelist,
+    int (*filter)(const struct dirent64 *),
+    int (*compar)(const struct dirent64 **, const struct dirent64 **)) {
+    static scandir64_function function;
+    if (function == NULL) function = (scandir64_function) dlsym(RTLD_NEXT, "scandir64");
+    if (function == NULL) { errno = ENOSYS; return -1; }
+    char translated[PATH_MAX];
+    const char *path = translate_path(dirp, translated, sizeof(translated));
+    if (path == NULL) return -1;
+    return function(path, namelist, filter, compar);
+}
+
+DIR *opendir(const char *name) {
+    static opendir_function function;
+    if (function == NULL) function = (opendir_function) dlsym(RTLD_NEXT, "opendir");
+    if (function == NULL) { errno = ENOSYS; return NULL; }
+    char translated[PATH_MAX];
+    const char *path = translate_path(name, translated, sizeof(translated));
+    if (path == NULL) return NULL;
+    return function(path);
+}
+
+FILE *fopen(const char *pathname, const char *mode) {
+    static fopen_function function;
+    if (function == NULL) function = (fopen_function) dlsym(RTLD_NEXT, "fopen");
+    if (function == NULL) { errno = ENOSYS; return NULL; }
+    char translated[PATH_MAX];
+    const char *path = translate_path(pathname, translated, sizeof(translated));
+    if (path == NULL) return NULL;
+    return function(path, mode);
+}
+
+FILE *fopen64(const char *pathname, const char *mode) {
+    static fopen_function function;
+    if (function == NULL) function = (fopen_function) dlsym(RTLD_NEXT, "fopen64");
+    if (function == NULL) { errno = ENOSYS; return NULL; }
+    char translated[PATH_MAX];
+    const char *path = translate_path(pathname, translated, sizeof(translated));
+    if (path == NULL) return NULL;
+    return function(path, mode);
 }
 
 int execv(const char *path, char *const argv[]) {

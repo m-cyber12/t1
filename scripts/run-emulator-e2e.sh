@@ -171,6 +171,19 @@ done
   echo "--- wifi status ---"; "$ADB" shell cmd wifi status 2>&1 | head -20
 } >> e2e-logs/network.log 2>&1
 "$ADB" shell ping -c 1 -W 5 packages-cf.termux.dev >> e2e-logs/network.log 2>&1 || true
+
+# Regression fixture for the real-device dpkg failure: on a stock phone,
+# another app's /data/data/<pkg> answers EACCES (SELinux/DAC), and stock
+# dpkg dies on it because its compile-time CONFIGDIR lives in the official
+# Termux data directory. Recreate that boundary here: a root-owned,
+# unreadable official-prefix config dir must NOT be able to break the
+# harness's dpkg (libharness-exec translates the scan to our prefix).
+{
+  echo "--- foreign-app dpkg config boundary ---"
+  "$ADB" shell mkdir -p /data/data/com.termux/files/usr/etc/dpkg/dpkg.cfg.d 2>&1
+  "$ADB" shell chmod 000 /data/data/com.termux/files/usr/etc/dpkg/dpkg.cfg.d 2>&1
+  "$ADB" shell ls -ld /data/data/com.termux/files/usr/etc/dpkg/dpkg.cfg.d 2>&1
+} >> e2e-logs/network.log 2>&1
 publish
 
 phase "connected-test"
