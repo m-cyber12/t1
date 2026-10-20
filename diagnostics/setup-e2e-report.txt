@@ -1,0 +1,213 @@
+[1792516245474] a01 start; prefix=/data/user/0/io.mcyber12.codingharness/files/coding-harness/rootfs/data/data/com.termux/files/usr
+[1792516821575] a01 bootstrap + cert + keyring installed
+[1792516823187] a01 java DNS: 104.21.44.149 172.67.200.228 2606:4700:3030::ac43:c8e4 2606:4700:3037::6815:2c95
+[1792516865126] a01 termux curl probe exit=0 http=200
+[1792516936017] a01 apt-get update exit=0 : Get:1 https://packages-cf.termux.dev/apt/termux-main stable InRelease [14.0 kB] Get:2 https://packages-cf.termux.dev/apt/termux-main stable/main x86_64 Packages [586 kB] Fetched 600 kB in 27s (22.5 kB/s) Reading package lists...
+[1792516936071] a01 package lists=1
+[1792517002895] a01 apt-get install jq exit=0 : Reading package lists... Building dependency tree... The following additional packages will be installed:   oniguruma The following NEW packages will be installed:   jq oniguruma 0 upgraded, 2 newly installed, 0 to remove and 55 not upgraded. Need to get 342 kB of archives. After this operation, 126
+[1792517043825] a01 jq --version exit=0 : jq-1.8.2
+[1792517043839] A01 SUCCESS
+[1792517044543] a02 start; prefix=/data/user/0/io.mcyber12.codingharness/files/coding-harness/rootfs/data/data/com.termux/files/usr
+[1792517045779] MainActivity launched; waiting for automatic setup
+[1792517046017] waiting… ready=bash=Y git=n rg=n python=n node=n npm=n perl=n ruby=n curl=Y
+[1792517061150] waiting… ready=bash=Y git=n rg=n python=n node=n npm=n perl=n ruby=n curl=Y
+[1792517076387] waiting… ready=bash=Y git=n rg=n python=n node=n npm=n perl=n ruby=n curl=Y
+[1792517091530] waiting… ready=bash=Y git=n rg=n python=n node=n npm=n perl=n ruby=n curl=Y
+[1792517106683] waiting… ready=bash=Y git=n rg=n python=n node=n npm=n perl=n ruby=n curl=Y
+[1792517121804] waiting… ready=bash=Y git=n rg=n python=n node=n npm=n perl=n ruby=n curl=Y
+[1792517136942] waiting… ready=bash=Y git=n rg=n python=n node=n npm=n perl=n ruby=n curl=Y
+[1792517152088] waiting… ready=bash=Y git=n rg=n python=n node=n npm=n perl=n ruby=n curl=Y
+[1792517167186] waiting… ready=bash=Y git=n rg=n python=n node=n npm=n perl=n ruby=n curl=Y
+[1792517182261] waiting… ready=bash=Y git=n rg=n python=n node=n npm=n perl=n ruby=n curl=Y
+[1792517197319] waiting… ready=bash=Y git=n rg=n python=n node=n npm=n perl=n ruby=n curl=Y
+[1792517212362] waiting… ready=bash=Y git=n rg=n python=n node=n npm=n perl=n ruby=n curl=Y
+[1792517227433] waiting… ready=bash=Y git=n rg=n python=n node=n npm=n perl=n ruby=n curl=Y
+[1792517242634] waiting… ready=bash=Y git=n rg=n python=n node=n npm=n perl=n ruby=n curl=Y
+[1792517257835] waiting… ready=bash=Y git=n rg=n python=n node=n npm=n perl=n ruby=n curl=Y
+[1792517272910] waiting… ready=bash=Y git=n rg=n python=n node=n npm=n perl=n ruby=n curl=Y
+[1792517288053] waiting… ready=bash=Y git=n rg=n python=n node=n npm=n perl=n ruby=n curl=Y
+[1792517303185] waiting… ready=bash=Y git=n rg=n python=n node=n npm=n perl=n ruby=n curl=Y
+[1792517318264] waiting… ready=bash=Y git=n rg=n python=n node=n npm=n perl=n ruby=n curl=Y
+[1792517333352] waiting… ready=bash=Y git=n rg=n python=n node=n npm=n perl=n ruby=n curl=Y
+[1792517348549] waiting… ready=bash=Y git=n rg=n python=n node=n npm=n perl=n ruby=n curl=Y
+[1792517363714] waiting… ready=bash=Y git=n rg=n python=n node=n npm=n perl=n ruby=n curl=Y
+[1792517378785] waiting… ready=bash=Y git=n rg=n python=n node=n npm=n perl=n ruby=n curl=Y
+[1792517393871] waiting… ready=bash=Y git=n rg=n python=n node=n npm=n perl=n ruby=n curl=Y
+[1792517409011] waiting… ready=bash=Y git=n rg=n python=n node=n npm=n perl=n ruby=n curl=Y
+[1792517424090] waiting… ready=bash=Y git=n rg=n python=n node=n npm=n perl=n ruby=n curl=Y
+[1792517439227] waiting… ready=bash=Y git=n rg=n python=n node=n npm=n perl=n ruby=n curl=Y
+[1792517454290] waiting… ready=bash=Y git=n rg=n python=n node=n npm=n perl=n ruby=n curl=Y
+[1792517469546] waiting… ready=bash=Y git=n rg=n python=n node=n npm=n perl=n ruby=n curl=Y
+[1792517484732] waiting… ready=bash=Y git=n rg=n python=n node=n npm=n perl=n ruby=n curl=Y
+[1792517499923] waiting… ready=bash=Y git=n rg=n python=n node=n npm=n perl=n ruby=n curl=Y
+[1792517515121] waiting… ready=bash=Y git=n rg=n python=n node=n npm=n perl=n ruby=n curl=Y
+[1792517530233] waiting… ready=bash=Y git=n rg=n python=n node=n npm=n perl=n ruby=n curl=Y
+[1792517545353] waiting… ready=bash=Y git=n rg=n python=n node=n npm=n perl=n ruby=n curl=Y
+[1792517560517] waiting… ready=bash=Y git=n rg=n python=n node=n npm=n perl=n ruby=n curl=Y
+[1792517575638] waiting… ready=bash=Y git=n rg=n python=n node=n npm=n perl=n ruby=n curl=Y
+[1792517590743] waiting… ready=bash=Y git=n rg=n python=n node=n npm=n perl=n ruby=n curl=Y
+[1792517605851] waiting… ready=bash=Y git=n rg=n python=n node=n npm=n perl=n ruby=n curl=Y
+[1792517620929] waiting… ready=bash=Y git=n rg=n python=n node=n npm=n perl=n ruby=n curl=Y
+[1792517636034] waiting… ready=bash=Y git=n rg=n python=n node=n npm=n perl=n ruby=n curl=Y
+[1792517651154] waiting… ready=bash=Y git=n rg=n python=n node=n npm=n perl=n ruby=n curl=Y
+[1792517666394] waiting… ready=bash=Y git=n rg=n python=n node=n npm=n perl=n ruby=n curl=Y
+[1792517681586] waiting… ready=bash=Y git=n rg=n python=n node=n npm=n perl=n ruby=n curl=Y
+[1792517696706] waiting… ready=bash=Y git=n rg=n python=n node=n npm=n perl=n ruby=n curl=Y
+[1792517711832] waiting… ready=bash=Y git=n rg=n python=n node=n npm=n perl=n ruby=n curl=Y
+[1792517726912] waiting… ready=bash=Y git=n rg=n python=n node=n npm=n perl=n ruby=n curl=Y
+[1792517742041] waiting… ready=bash=Y git=n rg=n python=n node=n npm=n perl=n ruby=n curl=Y
+[1792517757162] waiting… ready=bash=Y git=n rg=n python=n node=n npm=n perl=n ruby=n curl=Y
+[1792517772318] waiting… ready=bash=Y git=n rg=n python=n node=n npm=n perl=n ruby=n curl=Y
+[1792517787515] waiting… ready=bash=Y git=n rg=n python=n node=n npm=n perl=n ruby=n curl=Y
+[1792517802567] waiting… ready=bash=Y git=n rg=n python=n node=n npm=n perl=n ruby=n curl=Y
+[1792517817693] waiting… ready=bash=Y git=n rg=n python=n node=n npm=n perl=n ruby=n curl=Y
+[1792517832839] waiting… ready=bash=Y git=n rg=n python=n node=n npm=n perl=n ruby=n curl=Y
+[1792517847942] waiting… ready=bash=Y git=n rg=n python=n node=n npm=n perl=n ruby=n curl=Y
+[1792517863101] waiting… ready=bash=Y git=n rg=n python=n node=n npm=n perl=n ruby=n curl=Y
+[1792517878287] waiting… ready=bash=Y git=n rg=n python=n node=n npm=n perl=n ruby=n curl=Y
+[1792517893577] waiting… ready=bash=Y git=n rg=n python=n node=n npm=n perl=n ruby=n curl=Y
+[1792517908771] waiting… ready=bash=Y git=n rg=n python=n node=n npm=n perl=n ruby=n curl=Y
+[1792517923889] waiting… ready=bash=Y git=n rg=n python=n node=n npm=n perl=n ruby=n curl=Y
+[1792517939049] waiting… ready=bash=Y git=n rg=n python=n node=n npm=n perl=n ruby=n curl=Y
+[1792517954139] waiting… ready=bash=Y git=n rg=n python=n node=n npm=n perl=n ruby=n curl=Y
+[1792517969355] waiting… ready=bash=Y git=n rg=n python=n node=n npm=n perl=n ruby=n curl=Y
+[1792517984505] waiting… ready=bash=Y git=n rg=n python=n node=n npm=n perl=n ruby=n curl=Y
+[1792517999714] waiting… ready=bash=Y git=n rg=n python=n node=n npm=n perl=n ruby=n curl=Y
+[1792518014791] waiting… ready=bash=Y git=n rg=n python=n node=n npm=n perl=n ruby=n curl=Y
+[1792518029907] waiting… ready=bash=Y git=n rg=n python=n node=n npm=n perl=n ruby=n curl=Y
+[1792518045092] waiting… ready=bash=Y git=n rg=n python=n node=n npm=n perl=n ruby=n curl=Y
+[1792518060167] waiting… ready=bash=Y git=n rg=n python=n node=n npm=n perl=n ruby=n curl=Y
+[1792518075349] waiting… ready=bash=Y git=n rg=n python=n node=n npm=n perl=n ruby=n curl=Y
+[1792518090477] waiting… ready=bash=Y git=n rg=n python=n node=n npm=n perl=n ruby=n curl=Y
+[1792518105611] waiting… ready=bash=Y git=n rg=n python=n node=n npm=n perl=n ruby=n curl=Y
+[1792518120801] waiting… ready=bash=Y git=n rg=n python=n node=n npm=n perl=n ruby=n curl=Y
+[1792518135987] waiting… ready=bash=Y git=n rg=n python=n node=n npm=n perl=n ruby=n curl=Y
+[1792518151070] waiting… ready=bash=Y git=n rg=n python=n node=n npm=n perl=n ruby=n curl=Y
+[1792518166753] waiting… ready=bash=Y git=n rg=n python=n node=n npm=n perl=n ruby=n curl=Y
+[1792518181895] waiting… ready=bash=Y git=n rg=n python=n node=n npm=n perl=n ruby=n curl=Y
+[1792518197079] waiting… ready=bash=Y git=n rg=n python=n node=n npm=n perl=n ruby=n curl=Y
+[1792518212265] waiting… ready=bash=Y git=n rg=n python=n node=n npm=n perl=n ruby=n curl=Y
+[1792518227483] waiting… ready=bash=Y git=n rg=n python=n node=n npm=n perl=n ruby=n curl=Y
+[1792518242663] waiting… ready=bash=Y git=n rg=n python=n node=n npm=n perl=n ruby=n curl=Y
+[1792518257841] waiting… ready=bash=Y git=n rg=n python=n node=n npm=n perl=n ruby=n curl=Y
+[1792518272969] waiting… ready=bash=Y git=n rg=n python=n node=n npm=n perl=n ruby=n curl=Y
+[1792518288119] waiting… ready=bash=Y git=n rg=n python=n node=n npm=n perl=n ruby=n curl=Y
+[1792518303355] waiting… ready=bash=Y git=n rg=n python=n node=n npm=n perl=n ruby=n curl=Y
+[1792518318530] waiting… ready=bash=Y git=n rg=n python=n node=n npm=n perl=n ruby=n curl=Y
+[1792518333687] waiting… ready=bash=Y git=n rg=n python=n node=n npm=n perl=n ruby=n curl=Y
+[1792518348782] waiting… ready=bash=Y git=n rg=n python=n node=n npm=n perl=n ruby=n curl=Y
+[1792518364074] waiting… ready=bash=Y git=n rg=n python=n node=n npm=n perl=n ruby=n curl=Y
+[1792518379201] waiting… ready=bash=Y git=n rg=n python=n node=n npm=n perl=n ruby=n curl=Y
+[1792518394387] waiting… ready=bash=Y git=n rg=n python=n node=n npm=n perl=n ruby=n curl=Y
+[1792518409491] waiting… ready=bash=Y git=n rg=n python=n node=n npm=n perl=n ruby=n curl=Y
+[1792518424637] waiting… ready=bash=Y git=n rg=n python=n node=n npm=n perl=n ruby=n curl=Y
+[1792518439767] waiting… ready=bash=Y git=n rg=n python=n node=n npm=n perl=n ruby=n curl=Y
+[1792518454878] waiting… ready=bash=Y git=n rg=n python=n node=n npm=n perl=n ruby=n curl=Y
+[1792518469968] waiting… ready=bash=Y git=n rg=n python=n node=n npm=n perl=n ruby=n curl=Y
+[1792518485087] waiting… ready=bash=Y git=n rg=n python=n node=n npm=n perl=n ruby=n curl=Y
+[1792518500200] waiting… ready=bash=Y git=n rg=n python=n node=n npm=n perl=n ruby=n curl=Y
+[1792518515367] waiting… ready=bash=Y git=n rg=n python=n node=n npm=n perl=n ruby=n curl=Y
+[1792518530591] waiting… ready=bash=Y git=n rg=n python=n node=n npm=n perl=n ruby=n curl=Y
+[1792518545800] waiting… ready=bash=Y git=n rg=n python=n node=n npm=n perl=n ruby=n curl=Y
+[1792518561043] waiting… ready=bash=Y git=n rg=n python=n node=n npm=n perl=n ruby=n curl=Y
+[1792518576163] waiting… ready=bash=Y git=n rg=n python=n node=n npm=n perl=n ruby=n curl=Y
+[1792518591317] waiting… ready=bash=Y git=n rg=n python=n node=n npm=n perl=n ruby=n curl=Y
+[1792518606547] waiting… ready=bash=Y git=n rg=n python=n node=n npm=n perl=n ruby=n curl=Y
+[1792518621753] waiting… ready=bash=Y git=n rg=n python=n node=n npm=n perl=n ruby=n curl=Y
+[1792518636913] waiting… ready=bash=Y git=n rg=n python=n node=n npm=n perl=n ruby=n curl=Y
+[1792518651987] waiting… ready=bash=Y git=n rg=n python=n node=n npm=n perl=n ruby=n curl=Y
+[1792518667167] waiting… ready=bash=Y git=n rg=n python=n node=n npm=n perl=n ruby=n curl=Y
+[1792518682291] waiting… ready=bash=Y git=n rg=n python=n node=n npm=n perl=n ruby=n curl=Y
+[1792518697550] waiting… ready=bash=Y git=n rg=n python=n node=n npm=n perl=n ruby=n curl=Y
+[1792518712739] waiting… ready=bash=Y git=n rg=n python=n node=n npm=n perl=n ruby=n curl=Y
+[1792518728141] waiting… ready=bash=Y git=n rg=n python=n node=n npm=n perl=n ruby=n curl=Y
+[1792518743210] waiting… ready=bash=Y git=n rg=n python=n node=n npm=n perl=n ruby=n curl=Y
+[1792518758420] waiting… ready=bash=Y git=n rg=n python=n node=n npm=n perl=n ruby=n curl=Y
+[1792518773647] waiting… ready=bash=Y git=n rg=n python=n node=n npm=n perl=n ruby=n curl=Y
+[1792518788811] waiting… ready=bash=Y git=n rg=n python=n node=n npm=n perl=n ruby=n curl=Y
+[1792518803962] waiting… ready=bash=Y git=n rg=n python=n node=n npm=n perl=n ruby=n curl=Y
+[1792518819222] waiting… ready=bash=Y git=n rg=n python=n node=n npm=n perl=n ruby=n curl=Y
+[1792518834339] waiting… ready=bash=Y git=n rg=n python=n node=n npm=n perl=n ruby=n curl=Y
+[1792518849587] waiting… ready=bash=Y git=n rg=n python=n node=n npm=n perl=n ruby=n curl=Y
+[1792518864858] waiting… ready=bash=Y git=n rg=n python=n node=n npm=n perl=n ruby=n curl=Y
+[1792518879975] waiting… ready=bash=Y git=n rg=n python=n node=n npm=n perl=n ruby=n curl=Y
+[1792518895163] waiting… ready=bash=Y git=n rg=n python=n node=n npm=n perl=n ruby=n curl=Y
+[1792518910290] waiting… ready=bash=Y git=n rg=n python=n node=n npm=n perl=n ruby=n curl=Y
+[1792518925394] waiting… ready=bash=Y git=n rg=n python=n node=n npm=n perl=n ruby=n curl=Y
+[1792518940583] waiting… ready=bash=Y git=n rg=n python=n node=n npm=n perl=n ruby=n curl=Y
+[1792518957198] waiting… ready=bash=Y git=n rg=n python=n node=n npm=n perl=n ruby=n curl=Y
+[1792518972357] waiting… ready=bash=Y git=n rg=n python=n node=n npm=n perl=n ruby=n curl=Y
+[1792518987505] waiting… ready=bash=Y git=n rg=n python=n node=n npm=n perl=n ruby=n curl=Y
+[1792519002606] waiting… ready=bash=Y git=n rg=n python=n node=n npm=n perl=n ruby=n curl=Y
+[1792519017827] waiting… ready=bash=Y git=n rg=n python=n node=n npm=n perl=n ruby=n curl=Y
+[1792519033039] waiting… ready=bash=Y git=n rg=n python=n node=n npm=n perl=n ruby=n curl=Y
+[1792519048197] waiting… ready=bash=Y git=n rg=n python=n node=n npm=n perl=n ruby=n curl=Y
+[1792519063419] waiting… ready=bash=Y git=n rg=n python=n node=n npm=n perl=n ruby=n curl=Y
+[1792519078482] waiting… ready=bash=Y git=n rg=n python=n node=n npm=n perl=n ruby=n curl=Y
+[1792519093561] waiting… ready=bash=Y git=n rg=n python=n node=n npm=n perl=n ruby=n curl=Y
+[1792519108608] waiting… ready=bash=Y git=n rg=n python=n node=n npm=n perl=n ruby=n curl=Y
+[1792519123672] waiting… ready=bash=Y git=n rg=n python=n node=n npm=n perl=n ruby=n curl=Y
+[1792519138809] waiting… ready=bash=Y git=n rg=n python=n node=n npm=n perl=n ruby=n curl=Y
+[1792519153950] waiting… ready=bash=Y git=n rg=n python=n node=n npm=n perl=n ruby=n curl=Y
+[1792519169113] waiting… ready=bash=Y git=Y rg=n python=n node=n npm=n perl=n ruby=n curl=Y
+[1792519184286] waiting… ready=bash=Y git=Y rg=n python=n node=n npm=n perl=n ruby=n curl=Y
+[1792519199562] waiting… ready=bash=Y git=Y rg=n python=n node=n npm=n perl=n ruby=n curl=Y
+[1792519214846] waiting… ready=bash=Y git=Y rg=n python=n node=n npm=n perl=n ruby=n curl=Y
+[1792519230137] waiting… ready=bash=Y git=Y rg=n python=n node=n npm=n perl=n ruby=n curl=Y
+[1792519245407] waiting… ready=bash=Y git=Y rg=n python=n node=n npm=n perl=n ruby=n curl=Y
+[1792519260623] waiting… ready=bash=Y git=Y rg=n python=Y node=n npm=n perl=n ruby=n curl=Y
+[1792519275765] waiting… ready=bash=Y git=Y rg=n python=Y node=n npm=n perl=n ruby=n curl=Y
+[1792519290867] waiting… ready=bash=Y git=Y rg=n python=Y node=n npm=n perl=n ruby=n curl=Y
+[1792519306022] waiting… ready=bash=Y git=Y rg=n python=Y node=n npm=n perl=n ruby=n curl=Y
+[1792519321135] waiting… ready=bash=Y git=Y rg=n python=Y node=n npm=n perl=n ruby=n curl=Y
+[1792519336235] waiting… ready=bash=Y git=Y rg=n python=Y node=n npm=n perl=n ruby=n curl=Y
+[1792519351351] waiting… ready=bash=Y git=Y rg=n python=Y node=n npm=n perl=n ruby=n curl=Y
+[1792519366582] waiting… ready=bash=Y git=Y rg=n python=Y node=n npm=n perl=n ruby=n curl=Y
+[1792519381758] waiting… ready=bash=Y git=Y rg=n python=Y node=n npm=n perl=n ruby=n curl=Y
+[1792519396878] waiting… ready=bash=Y git=Y rg=n python=Y node=n npm=n perl=n ruby=n curl=Y
+[1792519412075] waiting… ready=bash=Y git=Y rg=n python=Y node=n npm=n perl=n ruby=n curl=Y
+[1792519427206] waiting… ready=bash=Y git=Y rg=n python=Y node=n npm=n perl=n ruby=n curl=Y
+[1792519442417] waiting… ready=bash=Y git=Y rg=n python=Y node=n npm=n perl=n ruby=n curl=Y
+[1792519457581] waiting… ready=bash=Y git=Y rg=n python=Y node=n npm=n perl=n ruby=n curl=Y
+[1792519472721] waiting… ready=bash=Y git=Y rg=n python=Y node=n npm=n perl=n ruby=n curl=Y
+[1792519487944] waiting… ready=bash=Y git=Y rg=n python=Y node=Y npm=n perl=n ruby=n curl=Y
+[1792519503177] waiting… ready=bash=Y git=Y rg=n python=Y node=Y npm=n perl=n ruby=n curl=Y
+[1792519518326] waiting… ready=bash=Y git=Y rg=n python=Y node=Y npm=n perl=n ruby=n curl=Y
+[1792519533603] waiting… ready=bash=Y git=Y rg=n python=Y node=Y npm=n perl=n ruby=n curl=Y
+[1792519548735] waiting… ready=bash=Y git=Y rg=n python=Y node=Y npm=n perl=n ruby=n curl=Y
+[1792519563914] waiting… ready=bash=Y git=Y rg=n python=Y node=Y npm=Y perl=n ruby=n curl=Y
+[1792519579103] waiting… ready=bash=Y git=Y rg=n python=Y node=Y npm=Y perl=n ruby=n curl=Y
+[1792519594174] waiting… ready=bash=Y git=Y rg=n python=Y node=Y npm=Y perl=n ruby=n curl=Y
+[1792519609257] waiting… ready=bash=Y git=Y rg=n python=Y node=Y npm=Y perl=n ruby=n curl=Y
+[1792519624375] waiting… ready=bash=Y git=Y rg=n python=Y node=Y npm=Y perl=n ruby=n curl=Y
+[1792519639602] waiting… ready=bash=Y git=Y rg=n python=Y node=Y npm=Y perl=n ruby=n curl=Y
+[1792519654855] waiting… ready=bash=Y git=Y rg=n python=Y node=Y npm=Y perl=n ruby=n curl=Y
+[1792519670061] waiting… ready=bash=Y git=Y rg=n python=Y node=Y npm=Y perl=n ruby=n curl=Y
+[1792519685271] waiting… ready=bash=Y git=Y rg=n python=Y node=Y npm=Y perl=n ruby=n curl=Y
+[1792519700420] waiting… ready=bash=Y git=Y rg=n python=Y node=Y npm=Y perl=n ruby=n curl=Y
+[1792519715651] waiting… ready=bash=Y git=Y rg=n python=Y node=Y npm=Y perl=n ruby=n curl=Y
+[1792519730799] waiting… ready=bash=Y git=Y rg=n python=Y node=Y npm=Y perl=Y ruby=n curl=Y
+[1792519746079] waiting… ready=bash=Y git=Y rg=n python=Y node=Y npm=Y perl=Y ruby=n curl=Y
+[1792519761215] waiting… ready=bash=Y git=Y rg=n python=Y node=Y npm=Y perl=Y ruby=n curl=Y
+[1792519776399] waiting… ready=bash=Y git=Y rg=n python=Y node=Y npm=Y perl=Y ruby=n curl=Y
+[1792519791498] waiting… ready=bash=Y git=Y rg=n python=Y node=Y npm=Y perl=Y ruby=n curl=Y
+[1792519806636] waiting… ready=bash=Y git=Y rg=n python=Y node=Y npm=Y perl=Y ruby=n curl=Y
+[1792519821729] waiting… ready=bash=Y git=Y rg=Y python=Y node=Y npm=Y perl=Y ruby=n curl=Y
+[1792519836847] waiting… ready=bash=Y git=Y rg=Y python=Y node=Y npm=Y perl=Y ruby=n curl=Y
+[1792519852031] waiting… ready=bash=Y git=Y rg=Y python=Y node=Y npm=Y perl=Y ruby=n curl=Y
+[1792519867301] waiting… ready=bash=Y git=Y rg=Y python=Y node=Y npm=Y perl=Y ruby=n curl=Y
+[1792519882507] waiting… ready=bash=Y git=Y rg=Y python=Y node=Y npm=Y perl=Y ruby=n curl=Y
+[1792519897731] waiting… ready=bash=Y git=Y rg=Y python=Y node=Y npm=Y perl=Y ruby=n curl=Y
+[1792519913085] waiting… ready=bash=Y git=Y rg=Y python=Y node=Y npm=Y perl=Y ruby=n curl=Y
+[1792519928295] toolchain executables present; verifying each tool runs
+[1792520309012] python --version -> exit 0 : Python 3.14.8
+[1792520631177] python -c import ssl, json, sqlite3; print('py-ssl', ssl.OPENSSL_VERSION) -> exit 0 : py-ssl OpenSSL 3.6.5 29 Sep 2026
+[1792520945638] node --version -> exit 0 : v26.4.0
+[1792521302263] node -e console.log('node-ok', process.version) -> exit 0 : node-ok v26.4.0
+[1792521638580] npm --version -> exit 0 : 11.21.1
+[1792521904071] perl -e print $^V -> exit 0 : v5.44.0
+[1792522127462] ruby --version -> exit 0 : ruby 4.0.7 (2026-09-15 revision 229531a6cf) +PRISM [x86_64-linux-android]
+[1792522337308] git --version -> exit 0 : git version 2.56.0
+[1792522551337] rg --version -> exit 0 : ripgrep 15.2.0  features:+pcre2 simd(compile):+SSE2,+SSSE3,-AVX2 simd(runtime):+SSE2,+SSSE3,-AVX2  PCRE2 10.45 is available (JIT is available)
+[1792522806486] clang --version -> exit 0 : clang version 21.1.8 Target: x86_64-unknown-linux-android24 Thread model: posix InstalledDir: /data/user/0/io.mcyber12.codingharness/files/coding-harness/rootfs/data/data/com.termux/files/usr/bin
+[1792523003096] cmake --version -> exit 0 : cmake version 4.4.4  CMake suite maintained and supported by Kitware (kitware.com/cmake).
