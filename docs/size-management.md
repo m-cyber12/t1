@@ -94,4 +94,4 @@ Interpretation:
   runtime + ICU (92.7 MiB combined) is what runs JS/TS projects and
   `npx`-based MCP servers; python 25.6 MiB; git 24.4 MiB.
 - Setup time fell with the smaller set: the connected-test stage
-  dropped from 1h05m to 13m57m on the same image.
+  dropped from 1h05m to 13m57s on the same image.
