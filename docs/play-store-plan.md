@@ -168,10 +168,12 @@ delta) is the natural first feature module.
 
 ## 5. Status: what is proven, what is measured, what is left
 
-**Proven on an emulator** (`ExecModel (targetSdk 34)` run `39852804375`,
+**Proven on an emulator** (`ExecModel (targetSdk 34)` run `39856436772`:
 `Tests 1/1 completed. (0 skipped) (0 failed)`, aosp_atd API 34 x86_64, built
-with `-PharnessTargetSdk=34 -PharnessTestBuildType=sealed`; the gate also
-verifies `extractNativeLibs` in the APK and fails if the test was skipped):
+with `-PharnessTargetSdk=34 -PharnessTestBuildType=sealed`. The gate first
+verifies that the APK really sets `extractNativeLibs` and ships the expected
+native libraries, and afterwards asserts from the run log that the test
+executed — a self-skipped test fails the gate instead of passing it):
 
 1. executing a file from `nativeLibraryDir` works at `targetSdk 34`;
 2. executing the *same bytes* copied into app-private storage is **denied** at
