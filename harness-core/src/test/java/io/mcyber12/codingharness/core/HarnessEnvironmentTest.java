@@ -269,6 +269,21 @@ public class HarnessEnvironmentTest {
     }
 
     @Test
+    public void uniqueBytesCountsHardLinkedFilesOnce() throws Exception {
+        File prefix = newTempPrefix();
+        File core = new File(prefix, "libexec/git-core");
+        core.mkdirs();
+        File git = new File(core, "git");
+        java.nio.file.Files.write(git.toPath(), new byte[1000]);
+        // git-core exposes one binary under many names via hard links.
+        java.nio.file.Files.createLink(new File(core, "git-commit").toPath(), git.toPath());
+        java.nio.file.Files.createLink(new File(core, "git-push").toPath(), git.toPath());
+
+        assertEquals(1000L, HarnessSizeReport.uniqueBytes(prefix));
+        assertEquals(3000L, HarnessSizeReport.directoryBytes(prefix)); // apparent
+    }
+
+    @Test
     public void sizeReportParsesDpkgStatus() {
         String status = "Package: bash\nStatus: install ok installed\nInstalled-Size: 2048\n\n"
             + "Package: libllvm\nInstalled-Size: 204800\n\n"

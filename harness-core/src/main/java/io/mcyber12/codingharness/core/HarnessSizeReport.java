@@ -104,14 +104,67 @@ public final class HarnessSizeReport {
         // system, apt state and any stragglers live on disk outside that
         // database. Attribute the gap to top-level directories so the
         // next optimization is a measurement, not a guess.
-        out.append("\nnot tracked by dpkg: ")
-            .append(formatBytes(Math.max(0L, onDisk - total)));
-        out.append("\nlargest directories:");
+        // Hard links (git-core links many command names to one binary,
+        // and the bootstrap does the same) make "sum of every path" far
+        // larger than the bytes actually stored. Report unique-inode
+        // bytes as the storage truth.
+        long unique = uniqueBytes(config.prefix);
+        out.append("\nunique bytes on disk: ").append(formatBytes(unique))
+            .append(" (apparent ").append(formatBytes(onDisk)).append(", hard links counted once)");
+        out.append("\nnot tracked by dpkg: ").append(formatBytes(Math.max(0L, unique - total)));
+        out.append("\nlargest directories (apparent / unique):");
         for (Map.Entry<String, Long> entry : topDirectories(config.prefix, 6).entrySet()) {
+            File dir = new File(config.prefix, entry.getKey());
             out.append("\n  ").append(entry.getKey()).append(' ')
-                .append(formatBytes(entry.getValue()));
+                .append(formatBytes(entry.getValue())).append(" / ")
+                .append(formatBytes(uniqueBytes(dir)));
         }
         return out.toString();
+    }
+
+    /**
+     * Bytes actually stored below a path: every file is counted once per
+     * inode, so hard links (a single binary reachable under many names)
+     * do not multiply the total. Falls back to apparent size when the
+     * platform cannot report inodes.
+     */
+    static long uniqueBytes(File root) {
+        if (root == null || !root.exists()) return 0L;
+        java.util.Set<String> seen = new java.util.HashSet<>();
+        long total = 0L;
+        List<File> pending = new ArrayList<>();
+        pending.add(root);
+        while (!pending.isEmpty()) {
+            File current = pending.remove(pending.size() - 1);
+            if (java.nio.file.Files.isSymbolicLink(current.toPath())) continue;
+            File[] children = current.listFiles();
+            if (children == null) {
+                if (current.isFile() && markInode(current, seen)) total += current.length();
+                continue;
+            }
+            for (File child : children) {
+                if (java.nio.file.Files.isSymbolicLink(child.toPath())) continue;
+                if (child.isDirectory()) {
+                    pending.add(child);
+                } else if (child.isFile() && markInode(child, seen)) {
+                    total += child.length();
+                }
+            }
+        }
+        return total;
+    }
+
+    /** Records the inode; false when this inode was already counted. */
+    private static boolean markInode(File file, java.util.Set<String> seen) {
+        try {
+            Map<String, Object> attributes = java.nio.file.Files.readAttributes(
+                file.toPath(), "unix:dev,ino");
+            String key = attributes.get("dev") + ":" + attributes.get("ino");
+            return seen.add(key);
+        } catch (Exception unsupported) {
+            // No unix view (or unreadable entry): count it, but never twice.
+            return seen.add("path:" + file.getAbsolutePath());
+        }
     }
 
     /** Byte totals of the prefix's top-level directories, largest first. */

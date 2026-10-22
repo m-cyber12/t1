@@ -27,8 +27,8 @@ android {
         applicationId "io.mcyber12.codingharness"
         minSdk rootProject.ext.minSdkVersion
         targetSdk rootProject.ext.targetSdkVersion
-        versionCode 35
-        versionName "0.31.4"
+        versionCode 36
+        versionName "0.31.5"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
