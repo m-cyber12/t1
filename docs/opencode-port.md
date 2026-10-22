@@ -19,7 +19,7 @@ so the port is a translation, not a redesign.
 | `Layer.effect(Service, ...)` / `LayerNode.make({deps})` | `Provisioning.create(config)` and `create(config, PackageManager)` — dependencies are constructor-injected |
 | `Instance.state()` per location | `HarnessPackageInstaller.service(config)` caches one service per prefix |
 | Effect service methods return typed errors | `ProvisioningError` with a stable `Kind` enum instead of raw exceptions |
-| `Info` schemas (`Config.Info`, `Agent.Info`) | `PackageTier.Info` — immutable descriptor: id, label, packages, requiredCommands, enabledByDefault |
+| `Info` schemas (`Config.Info`, `Agent.Info`) | `PackageTier.Info` — immutable descriptor: id, label, packages, requiredCommands, enabledByDefault, removable |
 | Pure functions separated from effects | `ProvisioningPlan.make(...)` — no I/O, deterministic, unit-tested |
 | Bus events / subscriber streams | `Provisioning.Listener` + `subscribe()`; every transition publishes an immutable `ProvisioningState` |
 | Status enums rendered by clients | `ProvisioningStatus` (IDLE … READY, FAILED) |
@@ -39,6 +39,7 @@ Two properties matter for portability and are now enforced by the design:
 |---|---|---|
 | `provision/PackageTier.java` | `src/provisioning/tier.ts` — `Info` schema + `CORE`, `BUILD_TOOLS` | Use an Effect `Schema.Struct` so tier config can be validated/overridden from config |
 | `provision/ProvisioningPlan.java` | `src/provisioning/plan.ts` — `plan()`, pure | Direct port; keep it I/O-free |
+| `provision/PackageCommands.java` | `src/provisioning/commands.ts` | Pure builders for install/remove/autoremove; unit-tested flag strings |
 | `provision/ProvisioningStatus.java` | `src/provisioning/status.ts` — schema enum | Serialised in events |
 | `provision/ProvisioningState.java` | `src/provisioning/state.ts` — `State` struct | Immutable snapshot; add `updatedAt` |
 | `provision/ProvisioningError.java` | `src/provisioning/error.ts` — `NamedError.create(...)` per `Kind` | Keep kinds stable; clients branch on them |
@@ -67,4 +68,7 @@ Two properties matter for portability and are now enforced by the design:
    view stayed stale until restart) is exactly what event-driven state
    removes.
 6. Keep `defaultTierIds()` = `[core]`: Perl and Ruby belong to core; the
-   compiler tier is opt-in.
+   compiler tier is opt-in and removable.
+7. Port `removeTier` as-is, including the dependency sweep and the
+   post-removal checks (pack gone, core intact, bytes reclaimed). Exposure in
+   the TUI is a single toggling action per pack.

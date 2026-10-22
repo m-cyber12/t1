@@ -43,10 +43,19 @@ Notes:
 2. **Explicit dependencies, no recommends.** `APT::Install-Recommends`
    and `APT::Install-Suggests` are `false` in harness-apt.conf, so the
    installed set is exactly what the tiers declare — no silent trees.
-3. **On-demand packs** install through the same verified pipeline
-   (update if stale → install → commands must execute → hygiene) via
-   `installBuildTools` / `installExtraLanguages`, exposed as buttons in
-   the TOOLS dialog while a pack is missing.
+3. **On-demand packs** install *and remove* through the same verified
+   pipeline (update if stale → install → commands must execute → hygiene),
+   exposed as one TOOLS-dialog button that flips between Install and Remove
+   (`Provisioning.installTier` / `removeTier`).
+
+3a. **Removal reclaims the whole pack.** `removeTier` purges the tier's own
+   packages, then runs a dependency sweep (`apt-get --purge autoremove`) so
+   the payload that only the pack needed — libllvm for clang, by far the
+   largest — goes too. The sweep can only drop packages dpkg marked
+   automatic, so the core runtime and base system are never touched; the
+   service verifies afterwards that no core package disappeared and that the
+   pack is really gone, and reports the measured bytes reclaimed.
+   Core is declared `removable = false`: it is the harness, not a pack.
 4. **Post-install hygiene** (`applySizeHygiene`): `apt-get clean`
    clears the .deb cache (after a full setup it duplicates the entire
    download), and `pruneNonRuntimePayload` deletes man/doc/gtk-doc/

@@ -76,6 +76,15 @@ public final class HarnessPackageInstaller {
         return result(state);
     }
 
+    /**
+     * Removes the build toolchain and the dependencies only it needed.
+     * Blocking. Core packages are never touched.
+     */
+    public static InstallResult removeBuildTools(HarnessConfig config) {
+        ProvisioningState state = service(config).removeTier(PackageTier.BUILD_TOOLS.id);
+        return result(state);
+    }
+
     private static InstallResult result(ProvisioningState state) {
         String detail = state.detail.isEmpty() ? state.message : state.message + " — " + state.detail;
         return new InstallResult(state.isReady(), detail);

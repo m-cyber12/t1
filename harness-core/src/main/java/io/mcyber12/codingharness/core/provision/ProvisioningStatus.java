@@ -11,6 +11,7 @@ public enum ProvisioningStatus {
     UPDATING_INDEX,
     UPGRADING_BASE,
     INSTALLING,
+    REMOVING,
     VERIFYING,
     CLEANING,
     READY,

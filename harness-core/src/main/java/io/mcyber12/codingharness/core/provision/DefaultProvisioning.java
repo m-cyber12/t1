@@ -109,7 +109,7 @@ final class DefaultProvisioning implements Provisioning.Service {
             publish(ProvisioningStatus.INSTALLING,
                 "installing " + plan.packagesToInstall.size() + " packages");
             PackageManager.CommandResult install = run(
-                installCommand(plan.packagesToInstall), INSTALL_TIMEOUT);
+                PackageCommands.install(plan.packagesToInstall), INSTALL_TIMEOUT);
             if (!install.isSuccess()) {
                 return fail(new ProvisioningError(ProvisioningError.Kind.INSTALL,
                     "package install failed", compact(install.output)));
@@ -160,7 +160,7 @@ final class DefaultProvisioning implements Provisioning.Service {
             }
             publish(ProvisioningStatus.INSTALLING, "installing " + tier.label);
             PackageManager.CommandResult install = run(
-                installCommand(plan.packagesToInstall), INSTALL_TIMEOUT);
+                PackageCommands.install(plan.packagesToInstall), INSTALL_TIMEOUT);
             if (!install.isSuccess()) {
                 return fail(new ProvisioningError(ProvisioningError.Kind.INSTALL,
                     tier.label + " install failed", compact(install.output)));
@@ -186,6 +186,81 @@ final class DefaultProvisioning implements Provisioning.Service {
         } finally {
             running.set(false);
         }
+    }
+
+    @Override
+    public ProvisioningState removeTier(String tierId) {
+        PackageTier.Info tier = PackageTier.byId(tierId);
+        if (!tier.removable) {
+            return fail(new ProvisioningError(ProvisioningError.Kind.REMOVE,
+                tier.label + " is part of the default install and cannot be removed",
+                "only optional packs are removable"));
+        }
+        if (!running.compareAndSet(false, true)) return state;
+        try {
+            Set<String> installedBefore = packages.installedPackages();
+            List<String> present = new ArrayList<>();
+            for (String name : tier.packages) {
+                if (installedBefore.contains(name)) present.add(name);
+            }
+            if (present.isEmpty()) {
+                return publish(ProvisioningStatus.READY, tier.label + " is not installed",
+                    sizeSummary(Collections.singletonList(tier)));
+            }
+
+            long bytesBefore = installedBytes();
+            publish(ProvisioningStatus.REMOVING, "removing " + tier.label);
+            PackageManager.CommandResult removal = run(
+                PackageCommands.remove(present), INSTALL_TIMEOUT);
+            if (!removal.isSuccess()) {
+                return fail(new ProvisioningError(ProvisioningError.Kind.REMOVE,
+                    tier.label + " removal failed", compact(removal.output)));
+            }
+
+            // The pack's dependencies (libllvm for clang, ...) are only
+            // candidates when nothing else needs them, and only packages dpkg
+            // marked automatic can be dropped — core stays put.
+            publish(ProvisioningStatus.REMOVING, "dropping unused dependencies");
+            PackageManager.CommandResult sweep = run(
+                PackageCommands.autoremove(), INSTALL_TIMEOUT);
+            String sweepNote = sweep.isSuccess()
+                ? "" : " (dependency sweep reported: " + compact(sweep.output) + ")";
+
+            publish(ProvisioningStatus.VERIFYING, "verifying " + tier.label + " is gone");
+            Set<String> installedAfter = packages.installedPackages();
+            List<String> leftovers = new ArrayList<>();
+            for (String name : tier.packages) {
+                if (installedAfter.contains(name)) leftovers.add(name);
+            }
+            if (!leftovers.isEmpty()) {
+                return fail(new ProvisioningError(ProvisioningError.Kind.VERIFY,
+                    tier.label + ": still installed after removal: " + leftovers, sweepNote));
+            }
+
+            publish(ProvisioningStatus.CLEANING, "reclaiming storage");
+            String hygiene = applyHygiene();
+            long reclaimed = Math.max(0L, bytesBefore - installedBytes());
+            return publish(ProvisioningStatus.READY,
+                tier.label + " removed (reclaimed " + HarnessSizeReport.formatBytes(reclaimed)
+                    + ", " + hygiene + ")" + sweepNote,
+                sizeSummary(PackageTier.defaults()));
+        } catch (IOException e) {
+            return fail(new ProvisioningError(ProvisioningError.Kind.IO,
+                tier.label + " removal I/O failed: " + e.getMessage(), ""));
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            return fail(new ProvisioningError(ProvisioningError.Kind.INTERRUPTED,
+                tier.label + " removal was interrupted", ""));
+        } finally {
+            running.set(false);
+        }
+    }
+
+    /** Byte total of everything dpkg accounts for, for before/after deltas. */
+    private long installedBytes() {
+        long total = 0L;
+        for (long bytes : packages.installedSizes().values()) total += bytes;
+        return total;
     }
 
     // ---- planning -------------------------------------------------------
@@ -227,14 +302,6 @@ final class DefaultProvisioning implements Provisioning.Service {
         return missing;
     }
 
-    private static List<String> installCommand(List<String> packagesToInstall) {
-        List<String> command = new ArrayList<>();
-        command.add("apt-get");
-        command.add("-y");
-        command.add("install");
-        command.addAll(packagesToInstall);
-        return command;
-    }
 
     // ---- effects --------------------------------------------------------
 

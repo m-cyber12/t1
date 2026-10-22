@@ -5,6 +5,7 @@ import org.junit.Test;
 import java.io.File;
 import java.util.Arrays;
 
+import io.mcyber12.codingharness.core.provision.PackageCommands;
 import io.mcyber12.codingharness.core.provision.PackageTier;
 import io.mcyber12.codingharness.core.provision.ProvisioningPlan;
 import java.util.Map;
@@ -263,6 +264,50 @@ public class HarnessEnvironmentTest {
         assertEquals("build-tools", plan.pendingTiers.get(0).id);
         assertTrue(plan.packagesToInstall.contains("clang"));
         assertTrue(!plan.packagesToInstall.contains("python"));
+    }
+
+    @Test
+    public void onlyOptionalPacksAreRemovable() {
+        // Core is the harness itself; removing it would leave the agent
+        // without a runtime. Packs are user-managed.
+        assertTrue(!PackageTier.CORE.removable);
+        assertTrue(PackageTier.BUILD_TOOLS.removable);
+        assertEquals(1, PackageTier.removable().size());
+        assertEquals("build-tools", PackageTier.removable().get(0).id);
+        // Every removable tier is an on-demand tier, never a default one.
+        for (PackageTier.Info tier : PackageTier.removable()) {
+            assertTrue(!tier.enabledByDefault);
+        }
+    }
+
+    @Test
+    public void removalCommandsNamePackagesExplicitly() {
+        java.util.List<String> remove = PackageCommands.remove(
+            PackageTier.BUILD_TOOLS.packages);
+        assertEquals("apt-get -y --purge remove make pkg-config clang cmake",
+            PackageCommands.describe(remove));
+        // Autoremove is what reclaims libllvm; without it removing clang
+        // would free almost nothing.
+        assertTrue(PackageCommands.describe(PackageCommands.autoremove())
+            .contains("autoremove"));
+        assertEquals("apt-get -y install git",
+            PackageCommands.describe(PackageCommands.install(
+                java.util.Collections.singletonList("git"))));
+    }
+
+    @Test
+    public void rebuildAfterRemovalRequestsThePackAgain() {
+        // After clang/cmake are gone the planner must ask for them again,
+        // while core packages already present stay untouched.
+        java.util.Set<String> present = new java.util.HashSet<>(PackageTier.CORE.requiredCommands);
+        java.util.Set<String> installed = new java.util.HashSet<>(PackageTier.CORE.packages);
+        ProvisioningPlan plan = ProvisioningPlan.make(
+            java.util.Collections.singletonList(PackageTier.BUILD_TOOLS), installed, present);
+
+        assertEquals("build-tools", plan.pendingTiers.get(0).id);
+        assertEquals(PackageTier.BUILD_TOOLS.packages.size(), plan.packagesToInstall.size());
+        assertTrue(plan.packagesToInstall.contains("clang"));
+        assertTrue(!plan.packagesToInstall.contains("git"));
     }
 
     @Test

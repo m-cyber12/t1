@@ -309,6 +309,93 @@ public class CodingHarnessE2eTest {
         report("A03 SUCCESS: service ready without rebuild");
     }
 
+    /**
+     * Pack lifecycle on device: the compiler pack installs on demand, then
+     * removes cleanly — packages gone, dependencies swept (libllvm is the
+     * real payload), storage reclaimed, and the core harness untouched.
+     * This is the path behind the TOOLS dialog's Install/Remove button.
+     */
+    @Test
+    public void a04_buildToolsPackInstallsAndRemoves() throws Exception {
+        Context context = ApplicationProvider.getApplicationContext();
+        initReport(context);
+        if (config == null) config = buildConfig(context);
+        HarnessConfig config = this.config;
+        report("a04 start; build tools pack install + remove");
+
+        io.mcyber12.codingharness.core.provision.Provisioning.Service service =
+            io.mcyber12.codingharness.core.provision.Provisioning.create(config);
+        if (!service.isReady()) fail("core tier is not ready before the pack test");
+
+        long before = totalInstalledBytes(config);
+        io.mcyber12.codingharness.core.provision.ProvisioningState install =
+            service.installTier(io.mcyber12.codingharness.core.provision.PackageTier.BUILD_TOOLS.id);
+        report("installTier(build-tools) -> " + install.status + " : " + install.message);
+        if (!install.isReady()) fail("build tools install failed: " + install.message);
+        if (!io.mcyber12.codingharness.core.HarnessPackageInstaller
+                .isBuildToolchainReady(config)) {
+            fail("build tools installed but clang/cmake are not executable");
+        }
+        HarnessCommandRunner runner = new HarnessCommandRunner(config);
+        for (String[] command : new String[][] {
+                {"clang", "--version"}, {"cmake", "--version"}}) {
+            HarnessCommandRunner.CommandResult run = runner.run(Arrays.asList(command), 180_000L);
+            String line = String.join(" ", command) + " -> exit " + run.exitCode
+                + " : " + oneLine(run.output);
+            report(line);
+            if (!run.isSuccess()) fail("build tool failed to run: " + line);
+        }
+        long withPack = totalInstalledBytes(config);
+        report("installed bytes: before=" + withPack + " (was " + before + ")");
+
+        io.mcyber12.codingharness.core.provision.ProvisioningState removal =
+            service.removeTier(io.mcyber12.codingharness.core.provision.PackageTier.BUILD_TOOLS.id);
+        report("removeTier(build-tools) -> " + removal.status + " : " + removal.message);
+        if (!removal.isReady()) fail("build tools removal failed: " + removal.message);
+
+        for (String gone : new String[] {"clang", "cmake"}) {
+            File exe = new File(config.toolDirectory, gone);
+            if (exe.isFile()) fail("still executable after removal: " + gone);
+        }
+        java.util.Set<String> installed = io.mcyber12.codingharness.core.HarnessSizeReport
+            .parseInstalledPackages(readDpkgStatus(config));
+        for (String pkg : io.mcyber12.codingharness.core.provision.PackageTier.BUILD_TOOLS.packages) {
+            if (installed.contains(pkg)) fail("dpkg still lists " + pkg + " after removal");
+        }
+        // Core must survive the sweep: autoremove only touches packages dpkg
+        // marked automatic.
+        for (String core : io.mcyber12.codingharness.core.provision.PackageTier.CORE.packages) {
+            if (!installed.contains(core)) fail("removal damaged the core tier: " + core);
+        }
+        long afterRemoval = totalInstalledBytes(config);
+        report("installed bytes after removal=" + afterRemoval
+            + " (reclaimed " + (withPack - afterRemoval) + ")");
+        if (afterRemoval >= withPack) {
+            fail("removal did not reclaim storage: " + withPack + " -> " + afterRemoval);
+        }
+        if (!service.isReady()) fail("core tier is not ready after pack removal");
+        report("A04 SUCCESS: pack installed, ran, removed; core intact, "
+            + (withPack - afterRemoval) + " bytes reclaimed");
+    }
+
+    private static long totalInstalledBytes(HarnessConfig config) {
+        long total = 0L;
+        for (long bytes : io.mcyber12.codingharness.core.HarnessSizeReport
+                .parseInstalledSizes(readDpkgStatus(config)).values()) {
+            total += bytes;
+        }
+        return total;
+    }
+
+    private static String readDpkgStatus(HarnessConfig config) {
+        try {
+            File status = new File(config.prefix, "var/lib/dpkg/status");
+            return new String(Files.readAllBytes(status.toPath()), StandardCharsets.UTF_8);
+        } catch (Exception ignored) {
+            return "";
+        }
+    }
+
     private String cxxRuntimeDiagnostics(HarnessConfig config, List<String> failures) {
         StringBuilder out = new StringBuilder("\n--- C++ runtime ---\n");
         try {

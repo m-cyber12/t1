@@ -14,6 +14,8 @@ public final class ProvisioningError {
         BASE_UPGRADE,
         /** package install failed. */
         INSTALL,
+        /** package removal failed, or the tier is not removable. */
+        REMOVE,
         /** install reported success but a required command is missing. */
         VERIFY,
         /** local I/O failed before or after the package work. */

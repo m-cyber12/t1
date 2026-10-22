@@ -342,30 +342,31 @@ public final class MainActivity extends Activity {
                     .setTitle("Toolchain")
                     .setMessage(text.toString())
                     .setPositiveButton("Close", null);
-                if (!buildReady) {
-                    dialog.setNeutralButton("Install build tools",
-                        (d, which) -> installBuildTools());
-                }
+                dialog.setNeutralButton(buildReady ? "Remove build tools" : "Install build tools",
+                    (d, which) -> changeBuildTools(!buildReady));
                 dialog.show();
             });
         }, "coding-harness-inventory").start();
     }
 
     /**
-     * Installs the on-demand native build toolchain. Same event-driven
-     * completion path as the core setup: the listener updates the status
-     * line when the service reaches a terminal state.
+     * Adds or removes the on-demand native build toolchain. Both directions
+     * go through the provisioning service and report through the same
+     * listener, so the status line reflects the outcome without a restart.
      */
-    private void installBuildTools() {
+    private void changeBuildTools(boolean install) {
         if (harnessConfig == null || provisioning == null) {
             setStatus("base runtime is still preparing...");
             return;
         }
         if (!setupRunning.compareAndSet(false, true)) return;
-        setStatus("installing build tools (clang/cmake)...");
+        setStatus(install ? "installing build tools (clang/cmake)..."
+            : "removing build tools...");
         new Thread(() -> {
             try {
-                ProvisioningState state = provisioning.installTier(PackageTier.BUILD_TOOLS.id);
+                ProvisioningState state = install
+                    ? provisioning.installTier(PackageTier.BUILD_TOOLS.id)
+                    : provisioning.removeTier(PackageTier.BUILD_TOOLS.id);
                 writeSetupResult(state);
                 if (state.isFailed()) {
                     runOnUiThread(() -> showSetupFailure(state.message));

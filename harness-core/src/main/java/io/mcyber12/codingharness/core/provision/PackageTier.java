@@ -23,14 +23,22 @@ public final class PackageTier {
         /** Commands that must exist and run before the tier counts as ready. */
         public final List<String> requiredCommands;
         public final boolean enabledByDefault;
+        /**
+         * Whether the user may remove this tier. Core is the harness itself —
+         * removing it would leave the agent without a runtime, so it is not
+         * removable; optional packs are.
+         */
+        public final boolean removable;
 
         public Info(String id, String label, List<String> packages,
-                    List<String> requiredCommands, boolean enabledByDefault) {
+                    List<String> requiredCommands, boolean enabledByDefault,
+                    boolean removable) {
             this.id = id;
             this.label = label;
             this.packages = Collections.unmodifiableList(packages);
             this.requiredCommands = Collections.unmodifiableList(requiredCommands);
             this.enabledByDefault = enabledByDefault;
+            this.removable = removable;
         }
     }
 
@@ -47,7 +55,7 @@ public final class PackageTier {
             "perl", "ruby", "jq", "tree", "which", "file", "openssh"),
         Arrays.asList("bash", "git", "rg", "python", "pip", "node", "npm",
             "perl", "ruby", "jq", "curl"),
-        true);
+        true, false);
 
     /**
      * Native build toolchain, installed on demand. libllvm (pulled by
@@ -59,7 +67,7 @@ public final class PackageTier {
         "Build tools (clang/cmake)",
         Arrays.asList("make", "pkg-config", "clang", "cmake"),
         Arrays.asList("clang", "cmake", "make", "pkg-config"),
-        false);
+        false, true);
 
     private static final List<Info> ALL =
         Collections.unmodifiableList(Arrays.asList(CORE, BUILD_TOOLS));
@@ -70,6 +78,15 @@ public final class PackageTier {
 
     public static List<Info> defaults() {
         return Collections.singletonList(CORE);
+    }
+
+    /** Tiers the user may install or remove on demand. */
+    public static List<Info> removable() {
+        List<Info> result = new java.util.ArrayList<>();
+        for (Info tier : ALL) {
+            if (tier.removable) result.add(tier);
+        }
+        return Collections.unmodifiableList(result);
     }
 
     public static Info byId(String id) {

@@ -53,6 +53,12 @@ public final class Provisioning {
         /** Installs one tier by id; same pipeline, no base-system upgrade. */
         ProvisioningState installTier(String tierId);
 
+        /**
+         * Removes an optional tier and the dependencies nothing else needs,
+         * then reclaims storage. Core is not removable: it is the harness.
+         */
+        ProvisioningState removeTier(String tierId);
+
         /** Default tier ids, for callers that just want "make it ready". */
         List<String> defaultTierIds();
     }
