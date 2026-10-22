@@ -210,6 +210,21 @@ fi
 } >> e2e-logs/network.log 2>&1
 publish
 
+phase "device-ready"
+# Gradle's device provider installs as soon as it sees the device; if adb has
+# not finished reading its properties it reports the (bogus) message "Cannot
+# install split APKs with API level < 21" and the run dies before a single
+# test executes. Wait for the SDK property and one real package-manager call.
+for i in $(seq 1 40); do
+  sdk_level="$("$ADB" shell getprop ro.build.version.sdk 2>/dev/null | tr -d '\r')"
+  if [ -n "$sdk_level" ] && "$ADB" shell pm list packages >/dev/null 2>&1; then
+    echo "device ready: sdk=$sdk_level (attempt $i)" >> e2e-logs/phases.log
+    break
+  fi
+  echo "device not ready yet (attempt $i, sdk='$sdk_level')" >> e2e-logs/phases.log
+  sleep 5
+done
+
 phase "connected-test"
 TEST_ARGS=""
 if [ -n "$E2E_TEST_CLASS" ]; then
