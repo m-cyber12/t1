@@ -130,8 +130,12 @@ public class ExecModelTest {
         env.add("TERMUX__PREFIX=" + config().prefix.getAbsolutePath());
         env.add("TERMUX__ROOTFS=" + config().rootfs.getAbsolutePath());
         env.add("TERMUX_APP__DATA_DIR=" + context.getApplicationInfo().dataDir);
-        Outcome shebang = execute("/system/bin/sh",
-            new String[]{"-c", "exec " + script.getAbsolutePath()}, env);
+        // The preloaded process is the sealed binary itself, not a system
+        // binary: an app-owned executable is what the preload runs inside in
+        // production (bash, apt-get, dpkg, python all live in the APK), and the
+        // execve() that matters is the one it issues.
+        Outcome shebang = execute(probe.getAbsolutePath(),
+            new String[]{"--exec", script.getAbsolutePath()}, env);
         assertProbeRan("shebang translated by the preload", shebang);
 
         // (5) A #! naming a *system* interpreter, executed directly. This is the
