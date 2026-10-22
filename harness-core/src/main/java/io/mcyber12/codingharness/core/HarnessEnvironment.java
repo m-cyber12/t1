@@ -160,6 +160,13 @@ public final class HarnessEnvironment {
         String content =
             (architecture.isEmpty() ? "" : "Apt::Architecture \"" + architecture + "\";\n") +
             "Acquire::Retries \"2\";\n" +
+            // Size discipline: never let Recommends/Suggests silently pull
+            // large optional trees (python Recommends python-pip, git
+            // Recommends openssh — both are named explicitly in the tier
+            // lists instead, see HarnessPackageInstaller). What is
+            // installed is exactly what the tiers declare.
+            "APT::Install-Recommends \"false\";\n" +
+            "APT::Install-Suggests \"false\";\n" +
             // apt's https method loads CA certificates from this option (or a
             // compiled-in default pointing at the official prefix). Give it
             // the relocated bundle explicitly; see HarnessBootstrap

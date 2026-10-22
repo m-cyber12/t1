@@ -178,9 +178,75 @@ public class HarnessEnvironmentTest {
         assertTrue(HarnessPackageInstaller.CODING_PACKAGES.contains("python"));
         assertTrue(HarnessPackageInstaller.CODING_PACKAGES.contains("nodejs"));
         assertTrue(HarnessPackageInstaller.CODING_PACKAGES.contains("npm"));
-        assertTrue(HarnessPackageInstaller.CODING_PACKAGES.contains("perl"));
-        assertTrue(HarnessPackageInstaller.CODING_PACKAGES.contains("ruby"));
         assertTrue(HarnessPackageInstaller.CODING_PACKAGES.contains("git"));
         assertTrue(HarnessPackageInstaller.CODING_PACKAGES.contains("ripgrep"));
+    }
+
+    @Test
+    public void packageTiersKeepHeavyweightToolsOnDemand() {
+        // The default install is the small agentic core; the ~300 MB
+        // compiler block and the extra language runtimes are explicit
+        // on-demand packs (docs/size-management.md).
+        assertTrue(HarnessPackageInstaller.CORE_PACKAGES.contains("python-pip"));
+        assertTrue(!HarnessPackageInstaller.CORE_PACKAGES.contains("clang"));
+        assertTrue(!HarnessPackageInstaller.CORE_PACKAGES.contains("cmake"));
+        assertTrue(!HarnessPackageInstaller.CORE_PACKAGES.contains("ruby"));
+        assertTrue(!HarnessPackageInstaller.CORE_PACKAGES.contains("perl"));
+        assertTrue(HarnessPackageInstaller.BUILD_TOOL_PACKAGES.contains("clang"));
+        assertTrue(HarnessPackageInstaller.BUILD_TOOL_PACKAGES.contains("cmake"));
+        assertTrue(HarnessPackageInstaller.EXTRA_LANGUAGE_PACKAGES.contains("ruby"));
+        assertTrue(HarnessPackageInstaller.EXTRA_LANGUAGE_PACKAGES.contains("perl"));
+        // No package is declared in two tiers.
+        for (String name : HarnessPackageInstaller.CORE_PACKAGES) {
+            assertTrue(!HarnessPackageInstaller.BUILD_TOOL_PACKAGES.contains(name));
+            assertTrue(!HarnessPackageInstaller.EXTRA_LANGUAGE_PACKAGES.contains(name));
+        }
+    }
+
+    @Test
+    public void pruneRemovesOnlyNonRuntimePayload() throws Exception {
+        File prefix = new File("/tmp/harness-test-prune/usr");
+        File man = new File(prefix, "share/man/man1");
+        man.mkdirs();
+        java.nio.file.Files.write(new File(man, "git.1").toPath(), new byte[100]);
+        File locale = new File(prefix, "share/locale/de/LC_MESSAGES");
+        locale.mkdirs();
+        java.nio.file.Files.write(new File(locale, "git.mo").toPath(), new byte[50]);
+        File stdlib = new File(prefix, "lib/python3.14/json");
+        stdlib.mkdirs();
+        File decoder = new File(stdlib, "decoder.py");
+        java.nio.file.Files.write(decoder.toPath(), new byte[10]);
+        File pycache = new File(stdlib, "__pycache__");
+        pycache.mkdirs();
+        java.nio.file.Files.write(new File(pycache, "decoder.pyc").toPath(), new byte[40]);
+        File userCache = new File(prefix, "lib/python3.14/site-packages/requests/__pycache__");
+        userCache.mkdirs();
+        File userPyc = new File(userCache, "models.pyc");
+        java.nio.file.Files.write(userPyc.toPath(), new byte[30]);
+        File binary = new File(prefix, "bin/git");
+        binary.getParentFile().mkdirs();
+        java.nio.file.Files.write(binary.toPath(), new byte[20]);
+
+        long freed = HarnessPackageInstaller.pruneNonRuntimePayload(prefix);
+
+        assertEquals(100 + 50 + 40, freed);
+        assertTrue(!new File(prefix, "share/man").exists());
+        assertTrue(!new File(prefix, "share/locale").exists());
+        assertTrue(decoder.isFile());       // stdlib code kept
+        assertTrue(userPyc.isFile());       // user site-packages kept
+        assertTrue(binary.isFile());        // binaries kept
+    }
+
+    @Test
+    public void sizeReportParsesDpkgStatus() {
+        String status = "Package: bash\nStatus: install ok installed\nInstalled-Size: 2048\n\n"
+            + "Package: libllvm\nInstalled-Size: 204800\n\n"
+            + "Package: clang\nInstalled-Size: 102400\nDescription: no size above\n\n";
+        java.util.Map<String, Long> sizes = HarnessSizeReport.parseInstalledSizes(status);
+        assertEquals(3, sizes.size());
+        assertEquals(Long.valueOf(2048L * 1024L), sizes.get("bash"));
+        assertEquals(Long.valueOf(204800L * 1024L), sizes.get("libllvm"));
+        assertTrue(HarnessSizeReport.formatBytes(204800L * 1024L).contains("MiB"));
+        assertTrue(HarnessSizeReport.formatBytes(3L * 1024L * 1024L * 1024L).contains("GiB"));
     }
 }

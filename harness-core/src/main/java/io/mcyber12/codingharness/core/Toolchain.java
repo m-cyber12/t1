@@ -9,11 +9,14 @@ import java.util.Map;
 
 /** Tool discovery for the coding harness. */
 public final class Toolchain {
+    /** Default (core) tier: what an agent session needs out of the box. */
     public static final List<String> REQUIRED_TOOLS = Collections.unmodifiableList(
-        Arrays.asList("sh", "bash", "git", "rg", "python", "node", "npm", "perl", "ruby")
+        Arrays.asList("sh", "bash", "git", "rg", "python", "pip", "node", "npm", "jq", "curl")
     );
+    /** On-demand packs and utilities: installable from the TOOLS dialog. */
     public static final List<String> OPTIONAL_TOOLS = Collections.unmodifiableList(
-        Arrays.asList("bun", "curl", "make", "clang", "cmake", "jq", "tree", "tar", "zip", "unzip", "ssh")
+        Arrays.asList("perl", "ruby", "make", "pkg-config", "clang", "cmake",
+            "bun", "tree", "tar", "zip", "unzip", "ssh")
     );
 
     private Toolchain() {}

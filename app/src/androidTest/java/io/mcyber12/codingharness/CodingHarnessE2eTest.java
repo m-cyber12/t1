@@ -224,7 +224,56 @@ public class CodingHarnessE2eTest {
             report("TOOL FAILURES\n" + message);
             fail(message);
         }
+        // Size discipline: the default setup must NOT have installed the
+        // on-demand packs (the ~300 MB compiler block, extra languages),
+        // and the size report must account for what WAS installed.
+        for (String absent : new String[] {"clang", "cmake", "ruby"}) {
+            File exe = new File(config.toolDirectory, absent);
+            if (exe.isFile()) {
+                fail("on-demand tool leaked into the default install: " + absent);
+            }
+        }
+        // perl is reported but not asserted: if the bootstrap base system
+        // ever ships it, that is base-system content, not a tier leak.
+        report("perl present by default: "
+            + new File(config.toolDirectory, "perl").isFile());
+        report("default install correctly excludes on-demand packs (clang/cmake/ruby)");
+        report(io.mcyber12.codingharness.core.HarnessSizeReport.summarize(config));
         report("E2E SUCCESS: all tools execute");
+    }
+
+    /**
+     * The on-demand path: Extra languages (perl/ruby) are absent after the
+     * default setup (asserted in a02) and must install and run when
+     * explicitly requested — the same code path the TOOLS dialog buttons
+     * use. Runs after a02, reusing its installed prefix.
+     */
+    @Test
+    public void a03_optionalLanguagePackInstallsOnDemand() throws Exception {
+        Context context = ApplicationProvider.getApplicationContext();
+        initReport(context);
+        if (config == null) config = buildConfig(context);
+        HarnessConfig config = this.config;
+        report("a03 start; on-demand install of extra languages (perl/ruby)");
+
+        io.mcyber12.codingharness.core.HarnessPackageInstaller.InstallResult result =
+            io.mcyber12.codingharness.core.HarnessPackageInstaller.installExtraLanguages(config);
+        report("installExtraLanguages: " + result.message);
+        if (!result.success) {
+            fail("On-demand language pack failed: " + result.message);
+        }
+        HarnessCommandRunner runner = new HarnessCommandRunner(config);
+        for (String[] command : new String[][] {
+                {"ruby", "--version"}, {"perl", "-e", "print $^V"}}) {
+            HarnessCommandRunner.CommandResult run =
+                runner.run(Arrays.asList(command), 180_000L);
+            String line = String.join(" ", command) + " -> exit " + run.exitCode
+                + " : " + oneLine(run.output);
+            report(line);
+            if (!run.isSuccess()) fail("Optional tool failed to run: " + line);
+        }
+        report(io.mcyber12.codingharness.core.HarnessSizeReport.summarize(config));
+        report("A03 SUCCESS: on-demand pack installs and runs");
     }
 
     /**
@@ -305,7 +354,7 @@ public class CodingHarnessE2eTest {
     }
 
     private String readinessSummary(HarnessConfig config) {
-        String[] commands = {"bash", "git", "rg", "python", "node", "npm", "perl", "ruby", "curl"};
+        String[] commands = {"bash", "git", "rg", "python", "pip", "node", "npm", "curl"};
         StringBuilder out = new StringBuilder();
         for (String command : commands) {
             File exe = new File(config.toolDirectory, command);

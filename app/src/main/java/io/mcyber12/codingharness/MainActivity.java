@@ -260,20 +260,65 @@ public final class MainActivity extends Activity {
 
     private void showToolInventory() {
         if (harnessConfig == null) return;
-        StringBuilder text = new StringBuilder("Coding harness tools\n\n");
-        for (Map.Entry<String, Toolchain.ToolStatus> entry : Toolchain.inspect(harnessConfig).entrySet()) {
-            Toolchain.ToolStatus tool = entry.getValue();
-            text.append(tool.name)
-                .append(tool.available ? "  READY" : "  —")
-                .append("\n  ")
-                .append(tool.note)
-                .append('\n');
+        setStatus("measuring storage...");
+        // Size accounting walks the prefix and parses the dpkg database;
+        // keep it off the UI thread, then show inventory + storage together.
+        new Thread(() -> {
+            StringBuilder text = new StringBuilder("Coding harness tools\n\n");
+            for (Map.Entry<String, Toolchain.ToolStatus> entry : Toolchain.inspect(harnessConfig).entrySet()) {
+                Toolchain.ToolStatus tool = entry.getValue();
+                text.append(tool.name)
+                    .append(tool.available ? "  READY" : "  —")
+                    .append("\n  ")
+                    .append(tool.note)
+                    .append('\n');
+            }
+            text.append('\n')
+                .append(io.mcyber12.codingharness.core.HarnessSizeReport.summarize(harnessConfig));
+            boolean buildReady = HarnessPackageInstaller.isBuildToolchainReady(harnessConfig);
+            boolean languagesReady = HarnessPackageInstaller.isExtraLanguagesReady(harnessConfig);
+            runOnUiThread(() -> {
+                setStatus("ready");
+                if (isFinishing()) return;
+                android.app.AlertDialog.Builder dialog = new android.app.AlertDialog.Builder(this)
+                    .setTitle("Toolchain")
+                    .setMessage(text.toString())
+                    .setPositiveButton("Close", null);
+                if (!buildReady) {
+                    dialog.setNeutralButton("Install build tools",
+                        (d, which) -> installOptionalPack(true));
+                }
+                if (!languagesReady) {
+                    dialog.setNegativeButton("Install perl/ruby",
+                        (d, which) -> installOptionalPack(false));
+                }
+                dialog.show();
+            });
+        }, "coding-harness-inventory").start();
+    }
+
+    /** Installs one on-demand pack (Build tools or Extra languages). */
+    private void installOptionalPack(boolean buildTools) {
+        if (harnessConfig == null || harnessSession == null) {
+            setStatus("base runtime is still preparing...");
+            return;
         }
-        new android.app.AlertDialog.Builder(this)
-            .setTitle("Toolchain")
-            .setMessage(text.toString())
-            .setPositiveButton("Close", null)
-            .show();
+        if (!setupRunning.compareAndSet(false, true)) return;
+        String label = buildTools ? "build tools (clang/cmake)" : "perl/ruby";
+        setStatus("installing " + label + "...");
+        new Thread(() -> {
+            HarnessPackageInstaller.InstallResult result = buildTools
+                ? HarnessPackageInstaller.installBuildTools(harnessConfig)
+                : HarnessPackageInstaller.installExtraLanguages(harnessConfig);
+            setupRunning.set(false);
+            writeSetupResult(result);
+            if (result.success) {
+                setStatus(result.message);
+            } else {
+                setStatus("optional install failed");
+                runOnUiThread(() -> showSetupFailure(result.message));
+            }
+        }, "coding-harness-optional-pack").start();
     }
 
     private void showKeyboard() {

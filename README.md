@@ -20,8 +20,9 @@ It is a focused coding harness containing:
   workspace;
 - the Termux bootstrap layer with `apt`/`dpkg`, shell, certificates and base
   Unix tools;
-- first-run installation of Python, Node.js/npm, Perl, Ruby, Git, ripgrep and
-  common build/archive/network utilities;
+- first-run installation of the agentic core — Python/pip, Node.js/npm, Git,
+  ripgrep and small utilities — with the compiler toolchain (clang/cmake)
+  and extra languages (Perl, Ruby) as on-demand packs (docs/size-management.md);
 - a one-shot command runner for agent tools;
 - explicit tool discovery and a setup/retry path in the standalone UI.
 
