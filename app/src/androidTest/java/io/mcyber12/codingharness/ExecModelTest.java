@@ -116,8 +116,14 @@ public class ExecModelTest {
         //     to translate the interpreter path and start it itself.
         File script = new File(context.getFilesDir(), "sealed-shebang.sh");
         write(script, "#!" + OFFICIAL_PREFIX + "/bin/harness-probe\n");
-        // The preload lives at the harness root, i.e. above the dpkg fsys root.
-        File preload = new File(config().rootfs.getParentFile(), "libharness-exec.so");
+        // The preload ships in the APK. With extractNativeLibs (the sealed
+        // build) it is already a real file in nativeLibraryDir; otherwise the
+        // bootstrap copies it to the harness root. Prefer the APK's own copy —
+        // that is the path the sealed design uses.
+        File preload = new File(nativeDir, "libharness-exec.so");
+        if (!preload.isFile()) {
+            preload = new File(config().rootfs.getParentFile(), "libharness-exec.so");
+        }
         assertTrue("preload library missing: " + preload, preload.isFile());
         List<String> env = new ArrayList<>();
         env.add("LD_PRELOAD=" + preload.getAbsolutePath());
