@@ -148,3 +148,11 @@ release during the build and is pinned by version and SHA-256 in
 be merged cleanly.
 
 See `TERMUX_SOURCE.md` for the integration and update procedure.
+
+## Architecture and distribution
+
+`ARCHITECTURE.md` describes the module layout, the on-device runtime
+layout, the exec/preload translation layer, the provisioning module and
+its invariants, how verification works, and the constraints on Google
+Play distribution (target API level, W^X execution, downloaded-code
+policy).
