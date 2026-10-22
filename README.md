@@ -27,8 +27,9 @@ It is a focused coding harness containing:
 - explicit tool discovery and a setup/retry path in the standalone UI.
 
 The first-run package setup uses the official Termux package repository. After
-setup, the terminal has `python`, `node`, `npm`, `perl`, `ruby`, `git`, `rg`,
-`bash`, `curl`, `make`, `tar`, `zip` and related tools in its private prefix.
+setup, the terminal has `python`, `pip`, `node`, `npm`, `git`, `rg`, `bash`,
+`curl` and related core tools in its private prefix; `clang`/`cmake`/`make`
+and `perl`/`ruby` install on demand from the TOOLS dialog.
 The package installation is done inside the app sandbox; it does not need
 Termux to be installed separately.
 

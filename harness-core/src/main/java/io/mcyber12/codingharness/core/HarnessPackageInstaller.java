@@ -197,8 +197,7 @@ public final class HarnessPackageInstaller {
         try {
             HarnessCommandRunner runner = new HarnessCommandRunner(config);
             if (!packageListsAreFresh(config)) {
-                HarnessCommandRunner.CommandResult update = runner.run(
-                    Arrays.asList("apt-get", "update"), 30 * 60_000L);
+                HarnessCommandRunner.CommandResult update = updateWithRetry(runner);
                 if (!update.isSuccess()) {
                     return new InstallResult(false, label + ": apt-get update failed: "
                         + compact(update.output));
@@ -319,6 +318,23 @@ public final class HarnessPackageInstaller {
         }
         if (file.delete()) return bytes;
         return 0L;
+    }
+
+    /**
+     * apt-get update with one retry after a pause. Termux republishes its
+     * index frequently and the CDN can briefly serve a stale InRelease
+     * against a newer Packages file ("File has unexpected size ..."),
+     * which fails an otherwise healthy update; the window closes in
+     * seconds, so a single backed-off retry makes setup robust without
+     * hiding real failures (a persistent error still surfaces verbatim).
+     */
+    private static HarnessCommandRunner.CommandResult updateWithRetry(HarnessCommandRunner runner)
+            throws IOException, InterruptedException {
+        HarnessCommandRunner.CommandResult update = runner.run(
+            Arrays.asList("apt-get", "update"), 30 * 60_000L);
+        if (update.isSuccess()) return update;
+        Thread.sleep(20_000L);
+        return runner.run(Arrays.asList("apt-get", "update"), 30 * 60_000L);
     }
 
     /** One-line on-device state check shown in the setup dialog. */
