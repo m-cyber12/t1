@@ -108,6 +108,21 @@ jobs:
         shell: bash
         run: bash scripts/run-emulator-e2e.sh
 
+      # A skipped test is not a pass: ExecModelTest skips itself in builds that
+      # do not extract native libraries, so assert it actually ran.
+      - name: Assert the measurement actually ran
+        shell: bash
+        run: |
+          set -euo pipefail
+          LOG=$(ls app/build/outputs/androidTest-results/connected/*.xml 2>/dev/null | head -1)
+          echo "result xml: ${LOG:-none}"
+          grep -h -o 'tests="[0-9]*"[^>]*failures="[0-9]*"[^>]*skipped="[0-9]*"'             app/build/outputs/androidTest-results/connected/*.xml || true
+          if grep -q 'skipped="1"' app/build/outputs/androidTest-results/connected/*.xml; then
+            echo "ExecModelTest was skipped - the sealed variant is not sealing" >&2
+            exit 1
+          fi
+          grep -q 'failures="0"' app/build/outputs/androidTest-results/connected/*.xml
+
       - name: Publish diagnostics
         if: always()
         shell: bash

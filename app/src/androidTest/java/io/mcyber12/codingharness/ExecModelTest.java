@@ -23,6 +23,7 @@ import java.util.concurrent.TimeUnit;
 import io.mcyber12.codingharness.core.HarnessConfig;
 import io.mcyber12.codingharness.core.exec.ExecAudit;
 
+import static org.junit.Assume.assumeTrue;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -76,7 +77,18 @@ public class ExecModelTest {
 
         File nativeDir = new File(context.getApplicationInfo().nativeLibraryDir);
         File probe = new File(nativeDir, PROBE_BINARY);
-        assertTrue("probe library missing from the APK: " + probe, probe.isFile());
+        // Only the sealed variant extracts native libraries (extractNativeLibs
+        // in app/src/sealed/AndroidManifest.xml). In the shipping build the APK
+        // has no exec-allowed directory at all, so there is nothing to measure
+        // here and the test is skipped rather than reported as a failure — the
+        // exec-model gate asserts that this skip did not happen.
+        assumeTrue("not a sealed build (no extracted native libraries); "
+                + "the exec model only exists in the sealed variant: " + probe,
+            probe.isFile());
+
+        // The audit below is meaningful even when the probe is absent, but the
+        // measurement steps are not; keep the reason visible in the log.
+        android.util.Log.i("ExecModel", "measuring the sealed exec model at targetSdk " + targetSdk);
 
         // (1) The native library directory is executable at every target.
         Outcome fromNative = execute(probe.getAbsolutePath(), null, null);
@@ -250,6 +262,7 @@ public class ExecModelTest {
 
     /** Append to the same report file the setup E2E uses, so CI shows it. */
     private void report(String line) {
+        android.util.Log.i("ExecModel", line);
         File external = context.getExternalFilesDir(null);
         if (external == null) return;
         File report = new File(external, "setup-e2e-report.txt");
