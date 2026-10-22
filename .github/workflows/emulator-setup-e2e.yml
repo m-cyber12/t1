@@ -68,6 +68,19 @@ jobs:
           set -o pipefail
           ./gradlew --no-daemon --stacktrace :app:assembleDebug :app:assembleDebugAndroidTest 2>&1 | tee gradle-assemble.log
 
+      # The sandbox/CI log endpoints are unreliable; publish the compiler
+      # output to the diagnostics branch so a build failure is readable.
+      - name: Publish build failure log
+        if: failure()
+        shell: bash
+        run: |
+          mkdir -p diagnostics/e2e-logs
+          tail -c 60000 gradle-assemble.log > diagnostics/e2e-logs/gradle-assemble-tail.log 2>/dev/null || true
+          grep -E 'error:|\.java:[0-9]+' gradle-assemble.log > diagnostics/e2e-logs/build-errors.log 2>/dev/null || true
+          git add diagnostics/ || true
+          git -c user.email=ci@invalid -c user.name=ci commit -qm "build failure ${GITHUB_RUN_ID} [ci]" || true
+          git push origin "HEAD:refs/heads/diagnostics/e2e-${GITHUB_RUN_ID}" --force || true
+
       - name: Run full setup E2E on emulator (manual emulator, self-publishing logs)
         shell: bash
         run: bash scripts/run-emulator-e2e.sh
