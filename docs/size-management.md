@@ -49,9 +49,49 @@ Notes:
    info/locale payloads and Python `__pycache__` caches — never
    binaries, libraries, headers, stdlib code, or user site-packages.
    Reinstalling a package restores anything pruned.
-5. **Measurement, not estimates.** `HarnessSizeReport` reads dpkg's
+5. **Storage truth = unique bytes.** Termux uses hard links heavily
+   (git-core exposes ~180 command names for one binary), so "size of
+   every path added up" overstates storage ~4x. The report prints
+   unique-inode bytes as the figure to budget against, alongside the
+   apparent total, and "not tracked by dpkg" must stay at 0.
+6. **Measurement, not estimates.** `HarnessSizeReport` reads dpkg's
    `Installed-Size` database, attributes bytes to tiers, lists the
    largest packages, and walks the prefix/cache. It is shown in the
    TOOLS dialog, appended to setup results, printed by the emulator
    E2E, and covered by unit tests. New packages may only join the core
    tier with a measured size justification in review.
+
+## Measured results (emulator E2E, run 39769843224, 3/3 tests)
+
+Default (core) install, x86_64 emulator:
+
+```
+all packages: 291.2 MiB (107 packages, dpkg Installed-Size)
+core (default): 137.2 MiB
+build tools (on demand): 0 B (0/4 installed)
+extra languages (on demand): 0 B (0/2 installed)
+base system + shared libraries: 154.0 MiB
+largest packages: nodejs 50.3, libicu 42.4, python 25.6, git 24.4, npm 17.8
+apt download cache: 0 B
+unique bytes on disk: 250.0 MiB (apparent 1017.6 MiB)
+not tracked by dpkg: 0 B
+largest directories (apparent / unique):
+  libexec 543.0 / 21.2 MiB   <- git-core hard links
+  bin     221.9 / 79.4 MiB
+  lib     217.5 / 115.2 MiB
+```
+
+Interpretation:
+
+- The ~1.2 GB reported on-device was largely **apparent** size: one
+  `libexec` tree weighs 543 MiB by name but only 21.2 MiB on disk.
+- Real footprint of the default harness is **~250 MiB unique**, of which
+  ~137 MiB is the core tier and ~113 MiB the Termux base system.
+- On-demand packs are genuinely absent from a default install (0 B), and
+  installing the extra languages pack costs ~114 MiB (405.1 MiB total)
+  while reclaiming 33.8 MiB through hygiene.
+- Remaining large items are irreducible for an agent harness: the Node
+  runtime + ICU (92.7 MiB combined) is what runs JS/TS projects and
+  `npx`-based MCP servers; python 25.6 MiB; git 24.4 MiB.
+- Setup time fell with the smaller set: the connected-test stage
+  dropped from 1h05m to 13m57m on the same image.
