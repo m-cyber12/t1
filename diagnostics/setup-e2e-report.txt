@@ -1,0 +1,30 @@
+[1792665780401] a01 start; prefix=/data/user/0/io.mcyber12.codingharness/files/coding-harness/rootfs/data/data/com.termux/files/usr
+[1792665847272] a01 bootstrap + cert + keyring installed
+[1792665847367] a01 java DNS: 172.67.200.228 104.21.44.149 2606:4700:3037::6815:2c95 2606:4700:3030::ac43:c8e4
+[1792665855475] a01 termux curl probe exit=0 http=200
+[1792665868636] a01 apt-get update exit=0 : Get:1 https://packages-cf.termux.dev/apt/termux-main stable InRelease [14.0 kB] Get:2 https://packages-cf.termux.dev/apt/termux-main stable/main x86_64 Packages [586 kB] Fetched 600 kB in 6s (104 kB/s) Reading package lists...
+[1792665868647] a01 package lists=1
+[1792665881659] a01 apt-get install jq exit=0 : Reading package lists... Building dependency tree... The following additional packages will be installed:   oniguruma The following NEW packages will be installed:   jq oniguruma 0 upgraded, 2 newly installed, 0 to remove and 55 not upgraded. Need to get 342 kB of archives. After this operation, 126
+[1792665888379] a01 jq --version exit=0 : jq-1.8.2
+[1792665888383] A01 SUCCESS
+[1792665888506] a02 start; prefix=/data/user/0/io.mcyber12.codingharness/files/coding-harness/rootfs/data/data/com.termux/files/usr
+[1792665888773] MainActivity launched; waiting for automatic setup
+[1792665888815] waiting… ready=bash=Y git=n rg=n python=n pip=n node=n npm=n curl=Y
+[1792665903891] waiting… ready=bash=Y git=n rg=n python=n pip=n node=n npm=n curl=Y
+[1792665918964] waiting… ready=bash=Y git=n rg=n python=n pip=n node=n npm=n curl=Y
+[1792665933987] waiting… ready=bash=Y git=n rg=n python=n pip=n node=n npm=n curl=Y
+[1792665949016] waiting… ready=bash=Y git=n rg=n python=n pip=n node=n npm=n curl=Y
+[1792665964053] waiting… ready=bash=Y git=n rg=n python=n pip=n node=n npm=n curl=Y
+[1792665979106] waiting… ready=bash=Y git=n rg=n python=n pip=n node=n npm=n curl=Y
+[1792665994132] waiting… ready=bash=Y git=n rg=n python=n pip=n node=n npm=n curl=Y
+[1792666009154] waiting… ready=bash=Y git=n rg=n python=n pip=n node=n npm=n curl=Y
+[1792666024193] waiting… ready=bash=Y git=n rg=n python=n pip=n node=n npm=n curl=Y
+[1792666039219] waiting… ready=bash=Y git=n rg=n python=n pip=n node=n npm=n curl=Y
+[1792666054265] waiting… ready=bash=Y git=n rg=n python=n pip=n node=n npm=n curl=Y
+[1792666069513] waiting… ready=bash=Y git=Y rg=n python=n pip=n node=n npm=n curl=Y
+[1792666084577] waiting… ready=bash=Y git=Y rg=n python=n pip=n node=Y npm=n curl=Y
+[1792666099591] toolchain executables present; verifying each tool runs
+[1792666131268] python --version -> exit 0 : Python 3.14.8
+[1792666166119] python -c import ssl, json, sqlite3; print('py-ssl', ssl.OPENSSL_VERSION) -> exit 0 : py-ssl OpenSSL 3.6.5 29 Sep 2026
+[1792666199093] node --version -> exit 0 : v26.12.1
+[1792666222499] node -e console.log('node-ok', process.version) -> exit 0 : node-ok v26.12.1
