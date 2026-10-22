@@ -1,0 +1,40 @@
+[1792671069660] a01 start; prefix=/data/user/0/io.mcyber12.codingharness/files/coding-harness/rootfs/data/data/com.termux/files/usr
+[1792671152947] a01 bootstrap + cert + keyring installed
+[1792671153019] a01 java DNS: 172.67.200.228 104.21.44.149 2606:4700:3037::6815:2c95 2606:4700:3030::ac43:c8e4
+[1792671160742] a01 termux curl probe exit=0 http=200
+[1792671174450] a01 apt-get update exit=0 : Get:1 https://packages-cf.termux.dev/apt/termux-main stable InRelease [14.0 kB] Get:2 https://packages-cf.termux.dev/apt/termux-main stable/main x86_64 Packages [586 kB] Fetched 600 kB in 6s (102 kB/s) Reading package lists...
+[1792671174466] a01 package lists=1
+[1792671185955] a01 apt-get install jq exit=0 : Reading package lists... Building dependency tree... The following additional packages will be installed:   oniguruma The following NEW packages will be installed:   jq oniguruma 0 upgraded, 2 newly installed, 0 to remove and 55 not upgraded. Need to get 342 kB of archives. After this operation, 126
+[1792671192877] a01 jq --version exit=0 : jq-1.8.2
+[1792671192882] A01 SUCCESS
+[1792671193029] a02 start; prefix=/data/user/0/io.mcyber12.codingharness/files/coding-harness/rootfs/data/data/com.termux/files/usr
+[1792671193344] MainActivity launched; waiting for automatic setup
+[1792671193490] waiting… ready=bash=Y git=n rg=n python=n pip=n node=n npm=n curl=Y
+[1792671208559] waiting… ready=bash=Y git=n rg=n python=n pip=n node=n npm=n curl=Y
+[1792671223591] waiting… ready=bash=Y git=n rg=n python=n pip=n node=n npm=n curl=Y
+[1792671238709] waiting… ready=bash=Y git=n rg=n python=n pip=n node=n npm=n curl=Y
+[1792671253760] waiting… ready=bash=Y git=n rg=n python=n pip=n node=n npm=n curl=Y
+[1792671268807] waiting… ready=bash=Y git=n rg=n python=n pip=n node=n npm=n curl=Y
+[1792671283861] waiting… ready=bash=Y git=n rg=n python=n pip=n node=n npm=n curl=Y
+[1792671298926] waiting… ready=bash=Y git=n rg=n python=n pip=n node=n npm=n curl=Y
+[1792671313962] waiting… ready=bash=Y git=n rg=n python=n pip=n node=n npm=n curl=Y
+[1792671329025] waiting… ready=bash=Y git=n rg=n python=n pip=n node=n npm=n curl=Y
+[1792671344057] waiting… ready=bash=Y git=n rg=n python=n pip=n node=n npm=n curl=Y
+[1792671359141] waiting… ready=bash=Y git=n rg=n python=n pip=n node=n npm=n curl=Y
+[1792671374172] waiting… ready=bash=Y git=n rg=n python=n pip=n node=n npm=n curl=Y
+[1792671389245] waiting… ready=bash=Y git=Y rg=n python=n pip=n node=n npm=n curl=Y
+[1792671404336] waiting… ready=bash=Y git=Y rg=n python=n pip=n node=n npm=n curl=Y
+[1792671419425] waiting… ready=bash=Y git=Y rg=n python=n pip=n node=Y npm=n curl=Y
+[1792671434526] waiting… ready=bash=Y git=Y rg=n python=Y pip=n node=Y npm=Y curl=Y
+[1792671449577] toolchain executables present; verifying each tool runs
+[1792671496594] python --version -> exit 0 : Python 3.14.8
+[1792671542558] python -c import ssl, json, sqlite3; print('py-ssl', ssl.OPENSSL_VERSION) -> exit 0 : py-ssl OpenSSL 3.6.5 29 Sep 2026
+[1792671594629] node --version -> exit 0 : v26.12.1
+[1792671615982] node -e console.log('node-ok', process.version) -> exit 0 : node-ok v26.12.1
+[1792671640885] npm --version -> exit 0 : 11.21.1
+[1792671669542] pip --version -> exit 0 : pip 26.2.2 from /data/user/0/io.mcyber12.codingharness/files/coding-harness/rootfs/data/data/com.termux/files/usr/lib/python3.14/site-packages/pip (python 3.14)
+[1792671679174] git --version -> exit 0 : git version 2.56.0
+[1792671689613] rg --version -> exit 0 : ripgrep 15.2.0  features:+pcre2 simd(compile):+SSE2,+SSSE3,-AVX2 simd(runtime):+SSE2,+SSSE3,-AVX2  PCRE2 10.45 is available (JIT is available)
+[1792671699719] jq --version -> exit 0 : jq-1.8.2
+[1792671699726] perl present by default: false
+[1792671699731] default install correctly excludes on-demand packs (clang/cmake/ruby)
