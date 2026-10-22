@@ -156,3 +156,10 @@ layout, the exec/preload translation layer, the provisioning module and
 its invariants, how verification works, and the constraints on Google
 Play distribution (target API level, W^X execution, downloaded-code
 policy).
+
+`docs/play-store-plan.md` is the way through those constraints: a *sealed*
+build that ships every executable as a JNI library inside the APK and keeps
+the Termux prefix shape with symlinks, so the harness can target a
+store-legal API level. The mechanism (`ExecAudit`, `SealedLayout`) and its
+on-device gate (`ExecModelTest`, `ci/play-exec-model.yml`) are in the tree;
+the payload packaging is the remaining work.

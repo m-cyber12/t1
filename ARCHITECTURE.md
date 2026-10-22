@@ -289,10 +289,15 @@ parsing. Details and a file-by-file mapping are in
 
 ## 10. Distribution and Google Play readiness
 
-Short answer: **as architected, this app cannot be published on Google
-Play today — and that is not caused by anything in the recent work.**
-The blockers are structural and identical to the ones that pushed
-Termux itself off the Play Store. Three independent reasons:
+**The migration plan is `docs/play-store-plan.md`; the execution model it
+relies on is implemented (`harness-core/.../core/exec/`) and measured by the
+`ExecModelTest` gate. Read this section as the constraint analysis and that
+document as the way through it.**
+
+Short answer: **the current build cannot be published on Google Play, and
+that is not caused by anything in the recent work.** The blockers are
+structural and identical to the ones that pushed Termux itself off the Play
+Store. Three independent reasons:
 
 ### 10.1 Target API level
 
@@ -350,7 +355,31 @@ submission is attempted:
 | minSdk | 29 — fine | — |
 | Edge-to-edge / API 36 behaviours | Not applicable yet (targets 28) | Handle insets if the target is ever raised |
 
-### 10.5 Realistic distribution options
+### 10.5 The way out: a sealed userland
+
+Both blockers 10.2 and 10.3 come from one property: the bytes the kernel
+executes live in app-private storage and arrive over the network. Android
+allows `execve` only from the APK's native library directory, and Play allows
+native code only from the APK, so a publishable build has to ship its
+executables and keep everything else as data:
+
+- every executable in the prefix becomes a **symlink** into `nativeLibraryDir`
+  (`SealedLayout`), which keeps its absolute path — apt, dpkg and every `#!`
+  line keep working — while the inode that runs came out of the APK;
+- everything that is only *read* (stdlib, gems, node_modules, `#!`` scripts)
+  is extracted from an asset payload;
+- scripts are never `execve`-d: the existing preload translates their
+  interpreter, which is why dpkg's maintainer scripts survived relocation in
+  the first place;
+- optional packs become **Play Feature Delivery modules** instead of
+  `apt install`, so on-demand installs are still Play downloads.
+
+`ExecAudit` answers "is this install publishable?" with a number — executable
+entries in the prefix that are not backed by the APK — and the sealed build
+asserts it is zero. This changes nothing for the current `.deb`-based build,
+which remains the only one that can install new native code on demand.
+
+### 10.6 Realistic distribution options
 
 1. **F-Droid / direct APK (recommended today).** Same model as Termux;
    no target-API floor and no downloaded-code policy. This is what the

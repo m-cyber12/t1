@@ -3,7 +3,15 @@
 # the connected E2E test. Every phase is logged to e2e-logs/ and published to
 # refs/heads/diagnostics/e2e on exit (trap), so progress and the exact
 # failing phase are visible even when CI logs/artifacts are unreachable.
+# Environment knobs (used by the exec-model gate, which needs no repository
+# access and runs a single measurement test):
+#   E2E_TEST_TASK   gradle task to run (default :app:connectedDebugAndroidTest)
+#   E2E_TEST_CLASS  optional instrumentation class filter
+#   E2E_LEAN=1      skip the connectivity wait (no package downloads needed)
 cd "$(dirname "$0")/.." || exit 1
+
+E2E_TEST_TASK="${E2E_TEST_TASK:-:app:connectedDebugAndroidTest}"
+E2E_TEST_CLASS="${E2E_TEST_CLASS:-}"
 
 mkdir -p e2e-logs diagnostics
 SDK="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-}}"
@@ -152,6 +160,10 @@ done
 # framework a long real-time window to associate and get DHCP, polling
 # for an actual default network instead of fixed short sleeps.
 net_ok=""
+if [ -n "${E2E_LEAN:-}" ]; then
+  echo "lean mode: skipping the connectivity wait (this gate needs no network)" >> e2e-logs/network.log
+  net_ok=lean
+else
 for i in $(seq 1 45); do
   default_net="$("$ADB" shell dumpsys connectivity 2>/dev/null | grep -m1 'Active default network:' || true)"
   wlan_ip="$("$ADB" shell ip addr show wlan0 2>/dev/null | grep -m1 'inet ' || true)"
@@ -166,6 +178,7 @@ for i in $(seq 1 45); do
   fi
   sleep 20
 done
+fi
 {
   echo "--- ip addr after wifi wait (net_ok=$net_ok) ---"; "$ADB" shell ip addr 2>&1 | grep -A2 -E "eth0|wlan0"
   echo "--- wifi status ---"; "$ADB" shell cmd wifi status 2>&1 | head -20
@@ -194,9 +207,14 @@ done
 publish
 
 phase "connected-test"
-./gradlew --no-daemon --stacktrace :app:connectedDebugAndroidTest > e2e-logs/connected-test.log 2>&1
+TEST_ARGS=""
+if [ -n "$E2E_TEST_CLASS" ]; then
+  TEST_ARGS="-Pandroid.testInstrumentationRunnerArguments.class=$E2E_TEST_CLASS"
+fi
+echo "task=$E2E_TEST_TASK class=${E2E_TEST_CLASS:-<all>}" >> e2e-logs/phases.log
+./gradlew --no-daemon --stacktrace "$E2E_TEST_TASK" $TEST_ARGS > e2e-logs/connected-test.log 2>&1
 RC=$?
-echo "connectedDebugAndroidTest exit=$RC" | tee -a e2e-logs/phases.log
+echo "$E2E_TEST_TASK exit=$RC" | tee -a e2e-logs/phases.log
 "$ADB" shell cat /sdcard/Android/data/io.mcyber12.codingharness/files/setup-e2e-report.txt > e2e-logs/device-report.log 2>&1 || true
 "$ADB" pull /sdcard/Android/data/io.mcyber12.codingharness/files/setup-e2e-report.txt ./setup-e2e-report.txt >> e2e-logs/phases.log 2>&1 || true
 "$ADB" shell run-as io.mcyber12.codingharness cat files/coding-harness/bootstrap-error.log > e2e-logs/bootstrap-error.log 2>&1 || true

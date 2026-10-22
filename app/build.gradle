@@ -43,10 +43,44 @@ android {
     // HarnessBootstrap.ensureHarnessExecLibrary), because modern AGP keeps
     // .so files compressed and a dlopen() path cannot point into the APK.
 
+    // The androidTest variant follows this property, so a build type other than
+    // `debug` can be instrumented without changing the default pipeline:
+    //   ./gradlew :app:connectedSealedAndroidTest -PharnessTestBuildType=sealed
+    testBuildType = (findProperty("harnessTestBuildType") ?: "debug").toString()
+
+    packagingOptions {
+        // The sealed variant ships a PIE executable under a JNI library name
+        // (see terminal-emulator/src/main/jni/harness-probe.c). Stripping an
+        // executable is not the same operation as stripping a library, so it
+        // is excluded rather than trusted to survive --strip-unneeded.
+        jniLibs {
+            keepDebugSymbols.add("**/libharnessprobe.so")
+        }
+    }
+
     buildTypes {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
+        }
+        // `sealed`: the store-shaped build (docs/play-store-plan.md).
+        //
+        // Two things change, and only these two:
+        //   * app/src/sealed/AndroidManifest.xml sets extractNativeLibs=true,
+        //     so the executables this build ships are extracted to the native
+        //     library directory as real files. Without that they stay inside
+        //     the APK, where nothing can execve() them.
+        //   * it is built with -PharnessTargetSdk=34, i.e. the target a store
+        //     submission would need, which is the point of the variant: the
+        //     data-dir exec exemption is gone, so anything that still runs
+        //     proves the sealed layout carries the harness.
+        // It is debuggable so instrumentation and run-as can inspect it; it
+        // shares the debug signing key and the shipping applicationId, exactly
+        // like the `smoke` variant in the reference harness.
+        sealed {
+            initWith(getByName("debug"))
+            isDebuggable = true
+            matchingFallbacks.addAll(["debug", "release"])
         }
     }
 

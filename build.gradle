@@ -10,7 +10,11 @@ ext {
     // API 29+, while the Termux-style runtime requires those files to run.
     // Keep the compatibility target until the runtime is packaged through the
     // native-library execution path instead of being installed under files/.
-    targetSdkVersion = 28
+    //
+    // Overridable so the sealed variant (see docs/play-store-plan.md) can be
+    // built and tested at a store-legal target without touching the shipping
+    // default:  ./gradlew :app:assembleSealed -PharnessTargetSdk=34
+    targetSdkVersion = (findProperty("harnessTargetSdk") ?: 28) as Integer
     compileSdkVersion = 35
     ndkVersion = "27.2.12479018"
 }

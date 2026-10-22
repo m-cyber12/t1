@@ -2,6 +2,31 @@ plugins {
     id "com.android.library"
 }
 
+// ---------------------------------------------------------------------------
+// Executable probe (measurement, not product code)
+//
+// Android's rule for apps targeting API 29+ is that only the native library
+// directory is executable. This module ships the smallest PIE executable that
+// proves it, under a JNI library name so the packaging step puts it there:
+//
+//     libharnessprobe.so   built from src/main/jni/harness-probe.c
+//
+// It is built with the NDK's own clang for each shipped ABI rather than through
+// ndk-build, because ndk-build's BUILD_EXECUTABLE output has no `lib*.so` name
+// and would not be packaged into `lib/<abi>/`. The on-device gate (see
+// app/src/androidTest/.../ExecModelTest.java) executes it from the native
+// library directory, through a prefix symlink, and from a `#!` line, and
+// expects all three to work at a modern targetSdk — while the same bytes copied
+// into app-private storage are expected to fail.
+// ---------------------------------------------------------------------------
+
+def probeSource = file("src/main/jni/harness-probe.c")
+def probeOutput = layout.buildDirectory.dir("generated/probe-jniLibs")
+def probeTargets = [
+    "arm64-v8a": "aarch64-linux-android29",
+    "x86_64"   : "x86_64-linux-android29",
+]
+
 android {
     namespace "com.termux.emulator"
     compileSdk rootProject.ext.compileSdkVersion
@@ -26,6 +51,20 @@ android {
         }
     }
 
+    sourceSets {
+        main {
+            jniLibs.srcDir(probeOutput)
+        }
+    }
+
+    packaging {
+        jniLibs {
+            // Never strip the probe: it is an executable, and a stripped
+            // executable is not obviously still an executable.
+            keepDebugSymbols.add("**/libharnessprobe.so")
+        }
+    }
+
     buildTypes {
         release {
             minifyEnabled false
@@ -43,6 +82,41 @@ android {
     testOptions {
         unitTests.returnDefaultValues = true
     }
+}
+
+def buildExecProbe = tasks.register("buildExecProbe") {
+    description = "Compiles the executable probe as libharnessprobe.so per ABI"
+    inputs.file(probeSource)
+    outputs.dir(probeOutput)
+    doLast {
+        File ndk = android.ndkDirectory
+        String osName = System.getProperty("os.name", "").toLowerCase()
+        String hostTag = osName.contains("mac") ? "darwin-x86_64"
+            : osName.contains("windows") ? "windows-x86_64"
+            : "linux-x86_64"
+        File bin = new File(ndk, "toolchains/llvm/prebuilt/${hostTag}/bin")
+        if (!bin.isDirectory()) {
+            throw new GradleException("NDK clang not found at ${bin}")
+        }
+        probeTargets.each { abi, triple ->
+            File compiler = new File(bin, "${triple}-clang")
+            if (!compiler.isFile()) {
+                throw new GradleException("Missing NDK compiler ${compiler}")
+            }
+            File output = new File(probeOutput.get().asFile, "${abi}/libharnessprobe.so")
+            output.parentFile.mkdirs()
+            providers.exec {
+                commandLine compiler.absolutePath, "-O2", "-fPIE", "-pie",
+                    "-o", output.absolutePath, probeSource.absolutePath
+            }.result.get().assertNormalExitValue()
+            if (!output.isFile()) throw new GradleException("Probe was not produced: ${output}")
+            logger.lifecycle("exec probe: ${output} (${output.length()} bytes)")
+        }
+    }
+}
+
+tasks.matching { it.name in ["preBuild"] }.configureEach {
+    dependsOn(buildExecProbe)
 }
 
 dependencies {

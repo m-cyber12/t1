@@ -1,0 +1,127 @@
+name: Exec model (targetSdk 34)
+
+# The publishability gate (docs/play-store-plan.md).
+#
+# The shipping build targets API 28, because it executes the userland it
+# installed under its own data directory — which Android 10+ forbids for apps
+# targeting 29+. This workflow builds the *sealed* variant at targetSdk 34
+# (extractNativeLibs=true, executables shipped as JNI libraries) and runs a
+# single measurement test on an emulator that asserts, on the device:
+#
+#   * a file in the native library directory executes;
+#   * the same bytes copied into app-private storage do NOT execute;
+#   * a prefix symlink into the native library directory DOES execute;
+#   * a script whose shebang names the official Termux prefix runs through the
+#     preload (interpreter translated, script only read);
+#   * direct execution of a data-dir script is denied;
+#   * the audit finds zero executables left outside the APK.
+#
+# It needs no network and no package installation, so it is fast and cannot
+# flake on a repository mirror. The full setup E2E (a01–a04) remains the
+# correctness gate for the apt-based build.
+#
+# Authored at ci/play-exec-model.yml and copied into .github/workflows/.
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ["arena/**"]
+    paths:
+      - "app/**"
+      - "harness-core/**"
+      - "terminal-emulator/**"
+      - "scripts/**"
+      - "ci/play-exec-model.yml"
+      - ".github/workflows/play-exec-model.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  exec-model:
+    name: Sealed build / exec model at targetSdk 34
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+
+    env:
+      E2E_TEST_TASK: ":app:connectedSealedAndroidTest"
+      E2E_TEST_CLASS: "io.mcyber12.codingharness.ExecModelTest"
+      E2E_LEAN: "1"
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: gradle
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+        with:
+          packages: 'platform-tools platforms;android-35 build-tools;35.0.0 ndk;27.2.12479018'
+
+      - name: Build the sealed variant at targetSdk 34
+        shell: bash
+        run: |
+          set -o pipefail
+          ./gradlew --no-daemon --stacktrace \
+            -PharnessTargetSdk=34 \
+            -PharnessTestBuildType=sealed \
+            :app:assembleSealed :app:assembleSealedAndroidTest 2>&1 | tee gradle-sealed.log
+
+      # The whole point of the variant: prove the APK really carries the exec
+      # policy it claims to. If extractNativeLibs silently stayed false, the
+      # on-device test would fail in a much more confusing way.
+      - name: Verify the sealed APK shape
+        shell: bash
+        run: |
+          set -euo pipefail
+          AAPT2="$(ls "$ANDROID_HOME"/build-tools/*/aapt2 | head -1)"
+          APK="$(ls app/build/outputs/apk/sealed/*.apk | head -1)"
+          echo "apk=$APK"
+          "$AAPT2" dump badging "$APK" | grep -E "package:|targetSdkVersion|native-code" || true
+          "$AAPT2" dump xmltree --file AndroidManifest.xml "$APK" > manifest-tree.txt
+          grep -A1 "extractNativeLibs" manifest-tree.txt || true
+          if ! grep -q "extractNativeLibs" manifest-tree.txt; then
+            echo "extractNativeLibs is not set in the sealed manifest" >&2; exit 1
+          fi
+          unzip -l "$APK" | grep -E "lib/.*/(libharnessprobe|libharness-exec)\.so" || {
+            echo "expected native libraries are missing from the APK" >&2; exit 1; }
+
+      - name: Run the exec-model measurement on an emulator
+        shell: bash
+        run: bash scripts/run-emulator-e2e.sh
+
+      - name: Publish diagnostics
+        if: always()
+        shell: bash
+        run: |
+          mkdir -p diagnostics
+          cp ./setup-e2e-report.txt diagnostics/setup-e2e-report.txt 2>/dev/null \
+            || echo "no setup-e2e-report.txt pulled" > diagnostics/setup-e2e-report.txt
+          cp manifest-tree.txt diagnostics/ 2>/dev/null || true
+          for x in app/build/outputs/androidTest-results/connected/*.xml; do
+            [ -f "$x" ] && cp "$x" diagnostics/
+          done
+          date -u +"exec-model finished %Y-%m-%dT%H:%M:%SZ run=${GITHUB_RUN_ID}" \
+            > diagnostics/exec-model-status.txt
+          git add diagnostics/
+          git -c user.email=ci@invalid -c user.name=ci-e2e \
+            commit -qm "exec model results ${GITHUB_RUN_ID} [ci]" || true
+          git push origin "HEAD:refs/heads/diagnostics/exec-model-${GITHUB_RUN_ID}" --force
+
+      - name: Upload results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: exec-model-results
+          path: |
+            setup-e2e-report.txt
+            manifest-tree.txt
+            gradle-sealed.log
+            app/build/outputs/androidTest-results/
+          if-no-files-found: warn

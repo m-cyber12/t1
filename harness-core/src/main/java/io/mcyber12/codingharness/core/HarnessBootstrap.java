@@ -16,6 +16,9 @@ import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.zip.ZipEntry;
+
+import io.mcyber12.codingharness.core.exec.ExecAudit;
+import io.mcyber12.codingharness.core.exec.SealedLayout;
 import java.util.zip.ZipInputStream;
 
 /**
@@ -58,7 +61,12 @@ public final class HarnessBootstrap {
         // Also provision on the fast path: installations from before the
         // preload library existed must gain it without a reinstall.
         ensureHarnessExecLibrary(context, config);
-        if (isInstalled(config)) return;
+        if (isInstalled(config)) {
+            // Heal the sealed layout too: an app upgrade may add executables,
+            // and the prefix must never be left pointing at a stale binary.
+            ensureSealedLayout(context, config);
+            return;
+        }
 
         String assetName = assetName();
         File root = harnessRoot(config);
@@ -133,6 +141,64 @@ public final class HarnessBootstrap {
         }
         relocateOfficialPrefixSymlinks(config);
         ensureHarnessExecLibrary(context, config);
+        // Must run after the payload tree exists: sealing replaces executable
+        // files with pointers into the APK's native library directory.
+        ensureSealedLayout(context, config);
+    }
+
+    /** Asset name of the build-generated sealed-exec manifest, when present. */
+    public static final String SEALED_MANIFEST_ASSET = "sealed-exec.txt";
+
+    /**
+     * Apply the sealed file layout, when this build ships one.
+     *
+     * <p>A sealed build packages every executable as a JNI library inside the
+     * APK and records the prefix path it has to answer to in
+     * {@code assets/sealed-exec.txt}. Applying it here keeps the prefix
+     * self-consistent ({@code …/usr/bin/git} still exists, still has its
+     * absolute path, still runs) while the bytes it runs live in the one
+     * location Android allows a modern app to execute from. After applying, an
+     * audit is written to {@code exec-audit.txt} so "is anything left that
+     * needs the data-dir exec exemption?" is answerable from a device.</p>
+     *
+     * <p>Returns null for a non-sealed build (no manifest asset), which is the
+     * current default: those builds install real packages under the prefix and
+     * keep the compatibility target SDK.</p>
+     */
+    public static SealedLayout.Result ensureSealedLayout(Context context, HarnessConfig config) {
+        if (context == null || config == null || config.nativeLibraryDirectory == null) return null;
+        List<SealedLayout.Link> links;
+        try (InputStream input = context.getAssets().open(SEALED_MANIFEST_ASSET)) {
+            links = SealedLayout.parse(readUtf8(input));
+        } catch (IOException absent) {
+            return null;
+        }
+        SealedLayout.Result result =
+            SealedLayout.apply(config.prefix, config.nativeLibraryDirectory, links);
+        ExecAudit.Report report = ExecAudit.audit(config.prefix, config.nativeLibraryDirectory);
+        writeText(new File(harnessRoot(config), "exec-audit.txt"),
+            result.summary() + "\n" + report.toText());
+        return result;
+    }
+
+    private static String readUtf8(InputStream input) throws IOException {
+        java.io.ByteArrayOutputStream buffer = new java.io.ByteArrayOutputStream();
+        byte[] chunk = new byte[8192];
+        int count;
+        while ((count = input.read(chunk)) != -1) buffer.write(chunk, 0, count);
+        return new String(buffer.toByteArray(), StandardCharsets.UTF_8);
+    }
+
+    private static void writeText(File file, String text) {
+        try {
+            File parent = file.getParentFile();
+            if (parent != null && !parent.isDirectory()) parent.mkdirs();
+            try (FileOutputStream output = new FileOutputStream(file)) {
+                output.write(text.getBytes(StandardCharsets.UTF_8));
+            }
+        } catch (IOException ignored) {
+            // Diagnostics must never be able to fail an install.
+        }
     }
 
     /** Official Termux data directory every bootstrap/.deb path is built for. */
