@@ -73,6 +73,17 @@ jobs:
             -PharnessTestBuildType=sealed \
             :app:assembleSealed :app:assembleSealedAndroidTest 2>&1 | tee gradle-sealed.log
 
+      - name: Publish build failure log
+        if: failure()
+        shell: bash
+        run: |
+          mkdir -p diagnostics
+          tail -c 60000 gradle-sealed.log > diagnostics/gradle-sealed-tail.log 2>/dev/null || true
+          grep -E 'error:|What went wrong|FAILED' -A5 gradle-sealed.log > diagnostics/gradle-sealed-errors.log 2>/dev/null || true
+          git add diagnostics/ || true
+          git -c user.email=ci@invalid -c user.name=ci commit -qm "sealed build failure ${GITHUB_RUN_ID} [ci]" || true
+          git push origin "HEAD:refs/heads/diagnostics/sealed-${GITHUB_RUN_ID}" --force || true
+
       # The whole point of the variant: prove the APK really carries the exec
       # policy it claims to. If extractNativeLibs silently stayed false, the
       # on-device test would fail in a much more confusing way.

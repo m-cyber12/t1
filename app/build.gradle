@@ -79,7 +79,7 @@ android {
         // like the `smoke` variant in the reference harness.
         sealed {
             initWith(getByName("debug"))
-            isDebuggable = true
+            debuggable = true
             matchingFallbacks.addAll(["debug", "release"])
         }
     }
