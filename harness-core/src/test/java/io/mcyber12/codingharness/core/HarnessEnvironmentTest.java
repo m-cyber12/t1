@@ -238,6 +238,26 @@ public class HarnessEnvironmentTest {
     }
 
     @Test
+    public void sizeReportAttributesTopDirectoriesByBytes() throws Exception {
+        File prefix = new File("/tmp/harness-test-sizes/usr");
+        File big = new File(prefix, "lib/a");
+        big.mkdirs();
+        java.nio.file.Files.write(new File(big, "libx.so").toPath(), new byte[4096]);
+        File small = new File(prefix, "share");
+        small.mkdirs();
+        java.nio.file.Files.write(new File(small, "f.txt").toPath(), new byte[10]);
+        java.nio.file.Files.createSymbolicLink(new File(prefix, "link").toPath(),
+            new File("/nonexistent/target").toPath());
+
+        java.util.Map<String, Long> top = HarnessSizeReport.topDirectories(prefix, 2);
+
+        assertEquals(2, top.size());
+        assertEquals(Long.valueOf(4096L), top.get("lib"));
+        assertEquals(Long.valueOf(10L), top.get("share"));
+        assertTrue(!top.containsKey("link")); // symlinks are never followed
+    }
+
+    @Test
     public void sizeReportParsesDpkgStatus() {
         String status = "Package: bash\nStatus: install ok installed\nInstalled-Size: 2048\n\n"
             + "Package: libllvm\nInstalled-Size: 204800\n\n"

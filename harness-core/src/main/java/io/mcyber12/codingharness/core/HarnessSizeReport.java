@@ -97,9 +97,41 @@ public final class HarnessSizeReport {
                 .append(formatBytes(entry.getValue()));
         }
         long cache = directoryBytes(new File(config.prefix, "var/cache/apt/archives"));
+        long onDisk = directoryBytes(config.prefix);
         out.append("\napt download cache: ").append(formatBytes(cache));
-        out.append("\nprefix on disk: ").append(formatBytes(directoryBytes(config.prefix)));
+        out.append("\nprefix on disk: ").append(formatBytes(onDisk));
+        // dpkg only counts files it installed; the bootstrap-era base
+        // system, apt state and any stragglers live on disk outside that
+        // database. Attribute the gap to top-level directories so the
+        // next optimization is a measurement, not a guess.
+        out.append("\nnot tracked by dpkg: ")
+            .append(formatBytes(Math.max(0L, onDisk - total)));
+        out.append("\nlargest directories:");
+        for (Map.Entry<String, Long> entry : topDirectories(config.prefix, 6).entrySet()) {
+            out.append("\n  ").append(entry.getKey()).append(' ')
+                .append(formatBytes(entry.getValue()));
+        }
         return out.toString();
+    }
+
+    /** Byte totals of the prefix's top-level directories, largest first. */
+    static Map<String, Long> topDirectories(File prefix, int limit) {
+        Map<String, Long> sizes = new LinkedHashMap<>();
+        File[] children = prefix.listFiles();
+        if (children == null) return sizes;
+        for (File child : children) {
+            if (java.nio.file.Files.isSymbolicLink(child.toPath())) continue;
+            long bytes = child.isDirectory() ? directoryBytes(child) : child.length();
+            sizes.put(child.getName(), bytes);
+        }
+        List<Map.Entry<String, Long>> sorted = new ArrayList<>(sizes.entrySet());
+        sorted.sort((a, b) -> Long.compare(b.getValue(), a.getValue()));
+        Map<String, Long> result = new LinkedHashMap<>();
+        for (Map.Entry<String, Long> entry : sorted) {
+            if (result.size() >= limit) break;
+            result.put(entry.getKey(), entry.getValue());
+        }
+        return result;
     }
 
     private static long appendTier(StringBuilder out, String label,
