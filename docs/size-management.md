@@ -56,8 +56,10 @@ Notes:
    service verifies afterwards that no core package disappeared and that the
    pack is really gone, and reports the measured bytes reclaimed.
    Core is declared `removable = false`: it is the harness, not a pack.
-   Measured on device (E2E a04): installing build tools takes the prefix to
-   ~1.05 GB, removing them brings it back to ~791 MB — **254 MB reclaimed**.
+   Measured on device (E2E a04, after argv translation landed): installing
+   build tools takes installed packages to 1,045,258,240 B; removing them
+   returns to 424,767,488 B — **byte-for-byte the pre-install size, 620 MB
+   reclaimed**, with `dpkg --audit` clean and apt still usable.
    If a dependency's maintainer script fails during the sweep, the pack is
    still gone, the database is repaired (`dpkg --configure -a`) and the
    result says which dependencies stayed behind.
