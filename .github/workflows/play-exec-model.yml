@@ -109,19 +109,26 @@ jobs:
         run: bash scripts/run-emulator-e2e.sh
 
       # A skipped test is not a pass: ExecModelTest skips itself in builds that
-      # do not extract native libraries, so assert it actually ran.
+      # do not extract native libraries, so assert it actually ran. The run log
+      # is the primary evidence; the JUnit XML is a cross-check.
       - name: Assert the measurement actually ran
         shell: bash
         run: |
-          set -euo pipefail
-          LOG=$(ls app/build/outputs/androidTest-results/connected/*.xml 2>/dev/null | head -1)
-          echo "result xml: ${LOG:-none}"
-          grep -h -o 'tests="[0-9]*"[^>]*failures="[0-9]*"[^>]*skipped="[0-9]*"'             app/build/outputs/androidTest-results/connected/*.xml || true
-          if grep -q 'skipped="1"' app/build/outputs/androidTest-results/connected/*.xml; then
-            echo "ExecModelTest was skipped - the sealed variant is not sealing" >&2
-            exit 1
+          set -uo pipefail
+          RUN_LOG=e2e-logs/connected-test.log
+          grep -E "Tests [0-9]+/[0-9]+ completed" "$RUN_LOG" || true
+          if grep -qE "Tests 1/1 completed\. \(0 skipped\) \(0 failed\)" "$RUN_LOG"; then
+            echo "measurement ran and passed: ok"
+            exit 0
           fi
-          grep -q 'failures="0"' app/build/outputs/androidTest-results/connected/*.xml
+          if grep -q 'skipped="1"' app/build/outputs/androidTest-results/connected/*.xml 2>/dev/null; then
+            echo "ExecModelTest was skipped - the sealed variant is not sealing" >&2
+          else
+            echo "no evidence in the run log that ExecModelTest executed" >&2
+          fi
+          ls -la e2e-logs/ 2>/dev/null || true
+          tail -40 "$RUN_LOG" 2>/dev/null || true
+          exit 1
 
       - name: Publish diagnostics
         if: always()
