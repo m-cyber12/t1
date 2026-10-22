@@ -75,7 +75,19 @@ public class ExecModelTest {
         report("exec-model: targetSdk=" + targetSdk + " abi="
             + android.os.Build.SUPPORTED_ABIS[0]);
 
+
+        // First, the audit: "how much of this install still needs the data-dir
+        // exec exemption?" It works in every variant (an empty prefix answers
+        // zero), so the number is recorded even where the measurement below is
+        // skipped.
         File nativeDir = new File(context.getApplicationInfo().nativeLibraryDir);
+        ExecAudit.Report audit = ExecAudit.audit(config().prefix, nativeDir);
+        report("exec-model: " + audit.toText().replace("\n", " | "));
+        if (targetSdk >= 29) {
+            assertTrue("a targetSdk " + targetSdk + " build may not leave executables in app data: "
+                + audit.outsideApk().size(), audit.publishable());
+        }
+
         File probe = new File(nativeDir, PROBE_BINARY);
         // Only the sealed variant extracts native libraries (extractNativeLibs
         // in app/src/sealed/AndroidManifest.xml). In the shipping build the APK
@@ -86,8 +98,6 @@ public class ExecModelTest {
                 + "the exec model only exists in the sealed variant: " + probe,
             probe.isFile());
 
-        // The audit below is meaningful even when the probe is absent, but the
-        // measurement steps are not; keep the reason visible in the log.
         android.util.Log.i("ExecModel", "measuring the sealed exec model at targetSdk " + targetSdk);
 
         // (1) The native library directory is executable at every target.
@@ -165,16 +175,6 @@ public class ExecModelTest {
         } else {
             assertTrue("expected direct-script-ok at targetSdk " + targetSdk
                 + ", got: " + directRun.output, directRun.output.contains("direct-script-ok"));
-        }
-
-        // (6) Whatever the variant, the audit answers "how much of this install
-        //     still needs the data-dir exemption?" with a number.
-        ExecAudit.Report audit = ExecAudit.audit(config().prefix,
-            new File(context.getApplicationInfo().nativeLibraryDir));
-        report("exec-model: " + audit.toText().replace("\n", " | "));
-        if (targetSdk >= 29) {
-            assertTrue("a targetSdk " + targetSdk + " build may not leave executables in app data: "
-                + audit.outsideApk().size(), audit.publishable());
         }
     }
 

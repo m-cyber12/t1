@@ -168,7 +168,10 @@ delta) is the natural first feature module.
 
 ## 5. Status: what is proven, what is measured, what is left
 
-**Proven on an emulator (this repository, `ExecModelTest`):**
+**Proven on an emulator** (`ExecModel (targetSdk 34)` run `39852804375`,
+`Tests 1/1 completed. (0 skipped) (0 failed)`, aosp_atd API 34 x86_64, built
+with `-PharnessTargetSdk=34 -PharnessTestBuildType=sealed`; the gate also
+verifies `extractNativeLibs` in the APK and fails if the test was skipped):
 
 1. executing a file from `nativeLibraryDir` works at `targetSdk 34`;
 2. executing the *same bytes* copied into app-private storage is **denied** at
@@ -180,10 +183,16 @@ delta) is the natural first feature module.
 6. `ExecAudit` reports the split, and the gate asserts the sealed prefix has
    **zero** executables outside the APK.
 
-**Measured against the current install (targetSdk 28):** the audit prints how
-many executables in the apt-installed prefix would need sealing. That number is
-the size of the packaging job, and the reason this is a migration rather than a
-flip.
+**Also learned from the gate, and worth writing down:** `LD_PRELOAD` did not
+take effect in `/system/bin/sh` (a system binary), but works exactly as designed
+in an app-owned executable from `nativeLibraryDir` — which is what every
+runtime in the sealed prefix is. The gate therefore measures the preload from
+the sealed binary itself, and the product path matches it.
+
+**Measured against the current install (targetSdk 28):** the audit runs first in
+every variant and reports how many executables in the installed prefix are not
+backed by the APK. That number is the size of the packaging job, and the reason
+this is a migration rather than a flip.
 
 **Left to build (in this order, each independently verifiable):**
 

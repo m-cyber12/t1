@@ -271,6 +271,16 @@ Two GitHub Actions workflows (both required for a change to be trusted):
   - Diagnostics: logs and reports are published to
     `diagnostics/e2e-<run_id>` every 5 minutes, so evidence survives.
 
+- **Exec model (targetSdk 34)** — the publishability gate, a separate
+  workflow (`ci/play-exec-model.yml`): builds the `sealed` variant at
+  `-PharnessTargetSdk=34`, verifies the APK actually sets
+  `extractNativeLibs`, then runs `ExecModelTest` on an emulator: native-library
+  exec works, the same bytes in app data are denied, a prefix symlink into the
+  APK works, a script whose `#!` names the official Termux prefix runs through
+  the preload, direct script exec is denied, and the audit finds zero
+  executables outside the APK. It needs no network, so it cannot flake on a
+  repository mirror.
+
 Unit tests cover the pure parts (planner, tiers, command strings,
 pruning, size parsing, symlink relocation, preload extraction).
 
