@@ -25,7 +25,7 @@ public final class HarnessSizeReport {
     private HarnessSizeReport() {}
 
     /** Package name -> installed size in bytes, in dpkg status order. */
-    static Map<String, Long> parseInstalledSizes(String statusText) {
+    public static Map<String, Long> parseInstalledSizes(String statusText) {
         Map<String, Long> sizes = new LinkedHashMap<>();
         if (statusText == null) return sizes;
         String currentPackage = null;
@@ -45,6 +45,31 @@ public final class HarnessSizeReport {
             }
         }
         return sizes;
+    }
+
+    /**
+     * Package names dpkg reports as fully installed. Used by the
+     * provisioning planner so it never reinstalls what is already present.
+     */
+    public static java.util.Set<String> parseInstalledPackages(String statusText) {
+        java.util.Set<String> installed = new java.util.LinkedHashSet<>();
+        if (statusText == null) return installed;
+        String currentPackage = null;
+        boolean installOk = false;
+        for (String line : statusText.split("\n")) {
+            if (line.startsWith("Package: ")) {
+                currentPackage = line.substring("Package: ".length()).trim();
+                installOk = false;
+            } else if (line.startsWith("Status: ")) {
+                installOk = line.contains("install ok installed");
+            } else if (line.isEmpty()) {
+                if (installOk && currentPackage != null) installed.add(currentPackage);
+                currentPackage = null;
+                installOk = false;
+            }
+        }
+        if (installOk && currentPackage != null) installed.add(currentPackage);
+        return installed;
     }
 
     static Map<String, Long> readInstalledSizes(HarnessConfig config) {
@@ -79,11 +104,10 @@ public final class HarnessSizeReport {
         out.append("Storage (dpkg Installed-Size)\n");
         out.append("all packages: ").append(formatBytes(total))
             .append(" (").append(sizes.size()).append(" packages)\n");
-        long tierBytes = appendTier(out, "core (default)", HarnessPackageInstaller.CORE_PACKAGES, sizes);
+        long tierBytes = appendTier(out, "core (default)",
+            io.mcyber12.codingharness.core.provision.PackageTier.CORE.packages, sizes);
         tierBytes += appendTier(out, "build tools (on demand)",
-            HarnessPackageInstaller.BUILD_TOOL_PACKAGES, sizes);
-        tierBytes += appendTier(out, "extra languages (on demand)",
-            HarnessPackageInstaller.EXTRA_LANGUAGE_PACKAGES, sizes);
+            io.mcyber12.codingharness.core.provision.PackageTier.BUILD_TOOLS.packages, sizes);
         out.append("base system + shared libraries: ")
             .append(formatBytes(Math.max(0L, total - tierBytes))).append('\n');
 
@@ -208,7 +232,7 @@ public final class HarnessSizeReport {
     }
 
     /** Recursive byte total of regular files below a directory (links not followed). */
-    static long directoryBytes(File directory) {
+    public static long directoryBytes(File directory) {
         if (directory == null || !directory.isDirectory()) return 0L;
         long total = 0L;
         List<File> pending = new ArrayList<>();

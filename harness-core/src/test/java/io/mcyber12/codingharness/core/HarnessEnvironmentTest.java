@@ -3,6 +3,10 @@ package io.mcyber12.codingharness.core;
 import org.junit.Test;
 
 import java.io.File;
+import java.util.Arrays;
+
+import io.mcyber12.codingharness.core.provision.PackageTier;
+import io.mcyber12.codingharness.core.provision.ProvisioningPlan;
 import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
@@ -183,24 +187,30 @@ public class HarnessEnvironmentTest {
     }
 
     @Test
-    public void packageTiersKeepHeavyweightToolsOnDemand() {
-        // The default install is the small agentic core; the ~300 MB
-        // compiler block and the extra language runtimes are explicit
-        // on-demand packs (docs/size-management.md).
-        assertTrue(HarnessPackageInstaller.CORE_PACKAGES.contains("python-pip"));
-        assertTrue(!HarnessPackageInstaller.CORE_PACKAGES.contains("clang"));
-        assertTrue(!HarnessPackageInstaller.CORE_PACKAGES.contains("cmake"));
-        assertTrue(!HarnessPackageInstaller.CORE_PACKAGES.contains("ruby"));
-        assertTrue(!HarnessPackageInstaller.CORE_PACKAGES.contains("perl"));
-        assertTrue(HarnessPackageInstaller.BUILD_TOOL_PACKAGES.contains("clang"));
-        assertTrue(HarnessPackageInstaller.BUILD_TOOL_PACKAGES.contains("cmake"));
-        assertTrue(HarnessPackageInstaller.EXTRA_LANGUAGE_PACKAGES.contains("ruby"));
-        assertTrue(HarnessPackageInstaller.EXTRA_LANGUAGE_PACKAGES.contains("perl"));
-        // No package is declared in two tiers.
-        for (String name : HarnessPackageInstaller.CORE_PACKAGES) {
-            assertTrue(!HarnessPackageInstaller.BUILD_TOOL_PACKAGES.contains(name));
-            assertTrue(!HarnessPackageInstaller.EXTRA_LANGUAGE_PACKAGES.contains(name));
+    public void coreTierCarriesEveryLanguageRuntime() {
+        // Product decision: Perl and Ruby ship with the default install, so
+        // the harness is ready for any project without an extra step.
+        assertTrue(PackageTier.CORE.packages.contains("python-pip"));
+        assertTrue(PackageTier.CORE.packages.contains("perl"));
+        assertTrue(PackageTier.CORE.packages.contains("ruby"));
+        assertTrue(PackageTier.CORE.requiredCommands.containsAll(
+            Arrays.asList("perl", "ruby", "python", "pip", "node", "npm", "git", "rg")));
+        assertTrue(PackageTier.CORE.enabledByDefault);
+    }
+
+    @Test
+    public void compilerStaysOnDemandAndTiersDoNotOverlap() {
+        // clang pulls libllvm, the largest single package: it must never be
+        // part of the default setup (docs/size-management.md).
+        assertTrue(!PackageTier.CORE.packages.contains("clang"));
+        assertTrue(!PackageTier.CORE.packages.contains("cmake"));
+        assertTrue(!PackageTier.BUILD_TOOLS.enabledByDefault);
+        assertTrue(PackageTier.BUILD_TOOLS.packages.containsAll(
+            Arrays.asList("clang", "cmake", "make", "pkg-config")));
+        for (String name : PackageTier.CORE.packages) {
+            assertTrue(!PackageTier.BUILD_TOOLS.packages.contains(name));
         }
+        assertEquals(1, PackageTier.defaults().size());
     }
 
     /**
@@ -212,6 +222,47 @@ public class HarnessEnvironmentTest {
         File root = java.nio.file.Files.createTempDirectory("harness-size-test").toFile();
         root.deleteOnExit();
         return new File(root, "usr");
+    }
+
+    @Test
+    public void plannerSkipsSatisfiedTiersAndPrunesInstalledPackages() {
+        java.util.Set<String> present = new java.util.HashSet<>(PackageTier.CORE.requiredCommands);
+        java.util.Set<String> installed = new java.util.HashSet<>(PackageTier.CORE.packages);
+        ProvisioningPlan plan = ProvisioningPlan.make(
+            PackageTier.defaults(), installed, present);
+
+        assertTrue(plan.isSatisfied());
+        assertTrue(plan.pendingTiers.isEmpty());
+        assertTrue(plan.packagesToInstall.isEmpty());
+    }
+
+    @Test
+    public void plannerRequestsOnlyMissingPackages() {
+        // None of the commands exist yet; dpkg already has git and python.
+        java.util.Set<String> installed = new java.util.HashSet<>(
+            Arrays.asList("git", "python", "bash"));
+        ProvisioningPlan plan = ProvisioningPlan.make(
+            PackageTier.defaults(), installed, java.util.Collections.<String>emptySet());
+
+        assertEquals(1, plan.pendingTiers.size());
+        assertEquals("core", plan.pendingTiers.get(0).id);
+        assertTrue(!plan.packagesToInstall.contains("git"));
+        assertTrue(!plan.packagesToInstall.contains("python"));
+        assertTrue(plan.packagesToInstall.contains("nodejs"));
+        assertTrue(plan.missingCommands.contains("node"));
+        assertTrue(!plan.packagesToInstall.contains("clang"));
+    }
+
+    @Test
+    public void plannerAddsBuildToolsOnlyWhenRequested() {
+        java.util.Set<String> present = new java.util.HashSet<>(PackageTier.CORE.requiredCommands);
+        ProvisioningPlan plan = ProvisioningPlan.make(
+            java.util.Collections.singletonList(PackageTier.BUILD_TOOLS),
+            new java.util.HashSet<String>(), present);
+
+        assertEquals("build-tools", plan.pendingTiers.get(0).id);
+        assertTrue(plan.packagesToInstall.contains("clang"));
+        assertTrue(!plan.packagesToInstall.contains("python"));
     }
 
     @Test

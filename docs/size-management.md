@@ -18,9 +18,13 @@ language runtimes until a specific project does.
 
 | Tier | Packages | Installed by default |
 |---|---|---|
-| Core | git, ripgrep, python, python-pip, nodejs, npm, jq, tree, which, file, openssh | yes |
+| Core | git, ripgrep, python, python-pip, nodejs, npm, perl, ruby, jq, tree, which, file, openssh | yes |
 | Build tools | make, pkg-config, clang, cmake | on demand (TOOLS dialog) |
-| Extra languages | perl, ruby | on demand (TOOLS dialog) |
+
+Perl and Ruby moved from an on-demand pack into the core tier by product
+decision: a coding harness should be ready for any project without an extra
+step, and together they cost about 20 MB on device (360 MB → 380 MB measured)
+while the compiler tier alone is ~600 MB.
 
 Notes:
 
@@ -29,8 +33,8 @@ Notes:
 - clang pulls libllvm — at ~34 MB download / ~200 MB installed the
   largest single block in the old 1.2 GB — yet is exercised only when
   compiling native code (C/C++ projects, node-gyp, pip source builds).
-- ruby carries a large stdlib and serves only Ruby projects; perl is
-  in the same pack (git merely *suggests* it).
+- perl and ruby are part of the default install: small next to the compiler
+  tier, and they remove a whole category of "install this first" friction.
 
 ## Rules
 

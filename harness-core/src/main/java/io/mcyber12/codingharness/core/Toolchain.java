@@ -11,11 +11,12 @@ import java.util.Map;
 public final class Toolchain {
     /** Default (core) tier: what an agent session needs out of the box. */
     public static final List<String> REQUIRED_TOOLS = Collections.unmodifiableList(
-        Arrays.asList("sh", "bash", "git", "rg", "python", "pip", "node", "npm", "jq", "curl")
+        Arrays.asList("sh", "bash", "git", "rg", "python", "pip", "node", "npm",
+            "perl", "ruby", "jq", "curl")
     );
     /** On-demand packs and utilities: installable from the TOOLS dialog. */
     public static final List<String> OPTIONAL_TOOLS = Collections.unmodifiableList(
-        Arrays.asList("perl", "ruby", "make", "pkg-config", "clang", "cmake",
+        Arrays.asList("make", "pkg-config", "clang", "cmake",
             "bun", "tree", "tar", "zip", "unzip", "ssh")
     );
 

@@ -20,16 +20,16 @@ It is a focused coding harness containing:
   workspace;
 - the Termux bootstrap layer with `apt`/`dpkg`, shell, certificates and base
   Unix tools;
-- first-run installation of the agentic core — Python/pip, Node.js/npm, Git,
-  ripgrep and small utilities — with the compiler toolchain (clang/cmake)
-  and extra languages (Perl, Ruby) as on-demand packs (docs/size-management.md);
+- first-run installation of the agentic core — Python/pip, Node.js/npm, Perl,
+  Ruby, Git, ripgrep and small utilities — with the compiler toolchain
+  (clang/cmake) as an on-demand pack (docs/size-management.md);
 - a one-shot command runner for agent tools;
 - explicit tool discovery and a setup/retry path in the standalone UI.
 
 The first-run package setup uses the official Termux package repository. After
-setup, the terminal has `python`, `pip`, `node`, `npm`, `git`, `rg`, `bash`,
-`curl` and related core tools in its private prefix; `clang`/`cmake`/`make`
-and `perl`/`ruby` install on demand from the TOOLS dialog.
+setup, the terminal has `python`, `pip`, `node`, `npm`, `perl`, `ruby`, `git`,
+`rg`, `bash`, `curl` and related core tools in its private prefix;
+`clang`/`cmake`/`make` install on demand from the TOOLS dialog.
 The package installation is done inside the app sandbox; it does not need
 Termux to be installed separately.
 

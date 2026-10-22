@@ -29,6 +29,9 @@ import io.mcyber12.codingharness.core.HarnessBootstrap;
 import io.mcyber12.codingharness.core.HarnessConfig;
 import io.mcyber12.codingharness.core.HarnessPackageInstaller;
 import io.mcyber12.codingharness.core.HarnessPaths;
+import io.mcyber12.codingharness.core.provision.PackageTier;
+import io.mcyber12.codingharness.core.provision.Provisioning;
+import io.mcyber12.codingharness.core.provision.ProvisioningState;
 import io.mcyber12.codingharness.core.HarnessSession;
 import io.mcyber12.codingharness.core.Toolchain;
 
@@ -43,9 +46,12 @@ public final class MainActivity extends Activity {
     private TerminalView terminalView;
     private HarnessSession harnessSession;
     private HarnessConfig harnessConfig;
+    private Provisioning.Service provisioning;
     private TextView statusView;
     private int fontSize = 14;
     private final AtomicBoolean setupRunning = new AtomicBoolean(false);
+    /** Stable listener identity so unsubscribe actually removes it. */
+    private final Provisioning.Listener provisioningListener = this::onProvisioningState;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -123,6 +129,12 @@ public final class MainActivity extends Activity {
             .transcriptRows(2_000)
             .build();
 
+        provisioning = HarnessPackageInstaller.service(harnessConfig);
+        // React to provisioning events instead of inferring completion: the
+        // status line, the terminal and the TOOLS dialog all follow the
+        // published state, so setup finishing is visible immediately.
+        provisioning.subscribe(provisioningListener);
+
         new Thread(() -> {
             try {
                 setStatus("installing base runtime...");
@@ -147,49 +159,94 @@ public final class MainActivity extends Activity {
     }
 
     private void attachTerminal() {
+        // Re-attaching (after setup, or after a resume) must not leak the
+        // previous PTY or leave the view bound to a dead session.
+        if (harnessSession != null) {
+            harnessSession.stop();
+            harnessSession = null;
+        }
         SessionClient client = new SessionClient();
         terminalView.setTerminalViewClient(client);
         terminalView.setTerminalCursorBlinkerRate(500);
         harnessSession = HarnessSession.start(this, harnessConfig, client);
         terminalView.attachSession(harnessSession.terminalSession());
         terminalView.requestFocus();
-        setStatus("base ready; installing coding tools...");
+        setStatus(provisioning != null && provisioning.isReady()
+            ? "ready: coding toolchain installed"
+            : "base ready; installing coding tools...");
 
-        // Do this automatically on the first run, while SETUP remains available
-        // for retrying after a network failure.
+        // Provisioning does not depend on the PTY (it only needs the prefix),
+        // so setup starts even if the shell had to be restarted.
         installToolchain();
     }
 
+    /**
+     * Single point where provisioning progress reaches the UI.
+     *
+     * <p>Called from the provisioning worker thread; every UI touch is
+     * posted. Replaces the old "poll a boolean and hope the shell followed"
+     * behaviour that left the terminal dead and the TOOLS dialog stale until
+     * the app was restarted.</p>
+     */
+    private void onProvisioningState(ProvisioningState state) {
+        runOnUiThread(() -> {
+            if (isFinishing()) return;
+            switch (state.status) {
+                case READY:
+                    setStatus("ready: Python/pip, Node/npm, Perl, Ruby, git, rg");
+                    // The shell may have been spawned before the new
+                    // binaries existed (or during the base upgrade);
+                    // bring up a working session now that setup is done.
+                    if (harnessSession == null || !harnessSession.isRunning()) {
+                        attachTerminal();
+                    }
+                    terminalView.requestFocus();
+                    break;
+                case FAILED:
+                    setStatus("setup failed — tap SETUP to retry");
+                    break;
+                default:
+                    setStatus("installing coding tools: " + state.message);
+                    break;
+            }
+        });
+    }
+
     private void installToolchain() {
-        if (harnessConfig == null || harnessSession == null) {
+        if (harnessConfig == null) {
             setStatus("base runtime is still preparing...");
             return;
         }
-        if (HarnessPackageInstaller.isCodingToolchainReady(harnessConfig)) {
-            setStatus("ready: Python / Node/npm / Perl / Ruby");
+        if (provisioning != null && provisioning.isReady()) {
+            setStatus("ready: coding toolchain installed");
             return;
         }
         if (!setupRunning.compareAndSet(false, true)) return;
 
-        setStatus("installing Python / Node/npm / Perl / Ruby...");
+        setStatus("installing core coding tools...");
         new Thread(() -> {
-            // Retry asset-based provisioning on the setup path itself, so it
-            // does not depend on the startup thread having succeeded.
             try {
-                HarnessBootstrap.ensureCertificates(this, harnessConfig);
-                HarnessBootstrap.ensureKeyring(this, harnessConfig);
-            } catch (Exception e) {
-                logBootstrapError("setup provisioning", e);
-            }
-            HarnessPackageInstaller.InstallResult result =
-                HarnessPackageInstaller.installCodingToolchain(harnessConfig);
-            setupRunning.set(false);
-            writeSetupResult(result);
-            if (result.success) {
-                setStatus(result.message);
-            } else {
-                setStatus("setup failed — tap SETUP to retry");
-                runOnUiThread(() -> showSetupFailure(result.message));
+                // Retry asset-based provisioning on the setup path itself, so
+                // it does not depend on the startup thread having succeeded.
+                try {
+                    HarnessBootstrap.ensureCertificates(this, harnessConfig);
+                    HarnessBootstrap.ensureKeyring(this, harnessConfig);
+                } catch (Exception e) {
+                    logBootstrapError("setup provisioning", e);
+                }
+                ProvisioningState state = provisioning.provision(null);
+                writeSetupResult(state);
+                if (state.isFailed()) {
+                    runOnUiThread(() -> showSetupFailure(state.message));
+                }
+            } catch (Throwable failure) {
+                // Never let the setup thread die silently: that used to leave
+                // setupRunning latched and the UI stale until a restart.
+                logBootstrapError("provisioning thread", failure);
+                setStatus("setup crashed — tap SETUP to retry");
+                runOnUiThread(() -> showSetupFailure(shortMessage(failure)));
+            } finally {
+                setupRunning.set(false);
             }
         }, "coding-harness-packages").start();
     }
@@ -200,13 +257,13 @@ public final class MainActivity extends Activity {
      * instead of polling the toolchain forever): coding-harness/
      * setup-result.txt contains OK or FAILED plus the full message.
      */
-    private void writeSetupResult(HarnessPackageInstaller.InstallResult result) {
+    private void writeSetupResult(ProvisioningState state) {
         try {
             java.io.File file = new java.io.File(
                 new java.io.File(getFilesDir(), "coding-harness"), "setup-result.txt");
             java.io.File parent = file.getParentFile();
             if (parent != null) parent.mkdirs();
-            String entry = (result.success ? "OK " : "FAILED ") + result.message + "\n";
+            String entry = (state.isReady() ? "OK " : "FAILED ") + state.message + "\n";
             try (java.io.FileOutputStream out = new java.io.FileOutputStream(file)) {
                 out.write(entry.getBytes(java.nio.charset.StandardCharsets.UTF_8));
             }
@@ -276,9 +333,10 @@ public final class MainActivity extends Activity {
             text.append('\n')
                 .append(io.mcyber12.codingharness.core.HarnessSizeReport.summarize(harnessConfig));
             boolean buildReady = HarnessPackageInstaller.isBuildToolchainReady(harnessConfig);
-            boolean languagesReady = HarnessPackageInstaller.isExtraLanguagesReady(harnessConfig);
             runOnUiThread(() -> {
-                setStatus("ready");
+                setStatus(provisioning != null && provisioning.isReady()
+                    ? "ready: coding toolchain installed"
+                    : "setup not finished");
                 if (isFinishing()) return;
                 android.app.AlertDialog.Builder dialog = new android.app.AlertDialog.Builder(this)
                     .setTitle("Toolchain")
@@ -286,39 +344,39 @@ public final class MainActivity extends Activity {
                     .setPositiveButton("Close", null);
                 if (!buildReady) {
                     dialog.setNeutralButton("Install build tools",
-                        (d, which) -> installOptionalPack(true));
-                }
-                if (!languagesReady) {
-                    dialog.setNegativeButton("Install perl/ruby",
-                        (d, which) -> installOptionalPack(false));
+                        (d, which) -> installBuildTools());
                 }
                 dialog.show();
             });
         }, "coding-harness-inventory").start();
     }
 
-    /** Installs one on-demand pack (Build tools or Extra languages). */
-    private void installOptionalPack(boolean buildTools) {
-        if (harnessConfig == null || harnessSession == null) {
+    /**
+     * Installs the on-demand native build toolchain. Same event-driven
+     * completion path as the core setup: the listener updates the status
+     * line when the service reaches a terminal state.
+     */
+    private void installBuildTools() {
+        if (harnessConfig == null || provisioning == null) {
             setStatus("base runtime is still preparing...");
             return;
         }
         if (!setupRunning.compareAndSet(false, true)) return;
-        String label = buildTools ? "build tools (clang/cmake)" : "perl/ruby";
-        setStatus("installing " + label + "...");
+        setStatus("installing build tools (clang/cmake)...");
         new Thread(() -> {
-            HarnessPackageInstaller.InstallResult result = buildTools
-                ? HarnessPackageInstaller.installBuildTools(harnessConfig)
-                : HarnessPackageInstaller.installExtraLanguages(harnessConfig);
-            setupRunning.set(false);
-            writeSetupResult(result);
-            if (result.success) {
-                setStatus(result.message);
-            } else {
-                setStatus("optional install failed");
-                runOnUiThread(() -> showSetupFailure(result.message));
+            try {
+                ProvisioningState state = provisioning.installTier(PackageTier.BUILD_TOOLS.id);
+                writeSetupResult(state);
+                if (state.isFailed()) {
+                    runOnUiThread(() -> showSetupFailure(state.message));
+                }
+            } catch (Throwable failure) {
+                logBootstrapError("build tools", failure);
+                runOnUiThread(() -> showSetupFailure(shortMessage(failure)));
+            } finally {
+                setupRunning.set(false);
             }
-        }, "coding-harness-optional-pack").start();
+        }, "coding-harness-build-tools").start();
     }
 
     private void showKeyboard() {
@@ -344,8 +402,29 @@ public final class MainActivity extends Activity {
         return (int) (value * getResources().getDisplayMetrics().density + 0.5f);
     }
 
+    /**
+     * A user who leaves the app during setup and comes back must find the
+     * finished state — no restart required. Provisioning keeps running in
+     * its own service; this only re-reads its snapshot.
+     */
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (provisioning == null) return;
+        ProvisioningState state = provisioning.state();
+        if (state.isReady()) {
+            setStatus("ready: coding toolchain installed");
+            if (harnessConfig != null && (harnessSession == null || !harnessSession.isRunning())) {
+                attachTerminal();
+            }
+        } else if (state.isFailed()) {
+            setStatus("setup failed — tap SETUP to retry");
+        }
+    }
+
     @Override
     protected void onDestroy() {
+        if (provisioning != null) provisioning.unsubscribe(provisioningListener);
         if (harnessSession != null) harnessSession.stop();
         super.onDestroy();
     }

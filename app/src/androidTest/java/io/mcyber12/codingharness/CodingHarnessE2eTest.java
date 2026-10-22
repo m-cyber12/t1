@@ -50,6 +50,8 @@ public class CodingHarnessE2eTest {
         {"node", "-e", "console.log('node-ok', process.version)"},
         {"npm", "--version"},
         {"pip", "--version"},
+        {"perl", "-e", "print $^V"},
+        {"ruby", "--version"},
         {"git", "--version"},
         {"rg", "--version"},
         {"jq", "--version"},
@@ -237,134 +239,79 @@ public class CodingHarnessE2eTest {
         // Size discipline: the default setup must NOT have installed the
         // on-demand packs (the ~300 MB compiler block, extra languages),
         // and the size report must account for what WAS installed.
-        for (String absent : new String[] {"clang", "cmake", "ruby"}) {
+        // Perl and Ruby ship with the core install (product decision).
+        for (String required : new String[] {"perl", "ruby"}) {
+            File exe = new File(config.toolDirectory, required);
+            if (!exe.isFile() || !exe.canExecute()) {
+                fail("core install is missing " + required);
+            }
+        }
+        // The compiler tier stays on demand: it must not leak into a
+        // default install (it is the largest single block in the prefix).
+        for (String absent : new String[] {"clang", "cmake"}) {
             File exe = new File(config.toolDirectory, absent);
             if (exe.isFile()) {
                 fail("on-demand tool leaked into the default install: " + absent);
             }
         }
-        // perl is reported but not asserted: if the bootstrap base system
-        // ever ships it, that is base-system content, not a tier leak.
-        report("perl present by default: "
-            + new File(config.toolDirectory, "perl").isFile());
-        report("default install correctly excludes on-demand packs (clang/cmake/ruby)");
+        report("default install contains perl+ruby and excludes clang/cmake");
+
+        // Regression: the app must notice completion on its own. This file is
+        // written by MainActivity's provisioning listener, so it exists only
+        // if the UI observed READY without being restarted (the reported bug).
+        String appResult = readSetupResult(context);
+        report("app-reported setup result: " + appResult);
+        if (appResult == null || !appResult.startsWith("OK")) {
+            fail("MainActivity did not observe provisioning completion in-process: " + appResult);
+        }
         report(io.mcyber12.codingharness.core.HarnessSizeReport.summarize(config));
         report("E2E SUCCESS: all tools execute");
     }
 
     /**
-     * The on-demand path: Extra languages (perl/ruby) are absent after the
-     * default setup (asserted in a02) and must install and run when
-     * explicitly requested — the same code path the TOOLS dialog buttons
-     * use. Runs after a02, reusing its installed prefix.
+     * Service-surface regression: a fresh service instance over the installed
+     * prefix must report the core tier ready immediately, and re-provisioning
+     * it must take the fast path (no apt work). This is the behaviour the UI
+     * depends on after setup, and it exercises the ported module on-device.
      */
     @Test
-    public void a03_optionalLanguagePackInstallsOnDemand() throws Exception {
+    public void a03_provisioningServiceIsReadyWithoutRebuild() throws Exception {
         Context context = ApplicationProvider.getApplicationContext();
         initReport(context);
         if (config == null) config = buildConfig(context);
         HarnessConfig config = this.config;
-        report("a03 start; on-demand install of extra languages (perl/ruby)");
+        report("a03 start; provisioning service snapshot over the installed prefix");
 
-        io.mcyber12.codingharness.core.HarnessPackageInstaller.InstallResult result =
-            io.mcyber12.codingharness.core.HarnessPackageInstaller.installExtraLanguages(config);
-        report("installExtraLanguages: " + result.message);
-        if (!result.success) {
-            fail("On-demand language pack failed: " + result.message);
-        }
-        HarnessCommandRunner runner = new HarnessCommandRunner(config);
-        for (String[] command : new String[][] {
-                {"ruby", "--version"}, {"perl", "-e", "print $^V"}}) {
-            HarnessCommandRunner.CommandResult run =
-                runner.run(Arrays.asList(command), 180_000L);
-            String line = String.join(" ", command) + " -> exit " + run.exitCode
-                + " : " + oneLine(run.output);
-            report(line);
-            if (!run.isSuccess()) fail("Optional tool failed to run: " + line);
-        }
-        report(io.mcyber12.codingharness.core.HarnessSizeReport.summarize(config));
-        report("A03 SUCCESS: on-demand pack installs and runs");
-    }
+        io.mcyber12.codingharness.core.provision.Provisioning.Service service =
+            io.mcyber12.codingharness.core.provision.Provisioning.create(config);
 
-    /**
-     * When a tool dies at link time ("cannot locate symbol ... libc++"),
-     * say which C++ runtime files the binary actually names and which are
-     * installed, and whether the missing symbol exists in ours. Prevents
-     * another round of guessing at version skews.
-     */
-    private String cxxRuntimeDiagnostics(HarnessConfig config, List<String> failures) {
-        StringBuilder out = new StringBuilder("\n--- C++ runtime ---\n");
-        try {
-            File libDirectory = new File(config.prefix, "lib");
-            File[] cxxLibraries = libDirectory.listFiles(
-                (dir, name) -> name.contains("libc++") || name.contains("c++"));
-            out.append("installed libc++ candidates: ");
-            if (cxxLibraries != null) {
-                for (File library : cxxLibraries) {
-                    out.append(library.getName()).append('(').append(library.length())
-                        .append("B,hasHashMemory=")
-                        .append(fileContains(library, "__hash_memory"))
-                        .append(") ");
-                }
-            }
-            out.append('\n');
-            for (String failure : failures) {
-                String tool = failure.split(" ")[0];
-                File binary = new File(config.prefix, "bin/" + tool);
-                out.append(tool).append(" names: ")
-                    .append(String.join(",", findPrintableTokens(binary, "libc++")))
-                    .append("; failure: ").append(failure).append('\n');
-            }
-        } catch (Exception e) {
-            out.append("(cxx diagnostics failed: ").append(e).append(")\n");
+        if (!service.isReady()) {
+            fail("provisioning service reports core tier not ready on an installed prefix");
         }
-        return out.toString();
-    }
+        report("service.isReady()=true, state=" + service.state());
 
-    private static boolean fileContains(File file, String needle) {
-        try {
-            byte[] data = Files.readAllBytes(file.toPath());
-            byte[] target = needle.getBytes(StandardCharsets.UTF_8);
-            outer:
-            for (int i = 0; i + target.length <= data.length; i++) {
-                for (int j = 0; j < target.length; j++) {
-                    if (data[i + j] != target[j]) continue outer;
-                }
-                return true;
-            }
-            return false;
-        } catch (Exception ignored) {
-            return false;
+        java.util.concurrent.atomic.AtomicReference<io.mcyber12.codingharness.core.provision.ProvisioningState> seen =
+            new java.util.concurrent.atomic.AtomicReference<>();
+        service.subscribe(seen::set);
+        if (seen.get() == null) {
+            fail("subscribe() did not deliver the current snapshot to the listener");
         }
-    }
+        report("listener received initial snapshot: " + seen.get().status);
 
-    private static List<String> findPrintableTokens(File file, String marker) {
-        List<String> tokens = new ArrayList<>();
-        try {
-            byte[] data = Files.readAllBytes(file.toPath());
-            String blob = new String(data, StandardCharsets.ISO_8859_1);
-            int index = 0;
-            while ((index = blob.indexOf(marker, index)) >= 0 && tokens.size() < 6) {
-                int start = index;
-                while (start > 0 && isPrintable(blob.charAt(start - 1))) start--;
-                int end = index;
-                while (end < blob.length() && isPrintable(blob.charAt(end))) end++;
-                String token = blob.substring(start, end);
-                if (!tokens.contains(token)) tokens.add(token);
-                index = end;
-            }
-        } catch (Exception ignored) {
-            // Diagnostics only.
+        long started = System.currentTimeMillis();
+        io.mcyber12.codingharness.core.provision.ProvisioningState state = service.provision(null);
+        long elapsed = System.currentTimeMillis() - started;
+        report("provision(core) on installed prefix -> " + state.status + " in " + elapsed + " ms");
+        if (!state.isReady()) fail("re-provisioning a ready prefix did not report READY");
+        if (elapsed > 120_000L) {
+            fail("re-provisioning a ready prefix took " + elapsed + " ms; fast path regressed");
         }
-        return tokens;
-    }
-
-    private static boolean isPrintable(char c) {
-        return c >= 0x21 && c <= 0x7e;
+        report("A03 SUCCESS: service ready without rebuild");
     }
 
     private String readinessSummary(HarnessConfig config) {
-        String[] commands = {"bash", "git", "rg", "python", "pip", "node", "npm", "curl"};
+        String[] commands = {"bash", "git", "rg", "python", "pip", "node", "npm",
+            "perl", "ruby", "curl"};
         StringBuilder out = new StringBuilder();
         for (String command : commands) {
             File exe = new File(config.toolDirectory, command);
