@@ -1,0 +1,104 @@
+[1792653457498] a01 start; prefix=/data/user/0/io.mcyber12.codingharness/files/coding-harness/rootfs/data/data/com.termux/files/usr
+[1792653556216] a01 bootstrap + cert + keyring installed
+[1792653556303] a01 java DNS: 172.67.200.228 104.21.44.149 2606:4700:3030::ac43:c8e4 2606:4700:3037::6815:2c95
+[1792653567056] a01 termux curl probe exit=0 http=200
+[1792653582533] a01 apt-get update exit=100 : Get:1 https://packages-cf.termux.dev/apt/termux-main stable InRelease [14.0 kB] Get:2 https://packages-cf.termux.dev/apt/termux-main stable/main x86_64 Packages [588 kB] Err:2 https://packages-cf.termux.dev/apt/termux-main stable/main x86_64 Packages   File has unexpected size (588439 != 588211). Mi
+[1792653582572] A01 FAILED
+apt-get exists=true, apt-key=28978, cert=225076
+trusted keys=8
+--- sources.list ---
+deb [signed-by=/data/user/0/io.mcyber12.codingharness/files/coding-harness/rootfs/data/data/com.termux/files/usr/etc/apt/trusted.gpg.d/termux-autobuilds.gpg] https://packages-cf.termux.dev/apt/termux-main/ stable main
+
+--- harness-apt.conf ---
+Apt::Architecture "x86_64";
+Acquire::Retries "2";
+APT::Install-Recommends "false";
+APT::Install-Suggests "false";
+Acquire::https::CaInfo "/data/user/0/io.mcyber12.codingharness/files/coding-harness/rootfs/data/data/com.termux/files/usr/etc/tls/cert.pem";
+Dir "/data/user/0/io.mcyber12.codingharness/files/coding-harness/rootfs/data/data/com.termux/files/usr";
+Dir::State "var/lib/apt";
+Dir::Cache "var/cache/apt";
+Dir::Cache::archives "archives";
+Dir::Etc "etc/apt";
+Dir::Etc::sourcelist "sources.list";
+Dir::Etc::sourceparts "sources.list.d";
+Dir::Etc::main "apt.conf";
+Dir::Etc::parts "apt.conf.d";
+Dir::Etc::trusted "trusted.gpg";
+Dir::Etc::trustedparts "trusted.gpg.d";
+Dir::Log "var/log/apt";
+Dir::Bin::dpkg "/data/user/0/io.mcyber12.codingharness/files/coding-harness/rootfs/data/data/com.termux/files/usr/bin/dpkg";
+Dir::Bin::apt-key "/data/user/0/io.mcyber12.codingharness/files/coding-harness/rootfs/data/data/com.termux/files/usr/bin/apt-key";
+Dir::Bin::gzip "/data/user/0/io.mcyber12.codingharness/files/coding-harness/rootfs/data/data/com.termux/files/usr/bin/gzip";
+Dir::Bin::bzip2 "/data/user/0/io.mcyber12.codingharness/files/coding-harness/rootfs/data/data/com.termux/files/usr/bin/bzip2";
+Dir::Bin::xz "/data/user/0/io.mcyber12.codingharness/files/coding-harness/rootfs/data/data/com.termux/files/usr/bin/xz";
+Dir::Bin::lz4 "/data/user/0/io.mcyber12.codingharness/files/coding-harness/rootfs/data/data/com.termux/files/usr/bin/lz4";
+Dir::Bin::zstd "/data/user/0/io.mcyber12.codingharness/files/coding-harness/rootfs/data/data/com.termux/files/usr/bin/zstd";
+Dir::Bin::lzma "/data/user/0/io.mcyber12.codingharness/files/coding-harness/rootfs/data/data/com.termux/files/usr/bin/xz";
+Dir::Bin::methods "lib/apt/methods";
+DPkg::Path "/data/user/0/io.mcyber12.codingharness/files/coding-harness/rootfs/data/data/com.termux/files/usr/bin";
+DPkg::Options:: "--force-script-chrootless";
+DPkg::Options:: "--force-confold";
+
+--- harness-command.log (tail) ---
+Get:1 https://packages-cf.termux.dev/apt/termux-main stable InRelease [14.0 kB]
+Get:2 https://packages-cf.termux.dev/apt/termux-main stable/main x86_64 Packages [588 kB]
+Err:2 https://packages-cf.termux.dev/apt/termux-main stable/main x86_64 Packages
+  File has unexpected size (588439 != 588211). Mirror sync in progress? [IP: 172.67.200.228 443]
+  Hashes of expected file:
+   - Filesize:588211 [weak]
+   - SHA512:b11d421acb82320c2a78e3f8670803ee452c88bc1752de584a7f7cd0743c6193257f1865b6af3fdb1aaa5dc806e0edddb2d40b99e5b3048aacd7189756598caf
+   - SHA256:d66bacb4e281d05df5040d457f1dafc37b86eee3daf0f8265e5453a19a43502b
+   - SHA1:e312d466d3b29ab52c21b5999e03a1914be6130b [weak]
+   - MD5Sum:8ae66d3c428daf5505e2c051e56c987c [weak]
+  Release file created at: Thu, 22 Oct 2026 06:54:26 +0000
+Fetched 14.0 kB in 5s (2759 B/s)
+Reading package lists...
+E: Failed to fetch https://packages-cf.termux.dev/apt/termux-main/dists/stable/main/binary-x86_64/Packages.bz2  File has unexpected size (588439 != 588211). Mirror sync in progress? [IP: 172.67.200.228 443]
+   Hashes of expected file:
+    - Filesize:588211 [weak]
+    - SHA512:b11d421acb82320c2a78e3f8670803ee452c88bc1752de584a7f7cd0743c6193257f1865b6af3fdb1aaa5dc806e0edddb2d40b99e5b3048aacd7189756598caf
+    - SHA256:d66bacb4e281d05df5040d457f1dafc37b86eee3daf0f8265e5453a19a43502b
+    - SHA1:e312d466d3b29ab52c21b5999e03a1914be6130b [weak]
+    - MD5Sum:8ae66d3c428daf5505e2c051e56c987c [weak]
+   Release file created at: Thu, 22 Oct 2026 06:54:26 +0000
+E: Some index files failed to download. They have been ignored, or old ones used instead.
+
+--- bootstrap-error.log (tail) ---
+(missing: /data/user/0/io.mcyber12.codingharness/files/coding-harness/rootfs/data/data/com.termux/files/bootstrap-error.log)
+apt lists entries=3
+  list: partial (4096B)
+  list: auxfiles (4096B)
+  list: lock (0B)
+  partial: packages-cf.termux.dev_apt_termux-main_dists_stable_InRelease (14016B)
+  partial: packages-cf.termux.dev_apt_termux-main_dists_stable_main_binary-x86%5f64_Packages.bz2.FAILED (0B)
+
+[1792653582881] a02 start; prefix=/data/user/0/io.mcyber12.codingharness/files/coding-harness/rootfs/data/data/com.termux/files/usr
+[1792653583121] MainActivity launched; waiting for automatic setup
+[1792653583495] waiting… ready=bash=Y git=n rg=n python=n pip=n node=n npm=n curl=Y
+[1792653598625] waiting… ready=bash=Y git=n rg=n python=n pip=n node=n npm=n curl=Y
+[1792653613673] waiting… ready=bash=Y git=n rg=n python=n pip=n node=n npm=n curl=Y
+[1792653628709] waiting… ready=bash=Y git=n rg=n python=n pip=n node=n npm=n curl=Y
+[1792653643738] waiting… ready=bash=Y git=n rg=n python=n pip=n node=n npm=n curl=Y
+[1792653658815] waiting… ready=bash=Y git=n rg=n python=n pip=n node=n npm=n curl=Y
+[1792653673882] waiting… ready=bash=Y git=n rg=n python=n pip=n node=n npm=n curl=Y
+[1792653688915] waiting… ready=bash=Y git=n rg=n python=n pip=n node=n npm=n curl=Y
+[1792653703941] waiting… ready=bash=Y git=n rg=n python=n pip=n node=n npm=n curl=Y
+[1792653718976] waiting… ready=bash=Y git=n rg=n python=n pip=n node=n npm=n curl=Y
+[1792653734033] waiting… ready=bash=Y git=n rg=n python=n pip=n node=n npm=n curl=Y
+[1792653749065] waiting… ready=bash=Y git=n rg=n python=n pip=n node=n npm=n curl=Y
+[1792653764123] waiting… ready=bash=Y git=n rg=n python=n pip=n node=n npm=n curl=Y
+[1792653779163] waiting… ready=bash=Y git=n rg=n python=n pip=n node=n npm=n curl=Y
+[1792653794232] waiting… ready=bash=Y git=n rg=n python=n pip=n node=n npm=n curl=Y
+[1792653809289] waiting… ready=bash=Y git=n rg=n python=n pip=n node=n npm=n curl=Y
+[1792653824346] waiting… ready=bash=Y git=n rg=n python=n pip=n node=n npm=n curl=Y
+[1792653839413] waiting… ready=bash=Y git=Y rg=n python=n pip=n node=n npm=n curl=Y
+[1792653854521] waiting… ready=bash=Y git=Y rg=n python=n pip=n node=n npm=n curl=Y
+[1792653869558] waiting… ready=bash=Y git=Y rg=n python=n pip=n node=Y npm=Y curl=Y
+[1792653884603] waiting… ready=bash=Y git=Y rg=n python=Y pip=Y node=Y npm=Y curl=Y
+[1792653899632] toolchain executables present; verifying each tool runs
+[1792653950617] python --version -> exit 0 : Python 3.14.8
+[1792654003799] python -c import ssl, json, sqlite3; print('py-ssl', ssl.OPENSSL_VERSION) -> exit 0 : py-ssl OpenSSL 3.6.5 29 Sep 2026
+[1792654046311] node --version -> exit 0 : v26.4.0
+[1792654065695] node -e console.log('node-ok', process.version) -> exit 0 : node-ok v26.4.0
+[1792654089033] npm --version -> exit 0 : 11.21.1
