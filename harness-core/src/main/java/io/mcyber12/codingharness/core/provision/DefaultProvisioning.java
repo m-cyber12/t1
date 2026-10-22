@@ -37,7 +37,7 @@ final class DefaultProvisioning implements Provisioning.Service {
 
     private final HarnessConfig config;
     private final PackageManager packages;
-    private final List<Listener> listeners = new CopyOnWriteArrayList<>();
+    private final List<Provisioning.Listener> listeners = new CopyOnWriteArrayList<>();
     private final AtomicBoolean running = new AtomicBoolean(false);
     private volatile ProvisioningState state = ProvisioningState.idle();
 
@@ -50,13 +50,13 @@ final class DefaultProvisioning implements Provisioning.Service {
 
     @Override public ProvisioningState state() { return state; }
 
-    @Override public void subscribe(Listener listener) {
+    @Override public void subscribe(Provisioning.Listener listener) {
         if (listener == null) return;
         listeners.add(listener);
         listener.onState(state); // clients never need a separate initial read
     }
 
-    @Override public void unsubscribe(Listener listener) { listeners.remove(listener); }
+    @Override public void unsubscribe(Provisioning.Listener listener) { listeners.remove(listener); }
 
     @Override public boolean isReady() {
         return presentCommands(PackageTier.CORE.requiredCommands)
@@ -97,8 +97,8 @@ final class DefaultProvisioning implements Provisioning.Service {
             // then refuses further work. Configure pending packages first;
             // a no-op on a clean system.
             publish(ProvisioningStatus.UPGRADING_BASE, "upgrading base system");
-            bestEffort(run(Arrays.asList("dpkg", "--force-script-chrootless",
-                "--force-confold", "--configure", "-a"), CONFIGURE_TIMEOUT));
+            bestEffort(Arrays.asList("dpkg", "--force-script-chrootless",
+                "--force-confold", "--configure", "-a"));
             PackageManager.CommandResult upgrade = run(
                 Arrays.asList("apt-get", "-y", "upgrade"), UPGRADE_TIMEOUT);
             if (!upgrade.isSuccess()) {
@@ -323,7 +323,7 @@ final class DefaultProvisioning implements Provisioning.Service {
     private ProvisioningState publish(ProvisioningStatus status, String message, String detail) {
         ProvisioningState next = ProvisioningState.of(status, message, detail);
         state = next;
-        for (Listener listener : listeners) {
+        for (Provisioning.Listener listener : listeners) {
             try {
                 listener.onState(next);
             } catch (RuntimeException ignored) {
@@ -336,7 +336,7 @@ final class DefaultProvisioning implements Provisioning.Service {
     private ProvisioningState fail(ProvisioningError error) {
         ProvisioningState next = ProvisioningState.failed(error);
         state = next;
-        for (Listener listener : listeners) {
+        for (Provisioning.Listener listener : listeners) {
             try {
                 listener.onState(next);
             } catch (RuntimeException ignored) {
