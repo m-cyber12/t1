@@ -12,6 +12,10 @@ cd "$(dirname "$0")/.." || exit 1
 
 E2E_TEST_TASK="${E2E_TEST_TASK:-:app:connectedDebugAndroidTest}"
 E2E_TEST_CLASS="${E2E_TEST_CLASS:-}"
+# Extra Gradle properties the variant needs (e.g. -PharnessTargetSdk=34), applied
+# to the test invocation as well: a second Gradle call must resolve the same
+# test build type, or the variant's connected task does not exist.
+E2E_GRADLE_PROPS="${E2E_GRADLE_PROPS:-}"
 
 mkdir -p e2e-logs diagnostics
 SDK="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-}}"
@@ -211,8 +215,9 @@ TEST_ARGS=""
 if [ -n "$E2E_TEST_CLASS" ]; then
   TEST_ARGS="-Pandroid.testInstrumentationRunnerArguments.class=$E2E_TEST_CLASS"
 fi
-echo "task=$E2E_TEST_TASK class=${E2E_TEST_CLASS:-<all>}" >> e2e-logs/phases.log
-./gradlew --no-daemon --stacktrace "$E2E_TEST_TASK" $TEST_ARGS > e2e-logs/connected-test.log 2>&1
+echo "task=$E2E_TEST_TASK class=${E2E_TEST_CLASS:-<all>} props=${E2E_GRADLE_PROPS:-none}" >> e2e-logs/phases.log
+# shellcheck disable=SC2086  # word splitting is intended for the property list
+./gradlew --no-daemon --stacktrace "$E2E_TEST_TASK" $TEST_ARGS $E2E_GRADLE_PROPS > e2e-logs/connected-test.log 2>&1
 RC=$?
 echo "$E2E_TEST_TASK exit=$RC" | tee -a e2e-logs/phases.log
 "$ADB" shell cat /sdcard/Android/data/io.mcyber12.codingharness/files/setup-e2e-report.txt > e2e-logs/device-report.log 2>&1 || true

@@ -47,6 +47,7 @@ jobs:
       E2E_TEST_TASK: ":app:connectedSealedAndroidTest"
       E2E_TEST_CLASS: "io.mcyber12.codingharness.ExecModelTest"
       E2E_LEAN: "1"
+      E2E_GRADLE_PROPS: "-PharnessTargetSdk=34 -PharnessTestBuildType=sealed"
 
     steps:
       - name: Check out source
