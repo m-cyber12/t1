@@ -65,25 +65,26 @@ Notes:
    E2E, and covered by unit tests. New packages may only join the core
    tier with a measured size justification in review.
 
-## Measured results (emulator E2E, run 39769843224, 3/3 tests)
+## Measured results (0.32.0, emulator E2E run 39796078354, 3/3 tests)
 
-Default (core) install, x86_64 emulator:
+Default (core) install now includes Perl and Ruby, x86_64 emulator:
 
 ```
-all packages: 291.2 MiB (107 packages, dpkg Installed-Size)
-core (default): 137.2 MiB
+all packages: 405.1 MiB (112 packages, dpkg Installed-Size)
+core (default): 250.8 MiB        <- includes perl + ruby
 build tools (on demand): 0 B (0/4 installed)
-extra languages (on demand): 0 B (0/2 installed)
-base system + shared libraries: 154.0 MiB
-largest packages: nodejs 50.3, libicu 42.4, python 25.6, git 24.4, npm 17.8
-apt download cache: 0 B
-unique bytes on disk: 250.0 MiB (apparent 1017.6 MiB)
+apt download cache: 0 B          <- hygiene reclaimed 112.2 MiB
+unique bytes on disk: 341.7 MiB (apparent 1.10 GiB)
 not tracked by dpkg: 0 B
-largest directories (apparent / unique):
-  libexec 543.0 / 21.2 MiB   <- git-core hard links
-  bin     221.9 / 79.4 MiB
-  lib     217.5 / 115.2 MiB
 ```
+
+On the user's device (arm64) the app's own storage screen reported
+360 MB for core and 380 MB once Perl and Ruby were added, versus 0.98 GB
+for the full installation — the difference between those figures and the
+emulator's is Android's own accounting of the app sandbox.
+
+Previous core-only measurement (0.31.x, run 39769843224): 291.2 MiB
+installed, 250.0 MiB unique, 137.2 MiB core tier.
 
 Interpretation:
 
