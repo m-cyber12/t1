@@ -127,7 +127,7 @@ final class DefaultProvisioning implements Provisioning.Service {
             String hygiene = applyHygiene();
             writeMarker();
             return publish(ProvisioningStatus.READY,
-                "ready: " + labels(tiers) + " (" + hygiene + ")", sizeSummary(tiers));
+                "ready: " + labels(tiers) + " (reclaimed " + hygiene + ")", sizeSummary(tiers));
         } catch (IOException e) {
             return fail(new ProvisioningError(ProvisioningError.Kind.IO,
                 "package setup I/O failed: " + e.getMessage(), ""));
@@ -174,7 +174,7 @@ final class DefaultProvisioning implements Provisioning.Service {
             publish(ProvisioningStatus.CLEANING, "reclaiming storage");
             String hygiene = applyHygiene();
             return publish(ProvisioningStatus.READY,
-                tier.label + " installed (" + hygiene + ")",
+                tier.label + " installed (reclaimed " + hygiene + ")",
                 sizeSummary(Collections.singletonList(tier)));
         } catch (IOException e) {
             return fail(new ProvisioningError(ProvisioningError.Kind.IO,
@@ -223,8 +223,17 @@ final class DefaultProvisioning implements Provisioning.Service {
             publish(ProvisioningStatus.REMOVING, "dropping unused dependencies");
             PackageManager.CommandResult sweep = run(
                 PackageCommands.autoremove(), INSTALL_TIMEOUT);
-            String sweepNote = sweep.isSuccess()
-                ? "" : " (dependency sweep reported: " + compact(sweep.output) + ")";
+            String sweepNote = "";
+            if (!sweep.isSuccess()) {
+                // A maintainer script of an unused dependency can fail on
+                // Android (they invoke tools with absolute official paths).
+                // The pack itself is already gone; leave the database usable
+                // and say exactly what stayed behind.
+                bestEffort(Arrays.asList("dpkg", "--force-script-chrootless",
+                    "--force-confold", "--configure", "-a"));
+                sweepNote = " (unused dependencies left in place: dependency sweep reported "
+                    + compact(sweep.output) + ")";
+            }
 
             publish(ProvisioningStatus.VERIFYING, "verifying " + tier.label + " is gone");
             Set<String> installedAfter = packages.installedPackages();
@@ -242,7 +251,7 @@ final class DefaultProvisioning implements Provisioning.Service {
             long reclaimed = Math.max(0L, bytesBefore - installedBytes());
             return publish(ProvisioningStatus.READY,
                 tier.label + " removed (reclaimed " + HarnessSizeReport.formatBytes(reclaimed)
-                    + ", " + hygiene + ")" + sweepNote,
+                    + "; hygiene " + hygiene + ")" + sweepNote,
                 sizeSummary(PackageTier.defaults()));
         } catch (IOException e) {
             return fail(new ProvisioningError(ProvisioningError.Kind.IO,
@@ -349,7 +358,7 @@ final class DefaultProvisioning implements Provisioning.Service {
         long cacheAfter = HarnessSizeReport.directoryBytes(
             new File(config.prefix, "var/cache/apt/archives"));
         long reclaimed = Math.max(0L, cacheBefore - cacheAfter) + pruned;
-        return "reclaimed " + HarnessSizeReport.formatBytes(reclaimed);
+        return HarnessSizeReport.formatBytes(reclaimed);
     }
 
     private String sizeSummary(List<PackageTier.Info> tiers) {

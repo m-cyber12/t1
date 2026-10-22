@@ -94,6 +94,75 @@ static size_t argument_count(char *const argv[]) {
     return count;
 }
 
+/*
+ * Maintainer scripts and package hooks invoke ordinary tools (`rm`, `mv`,
+ * `sed`, `install`, ...) with absolute paths baked in at build time:
+ * /data/data/com.termux/files/usr/... . The kernel resolves those against
+ * the real filesystem, so without translation the tool operates on ANOTHER
+ * app's private directory: dpkg reports "rm: cannot remove
+ * '.../share/glib-2.0/schemas/gschemas.compiled': Permission denied" and
+ * aborts the transaction ("too many errors, stopping"). termux-exec has the
+ * same responsibility for its relocated prefix; translate path arguments on
+ * every exec so removals, prerm/postrm hooks and scripted builds behave like
+ * an official Termux install.
+ */
+static void free_translated_arguments(char **translated, char *const argv[]) {
+    if (translated == NULL) return;
+    if (argv != NULL) {
+        for (size_t i = 0; argv[i] != NULL && translated[i] != NULL; i++) {
+            if (translated[i] != argv[i]) free(translated[i]);
+        }
+    }
+    free(translated);
+}
+
+static char **translate_arguments(char *const argv[], size_t argc) {
+    if (argv == NULL || argc == 0) return NULL;
+    char **translated = calloc(argc + 1, sizeof(char *));
+    if (translated == NULL) return NULL;
+    for (size_t i = 0; i < argc; i++) {
+        char buffer[PATH_MAX];
+        const char *path = translate_path(argv[i], buffer, sizeof(buffer));
+        if (path == NULL) { free_translated_arguments(translated, argv); return NULL; }
+        if (path == argv[i]) {
+            translated[i] = argv[i];
+            continue;
+        }
+        size_t length = strlen(path);
+        char *copy = malloc(length + 1);
+        if (copy == NULL) { free_translated_arguments(translated, argv); return NULL; }
+        memcpy(copy, path, length + 1);
+        translated[i] = copy;
+    }
+    return translated;
+}
+
+/* execve with translated executable path AND translated path arguments. */
+static int execute_translated(
+    const char *executable_path,
+    char *const argv[],
+    char *const envp[]
+) {
+    execve_function function = real_execve();
+    if (function == NULL) {
+        errno = ENOSYS;
+        return -1;
+    }
+    size_t argc = argument_count(argv);
+    if (argc == 0) return function(executable_path, argv, envp);
+    char **arguments = translate_arguments(argv, argc);
+    if (arguments == NULL) {
+        // Translation is an optimization for relocated paths: if it cannot
+        // allocate, run the command unchanged rather than failing it.
+        return function(executable_path, argv, envp);
+    }
+    int result = function(executable_path, arguments, envp);
+    int saved_errno = errno;
+    free_translated_arguments(arguments, argv);
+    errno = saved_errno;
+    return result;
+}
+
 static int execute_with_translated_shebang(
     const char *path,
     char *const argv[],
@@ -110,13 +179,13 @@ static int execute_with_translated_shebang(
     if (executable_path == NULL) return -1;
 
     int file = open(executable_path, O_RDONLY | O_CLOEXEC);
-    if (file < 0) return function(executable_path, argv, envp);
+    if (file < 0) return execute_translated(executable_path, argv, envp);
 
     char header[PATH_MAX];
     ssize_t length = read(file, header, sizeof(header) - 1);
     close(file);
     if (length < 2 || header[0] != '#' || header[1] != '!') {
-        return function(executable_path, argv, envp);
+        return execute_translated(executable_path, argv, envp);
     }
     header[length] = '\0';
 
@@ -124,7 +193,7 @@ static int execute_with_translated_shebang(
     while (*interpreter == ' ' || *interpreter == '\t') interpreter++;
     char *end = interpreter;
     while (*end != '\0' && *end != ' ' && *end != '\t' && *end != '\r' && *end != '\n') end++;
-    if (*end == '\0') return function(executable_path, argv, envp);
+    if (*end == '\0') return execute_translated(executable_path, argv, envp);
     // *end is the first delimiter after the interpreter. If it is end-of-line
     // the shebang has NO optional argument: end + 1 would land on the script
     // body, and the interpreter would receive the script's first line as a
@@ -149,14 +218,21 @@ static int execute_with_translated_shebang(
     }
 
     size_t argc = argument_count(argv);
+    char **arguments = argc > 1 ? translate_arguments(argv, argc) : NULL;
     char *translated_argv[argc + 4];
     size_t output_index = 0;
     translated_argv[output_index++] = (char *) interpreter_path;
     if (*shebang_argument != '\0') translated_argv[output_index++] = shebang_argument;
     translated_argv[output_index++] = (char *) executable_path;
-    for (size_t i = 1; i < argc; i++) translated_argv[output_index++] = argv[i];
+    for (size_t i = 1; i < argc; i++) {
+        translated_argv[output_index++] = arguments != NULL ? arguments[i] : argv[i];
+    }
     translated_argv[output_index] = NULL;
-    return function(interpreter_path, translated_argv, envp);
+    int result = function(interpreter_path, translated_argv, envp);
+    int saved_errno = errno;
+    free_translated_arguments(arguments, argv);
+    errno = saved_errno;
+    return result;
 }
 
 int execve(const char *path, char *const argv[], char *const envp[]) {

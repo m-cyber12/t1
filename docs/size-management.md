@@ -56,6 +56,11 @@ Notes:
    service verifies afterwards that no core package disappeared and that the
    pack is really gone, and reports the measured bytes reclaimed.
    Core is declared `removable = false`: it is the harness, not a pack.
+   Measured on device (E2E a04): installing build tools takes the prefix to
+   ~1.05 GB, removing them brings it back to ~791 MB — **254 MB reclaimed**.
+   If a dependency's maintainer script fails during the sweep, the pack is
+   still gone, the database is repaired (`dpkg --configure -a`) and the
+   result says which dependencies stayed behind.
 4. **Post-install hygiene** (`applySizeHygiene`): `apt-get clean`
    clears the .deb cache (after a full setup it duplicates the entire
    download), and `pruneNonRuntimePayload` deletes man/doc/gtk-doc/

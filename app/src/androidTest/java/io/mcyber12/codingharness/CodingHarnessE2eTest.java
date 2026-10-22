@@ -367,6 +367,25 @@ public class CodingHarnessE2eTest {
         for (String core : io.mcyber12.codingharness.core.provision.PackageTier.CORE.packages) {
             if (!installed.contains(core)) fail("removal damaged the core tier: " + core);
         }
+        // The package database must still be usable afterwards: a removal
+        // that aborts mid-sweep would leave dpkg complaining on the next
+        // operation, which is exactly what a user would hit next.
+        HarnessCommandRunner runnerAfter = new HarnessCommandRunner(config);
+        HarnessCommandRunner.CommandResult audit = runnerAfter.run(
+            Arrays.asList("dpkg", "--audit"), 120_000L);
+        report("dpkg --audit after removal: exit=" + audit.exitCode + " : "
+            + oneLine(audit.output));
+        if (audit.exitCode != 0 || !oneLine(audit.output).isEmpty()) {
+            fail("dpkg reported problems after pack removal: " + oneLine(audit.output));
+        }
+        HarnessCommandRunner.CommandResult aptProbe = runnerAfter.run(
+            Arrays.asList("apt-get", "-s", "-q", "install", "jq"), 180_000L);
+        report("apt-get simulation after removal: exit=" + aptProbe.exitCode);
+        if (!aptProbe.isSuccess()) {
+            fail("apt is unusable after pack removal (exit " + aptProbe.exitCode + "): "
+                + oneLine(aptProbe.output));
+        }
+
         long afterRemoval = totalInstalledBytes(config);
         report("installed bytes after removal=" + afterRemoval
             + " (reclaimed " + (withPack - afterRemoval) + ")");
