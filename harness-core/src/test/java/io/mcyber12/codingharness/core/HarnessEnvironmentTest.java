@@ -203,9 +203,20 @@ public class HarnessEnvironmentTest {
         }
     }
 
+    /**
+     * Each variant (debug/release) runs the same tests in the same
+     * filesystem, so state between runs must never collide: every test
+     * gets a fresh directory under a unique temp root.
+     */
+    private File newTempPrefix() throws Exception {
+        File root = java.nio.file.Files.createTempDirectory("harness-size-test").toFile();
+        root.deleteOnExit();
+        return new File(root, "usr");
+    }
+
     @Test
     public void pruneRemovesOnlyNonRuntimePayload() throws Exception {
-        File prefix = new File("/tmp/harness-test-prune/usr");
+        File prefix = newTempPrefix();
         File man = new File(prefix, "share/man/man1");
         man.mkdirs();
         java.nio.file.Files.write(new File(man, "git.1").toPath(), new byte[100]);
@@ -239,7 +250,7 @@ public class HarnessEnvironmentTest {
 
     @Test
     public void sizeReportAttributesTopDirectoriesByBytes() throws Exception {
-        File prefix = new File("/tmp/harness-test-sizes/usr");
+        File prefix = newTempPrefix();
         File big = new File(prefix, "lib/a");
         big.mkdirs();
         java.nio.file.Files.write(new File(big, "libx.so").toPath(), new byte[4096]);

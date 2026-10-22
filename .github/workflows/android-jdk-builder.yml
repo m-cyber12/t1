@@ -150,7 +150,11 @@ jobs:
         if: failure()
         shell: bash
         run: |
-          report=$(grep -h -m1 -A12 '<failure' terminal-emulator/build/test-results/testDebugUnitTest/*.xml harness-core/build/test-results/test/*.xml 2>/dev/null | tr '\n' ' ' | cut -c1-8000 || true)
+          # Both variants write separate result directories; glob them all
+          # (a debug-only glob once hid a release-variant failure).
+          report=$(grep -h -m1 -A12 '<failure' \
+            */*/build/test-results/*/*.xml */build/test-results/*/*.xml 2>/dev/null \
+            | tr '\n' ' ' | cut -c1-8000 || true)
           if [ -n "$report" ]; then
             report=${report//%/%25}
             report=${report//$'\r'/%0D}
