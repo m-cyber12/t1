@@ -309,6 +309,77 @@ public class CodingHarnessE2eTest {
         report("A03 SUCCESS: service ready without rebuild");
     }
 
+    private String cxxRuntimeDiagnostics(HarnessConfig config, List<String> failures) {
+        StringBuilder out = new StringBuilder("\n--- C++ runtime ---\n");
+        try {
+            File libDirectory = new File(config.prefix, "lib");
+            File[] cxxLibraries = libDirectory.listFiles(
+                (dir, name) -> name.contains("libc++") || name.contains("c++"));
+            out.append("installed libc++ candidates: ");
+            if (cxxLibraries != null) {
+                for (File library : cxxLibraries) {
+                    out.append(library.getName()).append('(').append(library.length())
+                        .append("B,hasHashMemory=")
+                        .append(fileContains(library, "__hash_memory"))
+                        .append(") ");
+                }
+            }
+            out.append('\n');
+            for (String failure : failures) {
+                String tool = failure.split(" ")[0];
+                File binary = new File(config.prefix, "bin/" + tool);
+                out.append(tool).append(" names: ")
+                    .append(String.join(",", findPrintableTokens(binary, "libc++")))
+                    .append("; failure: ").append(failure).append('\n');
+            }
+        } catch (Exception e) {
+            out.append("(cxx diagnostics failed: ").append(e).append(")\n");
+        }
+        return out.toString();
+    }
+
+    private static boolean fileContains(File file, String needle) {
+        try {
+            byte[] data = Files.readAllBytes(file.toPath());
+            byte[] target = needle.getBytes(StandardCharsets.UTF_8);
+            outer:
+            for (int i = 0; i + target.length <= data.length; i++) {
+                for (int j = 0; j < target.length; j++) {
+                    if (data[i + j] != target[j]) continue outer;
+                }
+                return true;
+            }
+            return false;
+        } catch (Exception ignored) {
+            return false;
+        }
+    }
+
+    private static List<String> findPrintableTokens(File file, String marker) {
+        List<String> tokens = new ArrayList<>();
+        try {
+            byte[] data = Files.readAllBytes(file.toPath());
+            String blob = new String(data, StandardCharsets.ISO_8859_1);
+            int index = 0;
+            while ((index = blob.indexOf(marker, index)) >= 0 && tokens.size() < 6) {
+                int start = index;
+                while (start > 0 && isPrintable(blob.charAt(start - 1))) start--;
+                int end = index;
+                while (end < blob.length() && isPrintable(blob.charAt(end))) end++;
+                String token = blob.substring(start, end);
+                if (!tokens.contains(token)) tokens.add(token);
+                index = end;
+            }
+        } catch (Exception ignored) {
+            // Diagnostics only.
+        }
+        return tokens;
+    }
+
+    private static boolean isPrintable(char c) {
+        return c >= 0x21 && c <= 0x7e;
+    }
+
     private String readinessSummary(HarnessConfig config) {
         String[] commands = {"bash", "git", "rg", "python", "pip", "node", "npm",
             "perl", "ruby", "curl"};
