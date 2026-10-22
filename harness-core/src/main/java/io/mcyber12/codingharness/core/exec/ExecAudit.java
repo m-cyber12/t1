@@ -34,6 +34,9 @@ public final class ExecAudit {
     /** Upper bound on visited paths, so a huge prefix cannot stall start-up. */
     public static final int MAX_ENTRIES = 40_000;
 
+    /** Wall-clock budget: a full audit must never be able to hang a caller. */
+    public static final long MAX_MILLIS = 20_000L;
+
     /** Directories whose contents are package data and never executed. */
     private static final String[] SKIP_DIRS = {
         "var/lib/apt/lists", "var/cache", "share/doc", "share/man", "share/info",
@@ -67,6 +70,8 @@ public final class ExecAudit {
         public final int scanned;
         public final boolean truncated;
         public final String nativeLibraryDirectory;
+        /** Non-null when the walk could not complete at all. */
+        public String failure;
 
         Report(List<Entry> entries, int scanned, boolean truncated, String nativeLibraryDirectory) {
             this.entries = Collections.unmodifiableList(entries);
@@ -108,6 +113,7 @@ public final class ExecAudit {
             text.append("native libraries: ").append(nativeLibraryDirectory).append('\n');
             text.append("scanned paths: ").append(scanned)
                 .append(truncated ? " (truncated)" : "").append('\n');
+            if (failure != null) text.append("walk failed: ").append(failure).append('\n');
             text.append("verdict: ")
                 .append(publishable()
                     ? "publishable at any targetSdk (no executables outside the APK)"
@@ -139,6 +145,20 @@ public final class ExecAudit {
      * read, not executed, so it does not constrain packaging.</p>
      */
     public static Report audit(File prefix, File nativeLibraryDirectory) {
+        try {
+            return auditBounded(prefix, nativeLibraryDirectory);
+        } catch (Throwable problem) {
+            // An audit is diagnostics: a hostile or half-installed prefix must
+            // never turn it into a crash for the caller (it runs during setup).
+            List<Entry> none = new ArrayList<>();
+            Report failed = new Report(none, 0, true,
+                String.valueOf(nativeLibraryDirectory));
+            failed.failure = problem.getClass().getSimpleName() + ": " + problem.getMessage();
+            return failed;
+        }
+    }
+
+    private static Report auditBounded(File prefix, File nativeLibraryDirectory) {
         List<Entry> entries = new ArrayList<>();
         if (prefix == null || !prefix.isDirectory()) {
             return new Report(entries, 0, false, String.valueOf(nativeLibraryDirectory));
@@ -151,9 +171,11 @@ public final class ExecAudit {
 
         Deque<File> pending = new ArrayDeque<>();
         pending.add(prefix);
+        long deadline = System.currentTimeMillis() + MAX_MILLIS;
         while (!pending.isEmpty()) {
             File current = pending.removeFirst();
             if (scanned >= MAX_ENTRIES) { truncated = true; break; }
+            if (System.currentTimeMillis() > deadline) { truncated = true; break; }
             File[] children = current.listFiles();
             if (children == null) continue;
             for (File child : children) {

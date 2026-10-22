@@ -177,6 +177,22 @@ public class ExecSealingTest {
     }
 
     @Test
+    public void auditSurvivesABrokenEntryInsteadOfThrowing() throws Exception {
+        File prefix = temporary.newFolder("prefix-broken");
+        File bin = new File(prefix, "bin");
+        assertTrue(bin.mkdirs());
+        // Dangling symlink with a target that does not exist, plus a link whose
+        // text is not a readable path: setup diagnostics must still answer.
+        Files.createSymbolicLink(new File(bin, "dangling").toPath(),
+            new File("/data/data/com.termux/files/usr/bin/absent").toPath());
+        Files.createSymbolicLink(new File(bin, "weird").toPath(),
+            new File("/nonexistent/with space/x").toPath());
+        ExecAudit.Report report = ExecAudit.audit(prefix, null);
+        assertFalse(report.publishable());
+        assertEquals(2, report.outsideApk().size());
+    }
+
+    @Test
     public void auditOfAMissingPrefixIsEmpty() {
         ExecAudit.Report report = ExecAudit.audit(new File(temporary.getRoot(), "absent"), null);
         assertEquals(0, report.examined());

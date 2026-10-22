@@ -193,8 +193,10 @@ the sealed binary itself, and the product path matches it.
 
 **Measured against the current install (targetSdk 28):** the audit runs first in
 every variant and reports how many executables in the installed prefix are not
-backed by the APK. That number is the size of the packaging job, and the reason
-this is a migration rather than a flip.
+backed by the APK — that number is the size of the packaging job, and the reason
+this is a migration rather than a flip. On the apt-installed prefix the walk is
+bounded (40 000 entries, 20 s) and may end truncated; the sealed gate treats a
+truncated audit as a failure, because there the number has to be certifiable.
 
 **Left to build (in this order, each independently verifiable):**
 

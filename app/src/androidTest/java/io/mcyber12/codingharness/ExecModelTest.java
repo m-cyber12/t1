@@ -24,6 +24,7 @@ import io.mcyber12.codingharness.core.HarnessConfig;
 import io.mcyber12.codingharness.core.exec.ExecAudit;
 
 import static org.junit.Assume.assumeTrue;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -84,6 +85,8 @@ public class ExecModelTest {
         ExecAudit.Report audit = ExecAudit.audit(config().prefix, nativeDir);
         report("exec-model: " + audit.toText().replace("\n", " | "));
         if (targetSdk >= 29) {
+            assertFalse("the audit could not finish (truncated or failed), so it cannot "
+                + "certify the install: " + audit.toText(), audit.truncated);
             assertTrue("a targetSdk " + targetSdk + " build may not leave executables in app data: "
                 + audit.outsideApk().size(), audit.publishable());
         }
