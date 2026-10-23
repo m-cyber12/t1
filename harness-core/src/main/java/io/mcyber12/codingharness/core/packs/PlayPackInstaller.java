@@ -206,7 +206,8 @@ public final class PlayPackInstaller implements PackInstaller {
                 SealedPayloadInstaller.install(context, config, pack.assetPrefix);
             if (installed == null) {
                 return PackResult.failed(PackResult.Kind.UNAVAILABLE, pack.id,
-                    "the pack's payload is not in this APK");
+                    "the pack's payload is not in this APK"
+                        + " (a delivered split may need one restart to become visible)");
             }
             if (!installed.ok()) {
                 return new PackResult(PackResult.Kind.INSTALL_FAILED, pack.id,
@@ -333,10 +334,11 @@ public final class PlayPackInstaller implements PackInstaller {
                         + (DELIVERY_TIMEOUT_SECONDS / 60) + " minutes");
             }
             if (finalStatus[0] == SplitInstallSessionStatus.DOWNLOADED) {
-                // Everything is on the device; the split is usable as soon as the
-                // session completes, which Play does at the next app boundary on
-                // some devices. Applying the payload needs no restart.
-                manager.completeInstall();
+                // The bytes are on the device. On some Play versions a
+                // downloaded split becomes visible to the process only when it
+                // is installed into it, which is what this asks for; if it
+                // still is not visible, apply() says so rather than pretending.
+                installSplitsIntoProcess();
             }
             if (finalStatus[0] != SplitInstallSessionStatus.INSTALLED
                 && finalStatus[0] != SplitInstallSessionStatus.DOWNLOADED) {
