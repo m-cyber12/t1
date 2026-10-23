@@ -93,6 +93,26 @@ def signingNote = canSignRelease
     ? "signing with the release key (${releaseKeyAlias})"
     : "no release key: this artefact is unsigned and cannot be uploaded"
 
+// ---------------------------------------------------------------------------
+// Which ABIs the store artefact carries.
+//
+// Play splits a bundle by ABI for *native libraries*, but assets are delivered
+// whole: a bundle holding both ABIs' sealed userland makes every device
+// download both, which put the base module at 290 MB against Play's 200 MB cap.
+// The uploaded bundle therefore carries arm64-v8a only (it covers the devices
+// Play serves; Google requires 64-bit, not 32-bit), while the local APK builds
+// keep both so the x86_64 emulator gate can run.
+//
+// -PharnessPayloadAbis=x86_64 overrides it, e.g. to build a bundle for an
+// emulator without Play, or to measure one ABI at a time.
+// ---------------------------------------------------------------------------
+def wantsBundle = gradle.startParameter.taskNames.join(" ").toLowerCase().contains("bundle")
+def payloadAbis = ((findProperty("harnessPayloadAbis")
+    ?: (wantsBundle ? "arm64-v8a" : "arm64-v8a,x86_64")).toString())
+    .split(",").collect { it.trim() }.findAll { !it.isEmpty() }
+ext.sealedPayloadAbis = payloadAbis
+def filteredPayloadDir = layout.buildDirectory.dir("generated/sealed-payload-upload")
+
 android {
     namespace "io.mcyber12.codingharness"
     compileSdk rootProject.ext.compileSdkVersion
@@ -189,8 +209,9 @@ android {
             jniLibs.srcDir(new File(project.sealedPayloadDir.get().asFile, "jniLibs"))
         }
         release {
-            assets.srcDir(new File(project.sealedPayloadDir.get().asFile, "assets"))
-            jniLibs.srcDir(new File(project.sealedPayloadDir.get().asFile, "jniLibs"))
+            // Filtered: only the ABIs this artefact ships (see above).
+            assets.srcDir(new File(filteredPayloadDir.get().asFile, "assets"))
+            jniLibs.srcDir(new File(filteredPayloadDir.get().asFile, "jniLibs"))
         }
     }
 
@@ -371,11 +392,40 @@ def buildSealedPayload = tasks.register("buildSealedPayload") {
     }
 }
 
+def filterSealedPayload = tasks.register("filterSealedPayloadAbis", Sync) {
+    description = "Keeps only the ABIs this artefact ships out of the built payload"
+    dependsOn(buildSealedPayload)
+    from(project.sealedPayloadDir.get().asFile)
+    into(filteredPayloadDir)
+    payloadAbis.each { abi ->
+        // The payload names every per-ABI file with the ABI in it.
+        include "assets/*-${abi}.zip"
+        include "assets/*-${abi}.txt"
+        include "assets/*-${abi}.json"
+        include "jniLibs/${abi}/**"
+    }
+    // Anything that is not per-ABI (a future shared asset) is kept as is.
+    include "assets/*"
+    exclude { element ->
+        def name = element.relativePath.pathString
+        def abiMatch = (name =~ /-(arm64-v8a|x86_64)\./)
+        return abiMatch.find() && !payloadAbis.contains(abiMatch.group(1))
+    }
+    doLast {
+        logger.lifecycle("payload ABIs in this artefact: " + payloadAbis.join(", "))
+    }
+}
+
 tasks.matching {
     it.name.startsWith("mergeSealed") || it.name.startsWith("preSealed")
-        || it.name.startsWith("mergeRelease") || it.name == "preReleaseBuild"
 }.configureEach {
     dependsOn(buildSealedPayload)
+}
+
+tasks.matching {
+    it.name.startsWith("mergeRelease") || it.name == "preReleaseBuild"
+}.configureEach {
+    dependsOn(filterSealedPayload)
 }
 
 // Every variant needs the bootstrap assets, not just debug/release: the
