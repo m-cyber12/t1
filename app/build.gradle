@@ -249,8 +249,16 @@ def buildSealedPayload = tasks.register("buildSealedPayload") {
                     "--deb-dir", debs.absolutePath
             }
             def result = split.result.get()
-            split.standardOutput.asText.get().readLines().each { logger.lifecycle(it) }
-            split.standardError.asText.get().readLines().each { logger.error(it) }
+            // The child's diagnostics must survive a failing build: Gradle drops
+            // captured output when the task throws, and a "missing shared
+            // library" report is the whole point of the step.
+            List<String> stdoutLines = split.standardOutput.asText.get().readLines()
+            List<String> stderrLines = split.standardError.asText.get().readLines()
+            File transcript = new File(bootstrapOutput.get().asFile, "sealed-payload-${abi}.log")
+            transcript.parentFile.mkdirs()
+            transcript.text = (stdoutLines + stderrLines).join("\n") + "\n"
+            stdoutLines.each { logger.lifecycle(it) }
+            stderrLines.each { logger.error(it) }
             result.assertNormalExitValue()
         }
     }
