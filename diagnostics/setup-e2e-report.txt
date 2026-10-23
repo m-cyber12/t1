@@ -1,0 +1,6 @@
+sealed-shell: payload abi=x86_64 targetSdk=34
+sealed-shell: sealed payload (x86_64): 13859 data files, 1172 data links, 543 executables from the APK
+sealed-shell: bin/bash -> /data/app/~~8W3RYTkNUcrW6hktL8EKbQ==/io.mcyber12.codingharness-FQegkpwRc07IiqBxuUfNlw==/lib/x86_64/libbash.so
+sealed-shell: bash -> exit 0 : SEALED-SHELL-OK | version=5.3.9(1)-release | prefix=/data/user/0/io.mcyber12.codingharness/files/coding-harness/rootfs/data/data/com.termux/files/usr | path=/data/user/0/io.mcyber12.codingharness/files/coding-harness/rootfs/data/data/com.termux/files/usr/bin:/data/user/0/io.mcyber12.codingharness/files/coding-harness/workspace/node_modules/.bin:/system/bin:/system/xbin | /data/user/0/io.mcyber12.codingharness/files/coding-harness/rootfs/data/data/com.termux/files/usr/bin/sed | exit-ok |
+sealed-shell: sed -> exit 0 : A1 | A2 |
+sealed-shell: bin/git -> exit 0 : git version 2.56.0
