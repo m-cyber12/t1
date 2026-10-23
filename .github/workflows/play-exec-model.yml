@@ -87,6 +87,10 @@ jobs:
           mkdir -p diagnostics
           tail -c 60000 gradle-sealed.log > diagnostics/gradle-sealed-tail.log 2>/dev/null || true
           grep -E 'error:|What went wrong|FAILED' -A5 gradle-sealed.log > diagnostics/gradle-sealed-errors.log 2>/dev/null || true
+          # The build steps write their own transcripts; Gradle drops a failed
+          # child's output, so these files are the only account of why.
+          cp app/build/generated/harness-bootstrap/assets/*.log diagnostics/ 2>/dev/null || true
+          cp app/build/fetch-core-debs-*.log diagnostics/ 2>/dev/null || true
           git add diagnostics/ || true
           git -c user.email=ci@invalid -c user.name=ci commit -qm "sealed build failure ${GITHUB_RUN_ID} [ci]" || true
           git push origin "HEAD:refs/heads/diagnostics/sealed-${GITHUB_RUN_ID}" --force || true
