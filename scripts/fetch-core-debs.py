@@ -90,9 +90,88 @@ def parse_stanzas(text):
     return stanzas
 
 
+def debian_version_compare(left, right):
+    """Debian version ordering (policy 5.6.12), enough for dependency checks."""
+    def split(version):
+        version = version.strip()
+        epoch = 0
+        if ":" in version:
+            head, version = version.split(":", 1)
+            try:
+                epoch = int(head)
+            except ValueError:
+                epoch = 0
+        if "-" in version:
+            upstream, revision = version.rsplit("-", 1)
+        else:
+            upstream, revision = version, "0"
+        return epoch, upstream, revision
+
+    def order(char):
+        if char == "":
+            return 0          # end of string sorts before any real character
+        if char == "~":
+            return -1
+        if char.isdigit():
+            return 0
+        if char.isalpha():
+            return ord(char)
+        return ord(char) + 256
+
+    def compare_part(left, right):
+        i = j = 0
+        while i < len(left) or j < len(right):
+            # non-digit run
+            while (i < len(left) and not left[i].isdigit()) or \
+                    (j < len(right) and not right[j].isdigit()):
+                left_char = left[i] if i < len(left) else ""
+                right_char = right[j] if j < len(right) else ""
+                if order(left_char or "") != order(right_char or ""):
+                    return -1 if order(left_char or "") < order(right_char or "") else 1
+                i += 1
+                j += 1
+            # digit run
+            start_left, start_right = i, j
+            while i < len(left) and left[i].isdigit():
+                i += 1
+            while j < len(right) and right[j].isdigit():
+                j += 1
+            left_number = int(left[start_left:i] or "0")
+            right_number = int(right[start_right:j] or "0")
+            if left_number != right_number:
+                return -1 if left_number < right_number else 1
+        return 0
+
+    left_epoch, left_upstream, left_revision = split(left)
+    right_epoch, right_upstream, right_revision = split(right)
+    if left_epoch != right_epoch:
+        return -1 if left_epoch < right_epoch else 1
+    result = compare_part(left_upstream, right_upstream)
+    if result:
+        return result
+    return compare_part(left_revision, right_revision)
+
+
+def satisfies(version, operator, required):
+    if not version or not operator:
+        return True
+    comparison = debian_version_compare(version, required)
+    if operator in (">=",):
+        return comparison >= 0
+    if operator in ("<=",):
+        return comparison <= 0
+    if operator in ("=", "=="):
+        return comparison == 0
+    if operator in ("<<", "<"):
+        return comparison < 0
+    if operator in (">>", ">"):
+        return comparison > 0
+    return True
+
+
 def bootstrap_packages(bootstrap_zip):
-    """Package names the bootstrap already ships, from its dpkg status."""
-    names = set()
+    """Package name -> version, from the bootstrap's own dpkg database."""
+    names = {}
     if not bootstrap_zip or not os.path.isfile(bootstrap_zip):
         return names
     with zipfile.ZipFile(bootstrap_zip) as archive:
@@ -102,26 +181,32 @@ def bootstrap_packages(bootstrap_zip):
             return names
         text = archive.read(candidates[0]).decode("utf-8", "replace")
     for stanza in parse_stanzas(text):
-        if stanza.get("Package") and stanza.get("Status", "").endswith("installed"):
-            names.add(stanza["Package"])
-        elif stanza.get("Package"):
-            names.add(stanza["Package"])
+        if stanza.get("Package"):
+            names[stanza["Package"]] = stanza.get("Version", "")
     return names
 
 
 def split_dependencies(value):
-    """'a (>= 1) | b, c:any' -> [['a','b'], ['c']] (alternatives kept)."""
+    """'a (>= 1) | b, c:any' -> [[('a','>=','1'), ('b','','')], [('c','','')]]."""
     if not value:
         return []
     groups = []
     for group in value.split(","):
         alternatives = []
         for alternative in group.split("|"):
+            constraint = re.search(r"\(([^)]*)\)", alternative)
+            operator = required = ""
+            if constraint:
+                pieces = constraint.group(1).split()
+                if len(pieces) >= 2:
+                    operator, required = pieces[0], pieces[1]
+                elif pieces:
+                    operator, required = "=", pieces[0]
             name = re.sub(r"\([^)]*\)", "", alternative)
             name = name.replace(":any", "").strip()
             name = name.split("[")[0].strip()
             if name:
-                alternatives.append(name)
+                alternatives.append((name, operator, required))
         if alternatives:
             groups.append(alternatives)
     return groups
@@ -177,26 +262,42 @@ def load_index(repo, suite, arch):
     return packages, provided
 
 
-def resolve(requested, packages, provided, prerequested, skip):
-    """Breadth-first dependency resolution; returns names in install order."""
+def resolve(requested, packages, provided, bootstrap, skip):
+    """Breadth-first dependency resolution; returns names in install order.
+
+    A dependency the bootstrap already provides is skipped only when the
+    bootstrap's version actually satisfies the constraint. Keeping a stale
+    bootstrap library because it happens to share a name is how a sealed build
+    links a new binary against an old libc++ and dies with "cannot locate
+    symbol" - the bootstrap is pinned, the package set is not.
+    """
     order = []
     seen = set()
-    queue = [(name, "requested") for name in requested]
+    queue = [(name, "", "", "requested") for name in requested]
     missing = []
     while queue:
-        name, reason = queue.pop(0)
-        if name in seen:
+        name, operator, required, reason = queue.pop(0)
+        key = (name, operator, required)
+        if key in seen:
             continue
-        seen.add(name)
-        if name in skip or name in prerequested:
-            log("skip %-22s (%s, provided by the bootstrap)" % (name, reason))
+        seen.add(key)
+        provided_version = bootstrap.get(name)
+        if provided_version:
+            if satisfies(provided_version, operator, required):
+                log("skip %-22s %-12s (%s; bootstrap has %s)"
+                    % (name, provided_version, reason, provided_version))
+                continue
+            log("refresh %-19s bootstrap has %s, %s needs %s"
+                % (name, provided_version, reason, required))
+        elif name in skip:
+            log("skip %-22s (%s, excluded)" % (name, reason))
             continue
         stanza = packages.get(name)
         if stanza is None:
             virtual = provided.get(name)
             if virtual is not None:
                 log("virtual %-19s -> %s" % (name, virtual))
-                queue.append((virtual, "virtual:" + name))
+                queue.append((virtual, operator, required, "virtual:" + name))
                 continue
             missing.append(name)
             log("MISSING %-19s (%s)" % (name, reason))
@@ -205,13 +306,22 @@ def resolve(requested, packages, provided, prerequested, skip):
         for field in DEPENDENCY_FIELDS:
             for alternatives in split_dependencies(stanza.get(field, "")):
                 chosen = next((alt for alt in alternatives
-                               if alt in packages or alt in provided), None)
+                               if alt[0] in packages or alt[0] in provided
+                               or alt[0] in bootstrap), None)
                 if chosen is None:
-                    missing.append("/".join(alternatives))
-                    log("MISSING dependency %-14s of %s" % ("/".join(alternatives), name))
+                    missing.append("/".join(alt[0] for alt in alternatives))
+                    log("MISSING dependency %-14s of %s"
+                        % ("/".join(alt[0] for alt in alternatives), name))
                     continue
-                queue.append((chosen, "%s:%s" % (name, field.lower())))
-    return order, missing
+                queue.append((chosen[0], chosen[1], chosen[2],
+                              "%s:%s" % (name, field.lower())))
+    # A package fetched later must not be replaced by an earlier entry for the
+    # same name (the refresh case above), and install order stays as resolved.
+    deduped = []
+    for name in order:
+        if name not in deduped:
+            deduped.append(name)
+    return deduped, missing
 
 
 def download_deb(repo, stanza, out_dir, arch):
@@ -254,13 +364,13 @@ def main():
 
     os.makedirs(arguments.out, exist_ok=True)
     packages, provided = load_index(arguments.repo, arguments.suite, arguments.arch)
-    prerequested = bootstrap_packages(arguments.bootstrap)
-    skip = set(ALWAYS_SKIP) | prerequested
+    bootstrap = bootstrap_packages(arguments.bootstrap)
+    skip = set(ALWAYS_SKIP)
     log("bootstrap provides %d packages; index has %d"
-        % (len(prerequested), len(packages)))
+        % (len(bootstrap), len(packages)))
 
     order, missing = resolve(arguments.packages, packages, provided,
-                             prerequested, skip)
+                             bootstrap, skip)
     if missing:
         print("unresolved dependencies: %s" % ", ".join(sorted(set(missing))), file=sys.stderr)
         return 1

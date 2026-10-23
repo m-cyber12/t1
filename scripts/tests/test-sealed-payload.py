@@ -115,7 +115,8 @@ def main():
             archive.writestr("lib/libssl.so.3", elf("libssl"))
             archive.writestr("var/lib/dpkg/status",
                              "Package: bash\nStatus: install ok installed\nVersion: 5.3\n\n"
-                             "Package: libandroid-support\nStatus: install ok installed\n\n")
+                             "Package: libandroid-support\nStatus: install ok installed\n\n"
+                             "Package: libc++\nStatus: install ok installed\nVersion: 26.0\n\n")
         # SYMLINKS.txt uses Termux's arrow notation
         with zipfile.ZipFile(bootstrap, "a") as archive:
             archive.writestr("SYMLINKS.txt", "/data/data/com.termux/files/usr/bin/bash\u2190bin/sh")
@@ -142,6 +143,16 @@ def main():
                          "share/git/template": b"template"})
         gitdata = open(degit, "rb").read()
 
+        # A package whose dependency the bootstrap *appears* to satisfy but does
+        # not: the bootstrap ships libc++ 26, node needs >= 27. Skipping it by
+        # name alone links node against an old library ("cannot locate symbol").
+        denode = os.path.join(pool, "nodejs.deb")
+        make_deb(denode, {"bin/node": elf("node")})
+        nodedata = open(denode, "rb").read()
+        delibcxx = os.path.join(pool, "libc++.deb")
+        make_deb(delibcxx, {"lib/libc++_shared.so": elf("libc++27")})
+        libcxxdata = open(delibcxx, "rb").read()
+
         deperl = os.path.join(pool, "perl.deb")
         make_deb(deperl, {"bin/perl": elf("perl"),
                           "bin/perl5.40.0": elf("perl"),
@@ -159,6 +170,9 @@ def main():
             stanza("libpython", "3.12.1", "pool/libpython.deb", libdata),
             stanza("libffi8", "3.4", "pool/libffi8.deb", ffidata, provides="libffi"),
             stanza("git", "2.48.1", "pool/git.deb", gitdata),
+            stanza("nodejs", "24.0.0", "pool/nodejs.deb", nodedata,
+                   depends="libc++ (>= 27)"),
+            stanza("libc++", "28.0", "pool/libc++.deb", libcxxdata),
             stanza("perl", "5.40.1", "pool/perl.deb", perldata),
             stanza("bash", "5.3", "pool/bash.deb", bashdata),
         ])
@@ -170,10 +184,13 @@ def main():
                        "--arch", "aarch64", "--out", debs,
                        "--bootstrap", bootstrap,
                        "--repo", "file://" + repo,
-                       "--packages", "python", "git", "perl", "bash"])
+                       "--packages", "python", "git", "perl", "bash", "nodejs"])
         fetched_names = sorted(name for name in os.listdir(debs) if name.endswith(".deb"))
-        assert fetched_names == ["git.deb", "libffi8.deb", "libpython.deb", "perl.deb", "python.deb"], fetched_names
-        assert "skip bash" in fetched.stderr and "provided by the bootstrap" in fetched.stderr, fetched.stderr
+        assert fetched_names == ["git.deb", "libc++.deb", "libffi8.deb", "libpython.deb",
+                                 "nodejs.deb", "perl.deb", "python.deb"], fetched_names
+        # the version constraint overrides "the bootstrap has it"
+        assert "refresh libc++" in fetched.stderr, fetched.stderr
+        assert "skip bash" in fetched.stderr and "bootstrap has 5.3" in fetched.stderr, fetched.stderr
         assert "virtual" in fetched.stderr, fetched.stderr
 
         out = os.path.join(root, "out")
