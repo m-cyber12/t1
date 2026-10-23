@@ -159,6 +159,17 @@ jobs:
             done
             echo "sealed executables: $(grep -vc '^#' "sealed-exec-${abi}.txt")"
           done
+          # 16 KB page support: Play checks the zipalign of the packaged
+          # libraries. NDK r27 does not align by itself, so the flags in
+          # Android.mk have to be visible here as a pass, not assumed.
+          ZIPALIGN="$(ls "$ANDROID_HOME"/build-tools/*/zipalign | head -1)"
+          if "$ZIPALIGN" -c -P 16 -v 4 "$APK" | tee sealed-apk-16kb.txt | grep -q "Verification successful"; then
+            echo "16 KB page alignment: verified"
+          else
+            echo "APK is not 16 KB aligned" >&2
+            grep -E "BAD|FAILED" sealed-apk-16kb.txt | head -20 >&2 || true
+            exit 1
+          fi
           cat app/build/generated/sealed-payload/assets/sealed-payload-*.json | tee sealed-payload.json
 
       - name: Run the exec-model measurement on an emulator
@@ -220,6 +231,7 @@ jobs:
             sealed-apk-identity.txt
             sealed-payload.json
             sealed-exec-*.txt
+            sealed-apk-16kb.txt
             gradle-sealed.log
             app/build/outputs/apk/sealed/*.apk
             app/build/outputs/androidTest-results/
