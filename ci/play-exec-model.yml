@@ -35,8 +35,11 @@ on:
     paths:
       - "app/**"
       - "harness-core/**"
+      - "sealed-runtime/**"
       - "terminal-emulator/**"
       - "scripts/**"
+      - "build.gradle"
+      - "settings.gradle"
       - "ci/play-exec-model.yml"
       - ".github/workflows/play-exec-model.yml"
 
