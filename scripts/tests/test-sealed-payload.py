@@ -190,7 +190,7 @@ def main():
                                  "nodejs.deb", "perl.deb", "python.deb"], fetched_names
         # the version constraint overrides "the bootstrap has it"
         assert "refresh libc++" in fetched.stderr, fetched.stderr
-        assert "skip bash" in fetched.stderr and "bootstrap has 5.3" in fetched.stderr, fetched.stderr
+        assert "skip bash" in fetched.stderr, fetched.stderr
         assert "virtual" in fetched.stderr, fetched.stderr
 
         out = os.path.join(root, "out")

@@ -283,15 +283,27 @@ def resolve(requested, packages, provided, bootstrap, skip):
         seen.add(key)
         provided_version = bootstrap.get(name)
         if provided_version:
-            if satisfies(provided_version, operator, required):
-                log("skip %-22s %-12s (%s; bootstrap has %s)"
-                    % (name, provided_version, reason, provided_version))
+            repository_version = (packages.get(name) or {}).get("Version")
+            if not repository_version:
+                log("skip %-22s %-12s (%s; bootstrap has it, repository does not)"
+                    % (name, provided_version, reason))
                 continue
-            log("refresh %-19s bootstrap has %s, %s needs %s"
-                % (name, provided_version, reason, required))
+            if debian_version_compare(provided_version, repository_version) == 0:
+                log("skip %-22s %-12s (%s; bootstrap has the same version)"
+                    % (name, provided_version, reason))
+                continue
+            # The bootstrap is pinned; the package set is not. A stale library is
+            # how node ends up linking against an old libc++ and dying with
+            # "cannot locate symbol", so a package both sides ship is taken from
+            # the repository - the same thing the apt build's base upgrade does.
+            log("refresh %-19s bootstrap %-12s -> %-12s (%s%s)"
+                % (name, provided_version, repository_version, reason,
+                   (" needs " + operator + " " + required) if operator else ""))
         elif name in skip:
             log("skip %-22s (%s, excluded)" % (name, reason))
             continue
+        elif not satisfies(provided_version or "0", operator, required) and operator:
+            log("check   %-19s %s %s" % (name, operator, required))
         stanza = packages.get(name)
         if stanza is None:
             virtual = provided.get(name)
