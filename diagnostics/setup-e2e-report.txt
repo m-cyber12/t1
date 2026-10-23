@@ -1,0 +1,3 @@
+sealed-shell: payload abi=x86_64 targetSdk=34
+sealed-shell: sealed payload (x86_64): 3169 data files, 956 data links, 324 executables from the APK
+sealed-shell: bin/bash -> /data/app/~~mt7SPYnCUjH7C54aGcKtaA==/io.mcyber12.codingharness--ufFEHJtlVRk8SdvMrDcgw==/lib/x86_64/libbash.so
