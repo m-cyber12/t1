@@ -12,9 +12,13 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:dist="http://schemas.android.com/apk/distribution">
 
-    <dist:module
-        dist:instant="false"
-        dist:title="@string/pack_buildtools_title">
+    <!--
+      No dist:title: bundletool resolves a module title against the base
+      module's resource table, which failed the bundle even with the string
+      declared in both places. Play shows the module's own name instead, and
+      the in-app label comes from Pack.BUILD_TOOLS where it is under test.
+    -->
+    <dist:module dist:instant="false">
         <dist:delivery>
             <dist:on-demand />
         </dist:delivery>
