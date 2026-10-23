@@ -1,0 +1,79 @@
+fetched 48 packages (355552 KiB installed) for x86_64
+index: https://packages-cf.termux.dev/apt/termux-main/dists/stable/main/binary-x86_64/Packages.xz
+index: https://packages-cf.termux.dev/apt/termux-main/dists/stable/main/binary-x86_64/Packages.gz
+bootstrap provides 79 packages; index has 3006
+refresh libcurl             bootstrap 8.18.0-1     -> 8.23.0       (git:depends)
+refresh libiconv            bootstrap 1.18-1       -> 1.19         (git:depends)
+refresh less                bootstrap 692          -> 710          (git:depends)
+refresh openssl             bootstrap 1:3.6.1      -> 1:3.6.5      (git:depends)
+refresh pcre2               bootstrap 10.47        -> 10.49        (git:depends)
+refresh zlib                bootstrap 1.3.1-1      -> 1.3.2        (git:depends)
+skip libandroid-posix-semaphore 0.1-4        (python:depends; bootstrap has the same version)
+skip libandroid-support     29-1         (python:depends; bootstrap has the same version)
+skip libbz2                 1.0.8-8      (python:depends; bootstrap has the same version)
+refresh liblzma             bootstrap 5.8.2        -> 5.8.4        (python:depends)
+refresh ncurses             bootstrap 6.6.20260124+really6.5.20250830 -> 6.6.20260307+really6.5.20250830 (python:depends)
+refresh readline            bootstrap 8.3.1-2      -> 8.3.6        (python:depends)
+skip zstd                   1.5.7-1      (python:depends; bootstrap has the same version)
+refresh ca-certificates     bootstrap 1:2025.12.02 -> 1:2026.10.20-1 (python-pip:depends)
+check   python              >= 3.11.1-1
+refresh libc++              bootstrap 29           -> 30           (nodejs:depends)
+skip libgmp                 6.3.0-2      (ruby:depends; bootstrap has the same version)
+check   libmagic            = 5.48-3
+refresh libnghttp2          bootstrap 1.68.0-1     -> 1.70.0       (libcurl:depends)
+refresh libnghttp3          bootstrap 1.15.0       -> 1.18.0       (libcurl:depends)
+refresh libngtcp2           bootstrap 1.20.0       -> 1.25.0       (libcurl:depends)
+refresh libssh2             bootstrap 1.11.1-1     -> 1.11.1-2     (libcurl:depends)
+refresh openssl             bootstrap 1:3.6.1      -> 1:3.6.5      (libcurl:depends needs >= 1:3.2.1-1)
+refresh ncurses             bootstrap 6.6.20260124+really6.5.20250830 -> 6.6.20260307+really6.5.20250830 (ncurses-ui-libs:depends needs = 6.6.20260307+really6.5.20250830)
+skip resolv-conf            1.3          (c-ares:depends; bootstrap has the same version)
+skip libandroid-glob        0.6-3        (krb5:depends; bootstrap has the same version)
+fetch git                    2.56.0                       git_2.56.0_x86_64.deb
+fetch ripgrep                15.2.0                       ripgrep_15.2.0_x86_64.deb
+fetch python                 3.14.8                       python_3.14.8_x86_64.deb
+fetch python-pip             26.2.2-2                     python-pip_26.2.2-2_all.deb
+fetch nodejs                 26.12.1                      nodejs_26.12.1_x86_64.deb
+fetch npm                    11.21.1                      npm_11.21.1_all.deb
+fetch perl                   5.44.0                       perl_5.44.0_x86_64.deb
+fetch ruby                   4.0.7                        ruby_4.0.7_x86_64.deb
+fetch jq                     1.8.2                        jq_1.8.2_x86_64.deb
+fetch tree                   2.3.2                        tree_2.3.2_x86_64.deb
+fetch which                  2.25                         which_2.25_x86_64.deb
+fetch file                   5.48-3                       file_5.48-3_x86_64.deb
+fetch openssh                10.6p1-2                     openssh_10.6p1-2_x86_64.deb
+fetch libcurl                8.23.0                       libcurl_8.23.0_x86_64.deb
+fetch libexpat               2.9.0                        libexpat_2.9.0_x86_64.deb
+fetch libiconv               1.19                         libiconv_1.19_x86_64.deb
+fetch less                   710                          less_710_x86_64.deb
+fetch openssl                1:3.6.5                      openssl_1:3.6.5_x86_64.deb
+fetch pcre2                  10.49                        pcre2_10.49_x86_64.deb
+fetch zlib                   1.3.2                        zlib_1.3.2_x86_64.deb
+fetch gdbm                   1.26-1                       gdbm_1.26-1_x86_64.deb
+fetch libcrypt               0.2-6                        libcrypt_0.2-6_x86_64.deb
+fetch libffi                 3.8.0                        libffi_3.8.0_x86_64.deb
+fetch liblzma                5.8.4                        liblzma_5.8.4_x86_64.deb
+fetch libsqlite              3.54.1                       libsqlite_3.54.1_x86_64.deb
+fetch ncurses                6.6.20260307+really6.5.20250830 ncurses_6.6.20260307+really6.5.20250830_x86_64.deb
+fetch ncurses-ui-libs        6.6.20260307+really6.5.20250830 ncurses-ui-libs_6.6.20260307+really6.5.20250830_x86_64.deb
+fetch readline               8.3.6                        readline_8.3.6_x86_64.deb
+fetch ca-certificates        1:2026.10.20-1               ca-certificates_1:2026.10.20-1_all.deb
+fetch libc++                 30                           libc++_30_x86_64.deb
+fetch c-ares                 1.34.9                       c-ares_1.34.9_x86_64.deb
+fetch libicu                 78.3                         libicu_78.3_x86_64.deb
+fetch libandroid-utimes      0.4                          libandroid-utimes_0.4_x86_64.deb
+fetch libandroid-execinfo    0.1-3                        libandroid-execinfo_0.1-3_x86_64.deb
+fetch libyaml                0.2.5-5                      libyaml_0.2.5-5_x86_64.deb
+fetch oniguruma              6.9.10-1                     oniguruma_6.9.10-1_x86_64.deb
+fetch libmagic               5.48-3                       libmagic_5.48-3_x86_64.deb
+fetch krb5                   1.22.2                       krb5_1.22.2_x86_64.deb
+fetch ldns                   1.9.2                        ldns_1.9.2_x86_64.deb
+fetch libedit                20260512-3.1-0               libedit_20260512-3.1-0_x86_64.deb
+fetch openssh-sftp-server    10.6p1-2                     openssh-sftp-server_10.6p1-2_x86_64.deb
+fetch termux-auth            1.5.0-1                      termux-auth_1.5.0-1_x86_64.deb
+fetch libnghttp2             1.70.0                       libnghttp2_1.70.0_x86_64.deb
+fetch libnghttp3             1.18.0                       libnghttp3_1.18.0_x86_64.deb
+fetch libngtcp2              1.25.0                       libngtcp2_1.25.0_x86_64.deb
+fetch libssh2                1.11.1-2                     libssh2_1.11.1-2_x86_64.deb
+fetch libresolv-wrapper      1.1.8                        libresolv-wrapper_1.1.8_x86_64.deb
+fetch libdb                  18.1.40-6                    libdb_18.1.40-6_x86_64.deb
+exit=0
