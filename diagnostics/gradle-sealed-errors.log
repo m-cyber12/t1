@@ -1,0 +1,16 @@
+> Task :app:fetchCoreDebs FAILED
+
+[Incubating] Problems report is available at: file:///home/runner/work/t1/t1/build/reports/problems/problems-report.html
+
+FAILURE: Build failed with an exception.
+
+--
+* What went wrong:
+Execution failed for task ':app:fetchCoreDebs'.
+> Process 'command 'python3'' finished with non-zero exit value 1
+
+* Try:
+> Run with --info or --debug option to get more log output.
+--
+BUILD FAILED in 2m 28s
+68 actionable tasks: 38 executed, 30 from cache
