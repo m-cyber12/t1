@@ -201,11 +201,16 @@ public class SealedShellTest {
     @Test
     public void packsComeFromTheStoreAndNeverFromApt() throws Exception {
         HarnessConfig config = HarnessConfig.builder(context).build();
+        assumeTrue("not the sealed variant", SealedPayloadInstaller.pickAbi(context) != null);
         // This test may run alone (the pack gate instruments just this method),
-        // so it installs the runtime it is about to add to.
-        SealedPayloadInstaller.Result base = SealedPayloadInstaller.install(context, config);
-        assumeTrue("not the sealed variant", base != null);
-        assertTrue("the core payload did not install: " + base.summary(), base.ok());
+        // so it installs the runtime it is about to add to — but only when the
+        // runtime is not already there. Re-extracting 13,858 files to prove a
+        // pack installs is minutes of emulator time for nothing.
+        if (!new File(config.prefix, "bin/git").exists()) {
+            SealedPayloadInstaller.Result base = SealedPayloadInstaller.install(context, config);
+            assertTrue("the core payload did not install: "
+                + (base == null ? "no payload" : base.summary()), base != null && base.ok());
+        }
 
         PackInstaller packs = Packs.installer(context, config);
         assertEquals("a sealed build must use the store channel",
