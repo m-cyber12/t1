@@ -1,0 +1,497 @@
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/9.2.1/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build 
+> Task :harness-core:preBuild UP-TO-DATE
+> Task :harness-core:preReleaseBuild UP-TO-DATE
+> Task :app:downloadHarnessBootstrap UP-TO-DATE
+> Task :terminal-emulator:buildExecProbe UP-TO-DATE
+> Task :terminal-emulator:preBuild UP-TO-DATE
+> Task :terminal-emulator:preReleaseBuild UP-TO-DATE
+> Task :sealed-runtime:compileJava UP-TO-DATE
+> Task :app:fetchCoreDebs UP-TO-DATE
+> Task :sealed-runtime:processResources NO-SOURCE
+> Task :sealed-runtime:classes UP-TO-DATE
+> Task :terminal-emulator:generateReleaseResValues FROM-CACHE
+> Task :sealed-runtime:jar UP-TO-DATE
+> Task :harness-core:generateReleaseResValues FROM-CACHE
+> Task :terminal-view:preBuild UP-TO-DATE
+> Task :terminal-view:preReleaseBuild UP-TO-DATE
+> Task :harness-core:generateReleaseResources FROM-CACHE
+> Task :terminal-emulator:generateReleaseResources FROM-CACHE
+> Task :terminal-view:generateReleaseResValues FROM-CACHE
+> Task :terminal-view:generateReleaseResources FROM-CACHE
+> Task :app:buildSealedPayload UP-TO-DATE
+> Task :app:preBuild UP-TO-DATE
+> Task :terminal-emulator:packageReleaseResources FROM-CACHE
+> Task :pack_buildtools:fetchPackDebs UP-TO-DATE
+> Task :harness-core:packageReleaseResources FROM-CACHE
+> Task :pack_buildtools:buildPackPayload UP-TO-DATE
+> Task :terminal-emulator:processReleaseNavigationResources FROM-CACHE
+> Task :pack_buildtools:preBuild UP-TO-DATE
+> Task :pack_buildtools:preReleaseBuild UP-TO-DATE
+> Task :harness-core:processReleaseNavigationResources FROM-CACHE
+> Task :terminal-view:packageReleaseResources FROM-CACHE
+> Task :terminal-view:processReleaseNavigationResources FROM-CACHE
+> Task :pack_buildtools:featureReleaseWriter
+> Task :pack_buildtools:generateReleaseResValues FROM-CACHE
+> Task :harness-core:javaPreCompileRelease FROM-CACHE
+> Task :terminal-emulator:javaPreCompileRelease FROM-CACHE
+> Task :terminal-emulator:parseReleaseLocalResources
+> Task :harness-core:parseReleaseLocalResources
+> Task :terminal-view:javaPreCompileRelease FROM-CACHE
+> Task :terminal-view:processReleaseJavaRes NO-SOURCE
+> Task :terminal-view:extractDeepLinksRelease FROM-CACHE
+> Task :terminal-view:parseReleaseLocalResources
+> Task :terminal-emulator:processReleaseJavaRes NO-SOURCE
+> Task :terminal-emulator:extractDeepLinksRelease FROM-CACHE
+> Task :harness-core:processReleaseJavaRes
+> Task :harness-core:generateReleaseRFile
+> Task :terminal-emulator:generateReleaseRFile
+> Task :terminal-view:generateReleaseRFile
+> Task :harness-core:extractDeepLinksRelease FROM-CACHE
+> Task :harness-core:processReleaseManifest
+> Task :terminal-emulator:processReleaseManifest
+> Task :terminal-view:processReleaseManifest
+> Task :harness-core:compileReleaseLibraryResources FROM-CACHE
+> Task :terminal-view:writeReleaseAarMetadata
+> Task :harness-core:writeReleaseAarMetadata
+> Task :terminal-view:compileReleaseLibraryResources FROM-CACHE
+> Task :harness-core:mergeReleaseShaders
+> Task :terminal-view:mergeReleaseShaders
+> Task :terminal-view:compileReleaseShaders NO-SOURCE
+> Task :terminal-view:generateReleaseAssets UP-TO-DATE
+> Task :harness-core:compileReleaseShaders NO-SOURCE
+> Task :harness-core:generateReleaseAssets UP-TO-DATE
+> Task :terminal-view:mergeReleaseAssets
+> Task :harness-core:mergeReleaseAssets
+> Task :pack_buildtools:javaPreCompileRelease FROM-CACHE
+> Task :pack_buildtools:generateReleaseResources FROM-CACHE
+> Task :harness-core:mergeReleaseJniLibFolders
+> Task :harness-core:mergeReleaseNativeLibs NO-SOURCE
+> Task :harness-core:copyReleaseJniLibsProjectOnly
+> Task :terminal-view:mergeReleaseJniLibFolders
+> Task :terminal-view:mergeReleaseNativeLibs NO-SOURCE
+> Task :terminal-view:copyReleaseJniLibsProjectOnly
+> Task :pack_buildtools:packageReleaseResources
+> Task :harness-core:prepareReleaseArtProfile
+> Task :terminal-view:prepareReleaseArtProfile
+> Task :harness-core:extractProguardFiles
+> Task :app:extractProguardFiles
+> Task :terminal-view:extractProguardFiles
+> Task :terminal-view:prepareLintJarForPublish
+> Task :harness-core:prepareLintJarForPublish
+> Task :harness-core:stripReleaseDebugSymbols NO-SOURCE
+> Task :terminal-view:stripReleaseDebugSymbols NO-SOURCE
+> Task :harness-core:copyReleaseJniLibsProjectAndLocalJars
+> Task :terminal-view:copyReleaseJniLibsProjectAndLocalJars
+> Task :harness-core:extractDeepLinksForAarRelease
+> Task :terminal-view:extractDeepLinksForAarRelease FROM-CACHE
+> Task :terminal-view:mergeReleaseJavaResource
+> Task :harness-core:writeReleaseLintModelMetadata
+> Task :terminal-view:writeReleaseLintModelMetadata
+> Task :pack_buildtools:extractProguardFiles
+> Task :pack_buildtools:mergeReleaseShaders
+> Task :pack_buildtools:compileReleaseShaders NO-SOURCE
+> Task :pack_buildtools:generateReleaseAssets UP-TO-DATE
+> Task :harness-core:mergeReleaseJavaResource
+> Task :pack_buildtools:processReleaseJavaRes NO-SOURCE
+> Task :pack_buildtools:mergeReleaseJniLibFolders
+
+> Task :terminal-emulator:compileReleaseJavaWithJavac
+Note: /home/runner/work/t1/t1/terminal-emulator/src/main/java/com/termux/terminal/TerminalSession.java uses or overrides a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+
+> Task :terminal-emulator:writeReleaseAarMetadata
+> Task :terminal-emulator:compileReleaseLibraryResources FROM-CACHE
+> Task :terminal-emulator:bundleLibCompileToJarRelease
+> Task :terminal-emulator:bundleLibRuntimeToJarRelease
+> Task :terminal-emulator:createFullJarRelease
+> Task :terminal-emulator:bundleLibRuntimeToDirRelease
+> Task :terminal-emulator:mergeReleaseShaders
+> Task :terminal-emulator:compileReleaseShaders NO-SOURCE
+> Task :terminal-emulator:generateReleaseAssets UP-TO-DATE
+> Task :terminal-emulator:mergeReleaseAssets
+> Task :harness-core:checkReleaseAarMetadata
+
+> Task :terminal-view:compileReleaseJavaWithJavac
+Note: /home/runner/work/t1/t1/terminal-view/src/main/java/com/termux/view/TerminalView.java uses or overrides a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+
+> Task :terminal-view:bundleLibRuntimeToJarRelease
+> Task :terminal-view:createFullJarRelease
+> Task :terminal-view:bundleLibRuntimeToDirRelease
+> Task :harness-core:compileReleaseJavaWithJavac
+> Task :harness-core:bundleLibRuntimeToJarRelease
+> Task :harness-core:createFullJarRelease
+> Task :app:generateReleaseFeatureTransitiveDeps FROM-CACHE
+> Task :pack_buildtools:generateReleaseFeatureTransitiveDeps FROM-CACHE
+> Task :app:checkReleaseLibraries FROM-CACHE
+> Task :app:preReleaseBuild
+> Task :harness-core:bundleLibRuntimeToDirRelease
+> Task :app:processReleaseNavigationResources FROM-CACHE
+> Task :app:compileReleaseNavigationResources FROM-CACHE
+> Task :app:generateReleaseResValues FROM-CACHE
+> Task :app:mapReleaseSourceSetPaths
+> Task :app:generateReleaseResources FROM-CACHE
+> Task :app:createReleaseCompatibleScreenManifests
+> Task :app:extractDeepLinksRelease FROM-CACHE
+> Task :app:writeReleaseModuleMetadata
+> Task :app:generateReleaseFeatureMetadata FROM-CACHE
+> Task :pack_buildtools:extractDeepLinksRelease FROM-CACHE
+> Task :app:checkReleaseAarMetadata
+> Task :app:packageReleaseResources
+> Task :app:parseReleaseLocalResources
+> Task :pack_buildtools:processReleaseMainManifest
+> Task :pack_buildtools:copyReleaseMergedManifest
+> Task :app:mergeReleaseResources
+> Task :harness-core:bundleLibCompileToJarRelease
+> Task :app:extractReleaseVersionControlInfo
+> Task :terminal-view:bundleLibCompileToJarRelease
+> Task :app:checkReleaseDuplicateClasses
+> Task :app:javaPreCompileRelease FROM-CACHE
+> Task :app:desugarReleaseFileDependencies
+> Task :app:mergeReleaseStartupProfile
+> Task :pack_buildtools:processApplicationManifestReleaseForBundle
+> Task :pack_buildtools:desugarReleaseFileDependencies FROM-CACHE
+> Task :pack_buildtools:processManifestReleaseForFeature
+> Task :pack_buildtools:processReleaseNavigationResources FROM-CACHE
+> Task :pack_buildtools:compileReleaseNavigationResources FROM-CACHE
+> Task :pack_buildtools:mapReleaseSourceSetPaths
+> Task :pack_buildtools:mergeReleaseResources
+> Task :pack_buildtools:parseReleaseLocalResources FROM-CACHE
+> Task :terminal-emulator:configureNdkBuildRelease[arm64-v8a]
+> Task :terminal-emulator:buildNdkBuildRelease[arm64-v8a]
+> Task :terminal-emulator:configureNdkBuildRelease[x86_64]
+> Task :terminal-emulator:buildNdkBuildRelease[x86_64]
+> Task :terminal-emulator:mergeReleaseJniLibFolders
+> Task :pack_buildtools:processReleaseManifestForPackage
+> Task :terminal-emulator:prepareReleaseArtProfile
+> Task :pack_buildtools:collectReleaseDependencies
+> Task :terminal-emulator:extractProguardFiles
+> Task :terminal-emulator:mergeReleaseNativeLibs
+> Task :pack_buildtools:checkReleaseAarMetadata
+> Task :terminal-view:checkReleaseAarMetadata
+> Task :terminal-emulator:generateReleaseLintModel
+> Task :terminal-emulator:copyReleaseJniLibsProjectOnly
+> Task :terminal-emulator:prepareLintJarForPublish
+> Task :terminal-emulator:checkReleaseAarMetadata
+> Task :terminal-emulator:stripReleaseDebugSymbols
+> Task :terminal-emulator:copyReleaseJniLibsProjectAndLocalJars
+> Task :terminal-emulator:extractDeepLinksForAarRelease FROM-CACHE
+> Task :app:mergeExtDexRelease
+
+> Task :app:processReleaseMainManifest
+/home/runner/work/t1/t1/app/src/release/AndroidManifest.xml:23:18-50 Warning:
+	android:extractNativeLibs should not be specified in this source AndroidManifest.xml file. See https://d.android.com/guide/topics/manifest/application-element#extractNativeLibs for more information.
+The AGP Upgrade Assistant can remove the attribute from the AndroidManifest.xml file and update the build file accordingly. See https://d.android.com/studio/build/agp-upgrade-assistant for more information.
+
+> Task :app:processReleaseManifest
+> Task :app:processApplicationManifestReleaseForBundle
+> Task :app:processReleaseManifestForPackage
+> Task :app:processReleaseResources
+> Task :app:bundleReleaseResources
+
+> Task :app:compileReleaseJavaWithJavac
+Note: /home/runner/work/t1/t1/app/src/main/java/io/mcyber12/codingharness/MainActivity.java uses or overrides a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+
+> Task :app:dexBuilderRelease
+> Task :app:mergeDexRelease
+> Task :app:mergeReleaseShaders
+> Task :app:compileReleaseShaders NO-SOURCE
+> Task :app:generateReleaseAssets UP-TO-DATE
+> Task :app:mergeReleaseAssets
+> Task :app:bundleReleaseClassesToRuntimeJar
+> Task :app:bundleReleaseClassesToCompileJar
+> Task :pack_buildtools:processReleaseResources
+> Task :pack_buildtools:compileReleaseJavaWithJavac NO-SOURCE
+> Task :pack_buildtools:dexBuilderRelease
+> Task :pack_buildtools:featureGlobalSyntheticsReleaseMerge
+> Task :app:mergeReleaseGlobalSynthetics
+> Task :app:processReleaseJavaRes NO-SOURCE
+> Task :app:mergeReleaseJavaResource
+> Task :harness-core:extractReleaseAnnotations
+> Task :terminal-view:extractReleaseAnnotations
+> Task :terminal-emulator:extractReleaseAnnotations
+> Task :terminal-emulator:mergeReleaseGeneratedProguardFiles
+> Task :terminal-emulator:mergeReleaseConsumerProguardFiles
+> Task :terminal-view:generateReleaseLintModel
+> Task :terminal-emulator:mergeReleaseJavaResource
+> Task :terminal-view:mergeReleaseGeneratedProguardFiles
+> Task :terminal-view:mergeReleaseConsumerProguardFiles
+> Task :terminal-view:syncReleaseLibJars
+> Task :terminal-emulator:syncReleaseLibJars
+> Task :terminal-view:bundleReleaseLocalLintAar
+> Task :terminal-emulator:bundleReleaseLocalLintAar
+> Task :terminal-emulator:writeReleaseLintModelMetadata
+> Task :app:mergeReleaseJniLibFolders
+> Task :terminal-view:generateReleaseLintVitalModel
+> Task :harness-core:generateReleaseLintModel
+> Task :harness-core:mergeReleaseGeneratedProguardFiles
+> Task :harness-core:mergeReleaseConsumerProguardFiles
+> Task :harness-core:syncReleaseLibJars
+> Task :app:writeReleaseAppMetadata
+> Task :app:mergeReleaseArtProfile
+> Task :app:compileReleaseArtProfile
+> Task :app:collectReleaseDependencies
+> Task :app:configureReleaseDependencies
+> Task :app:generateReleaseLintVitalReportModel
+> Task :harness-core:bundleReleaseLocalLintAar
+> Task :app:mergeReleaseNativeLibs
+
+> Task :app:stripReleaseDebugSymbols
+Unable to strip the following libraries, packaging them as they are: libaddpart.so, libapt.so, libapt_cache.so, libapt_config.so, libapt_get.so, libapt_mark.so, libarp.so, libattr.so, libbash.so, libbits.so, libblkpr.so, libblockdev.so, libbzip2.so, libbzip2recover.so, libcal.so, libcaptest.so, libchacl.so, libchcpu.so, libchoom.so, libchrt.so, libclear.so, libcmd.so, libcmp.so, libcol.so, libcolcrt.so, libcolrm.so, libcolumn.so, libcommand_not_found.so, libcoresched.so, libcoreutils.so, libctrlaltdel.so, libcurl.so, libdash.so, libdelpart.so, libdialog.so, libdiff.so, libdiff3.so, libdmesg.so, libdnsdomainname.so, libdos2unix.so, libdpkg.so, libdpkg_deb.so, libdpkg_divert.so, libdpkg_query.so, libdpkg_split.so, libdpkg_trigger.so, libdrill.so, libdumpsexp.so, libed.so, libenosys.so, libexch.so, libfadvise.so, libfallocate.so, libfile.so, libfilecap.so, libfincore.so, libfind.so, libflock.so, libfrcode.so, libfree.so, libfsck_cramfs.so, libfsck_minix.so, libfsfreeze.so, libftp.so, libfunzip.so, libfuser.so, libgawk.so, libgdbm_dump.so, libgdbm_load.so, libgdbmtool.so, libgetfacl.so, libgetfattr.so, libgetopt.so, libgit.so, libgit_daemon.so, libgit_http_backend.so, libgit_http_fetch.so, libgit_http_push.so, libgit_imap_send.so, libgit_remote_http.so, libgit_sh_i18n__envsubst.so, libgit_shell.so, libgpg_error.so, libgpgv.so, libgrcat.so, libgrep.so, libgss_client.so, libgss_server.so, libgzip.so, libhardlink.so, libharness-exec.so, libhexdump.so, libhmac256.so, libhostname.so, libhwclock.so, libidn2.so, libifconfig.so, libinetd.so, libionice.so, libipmaddr.so, libiptunnel.so, libirqtop.so, libischroot.so, libisosize.so, libjq.so, libkadmin.so, libkadmin_local.so, libkadmind.so, libkdb5_util.so, libkdestroy.so, libkillall.so, libkinit.so, libklist.so, libkpasswd.so, libkprop.so, libkpropd.so, libkproplog.so, libkrb5kdc.so, libksu.so, libkswitch.so, libktutil.so, libkvno.so, libldattach.so, libless.so, liblessecho.so, liblessecho_b6536be1.so, liblessecho_eee39fae.so, liblesskey.so, liblibstdbuf_so.so, liblogger.so, liblook.so, liblosetup.so, liblsclocks.so, liblscpu.so, liblsfd.so, liblsipc.so, liblsirq.so, liblsof.so, liblzmadec.so, liblzmainfo.so, libmcookie.so, libmii_tool.so, libmkfs.so, libmkfs_bfs.so, libmkfs_cramfs.so, libmkfs_minix.so, libmore.so, libmpicalc.so, libnamei.so, libnameif.so, libnano.so, libnetcap.so, libnetstat.so, libnode.so, libnsenter.so, libpasswd.so, libpatch.so, libpeekfd.so, libperl.so, libpgrep.so, libpidof.so, libpipesz.so, libplipconfig.so, libpmap.so, libprlimit.so, libprtstat.so, libps.so, libpscap.so, libpslog.so, libpstree.so, libpwdx.so, libpwlogin.so, libpython3_14.so, librarp.so, libreadprofile.so, librename.so, librenice.so, libresizepart.so, librev.so, librg.so, librmt.so, libroute.so, librtcwake.so, libruby.so, librun_parts.so, libscalar.so, libsclient.so, libscp.so, libscript.so, libscriptlive.so, libscriptreplay.so, libsdiff.so, libsed.so, libsetarch.so, libsetfacl.so, libsetfattr.so, libsetpgid.so, libsetpriv.so, libsetsid.so, libsetterm.so, libsftp.so, libsftp_server.so, libsim_client.so, libsim_server.so, libslattach.so, libsserver.so, libssh.so, libssh_add.so, libssh_agent.so, libssh_keygen.so, libssh_keyscan.so, libssh_keysign.so, libssh_pkcs11_helper.so, libssh_sk_helper.so, libsshd.so, libsshd_auth.so, libsshd_session.so, libstart_stop_daemon.so, libsysctl.so, libsyslogd.so, libtar.so, libtaskset.so, libtelnet.so, libtelnetd.so, libtempfile.so, libtermux.so, libtermux_am_socket.so, libtftp.so, libtftpd.so, libtload.so, libtree.so, libtset.so, libuclampset.so, libul.so, libunix2dos.so, libunshare.so, libunzip.so, libunzipsfx.so, libupdate_alternatives.so, libuptime.so, libuuclient.so, libuuserver.so, libvmstat.so, libwaitpid.so, libwatch.so, libwdctl.so, libwhereis.so, libwhich.so, libxargs.so, libxxhsum.so, libxz.so, libxzdec.so, libyat2m.so, libzramctl.so, libzstd.so. Run with --info option to learn more.
+
+> Task :app:buildReleasePreBundle
+> Task :app:extractReleaseNativeSymbolTables
+> Task :harness-core:generateReleaseLintVitalModel
+> Task :app:generateReleaseLintModel
+> Task :pack_buildtools:generateReleaseLintVitalModel
+> Task :pack_buildtools:lintVitalAnalyzeRelease
+> Task :terminal-emulator:generateReleaseLintVitalModel
+> Task :app:parseReleaseIntegrityConfig
+> Task :pack_buildtools:bundleReleaseResources
+> Task :pack_buildtools:checkReleaseDuplicateClasses
+> Task :pack_buildtools:mergeExtDexRelease
+> Task :pack_buildtools:mergeDexRelease
+> Task :pack_buildtools:mergeReleaseAssets
+> Task :pack_buildtools:mergeReleaseJavaResource
+> Task :pack_buildtools:mergeReleaseNativeLibs
+
+> Task :pack_buildtools:stripReleaseDebugSymbols
+Unable to strip the following libraries, packaging them as they are: libgapplication.so, libgdbus.so, libgi_compile_repository.so, libgi_decompile_typelib.so, libgi_inspect_typelib.so, libgio.so, libgio_launch_desktop.so, libgio_querymodules.so, libglib_compile_resources.so, libglib_compile_schemas.so, libgobject_query.so, libgresource.so, libgsettings.so, libgtester.so, libmake.so, libpkg_config.so. Run with --info option to learn more.
+
+> Task :pack_buildtools:buildReleasePreBundle
+> Task :pack_buildtools:extractReleaseNativeSymbolTables
+> Task :harness-core:lintVitalAnalyzeRelease
+> Task :terminal-view:lintVitalAnalyzeRelease
+> Task :terminal-emulator:lintVitalAnalyzeRelease
+> Task :app:lintVitalAnalyzeRelease
+> Task :app:lintVitalReportRelease
+> Task :app:lintVitalRelease
+> Task :app:packageReleaseBundle
+> Task :app:signReleaseBundle
+> Task :app:produceReleaseBundleIdeListingFile
+> Task :app:createReleaseBundleListingFileRedirect
+
+> Task :app:bundleRelease
+bundleRelease: no release key: this artefact is unsigned and cannot be uploaded
+
+[Incubating] Problems report is available at: file:///home/runner/work/t1/t1/build/reports/problems/problems-report.html
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 10.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+For more on this, please refer to https://docs.gradle.org/9.2.1/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+
+BUILD SUCCESSFUL in 54s
+220 actionable tasks: 171 executed, 41 from cache, 8 up-to-date
+Consider enabling configuration cache to speed up this build: https://docs.gradle.org/9.2.1/userguide/configuration_cache_enabling.html
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/9.2.1/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build 
+> Task :harness-core:preBuild UP-TO-DATE
+> Task :harness-core:preDebugBuild UP-TO-DATE
+> Task :app:downloadHarnessBootstrap UP-TO-DATE
+> Task :harness-core:generateDebugResValues UP-TO-DATE
+> Task :terminal-emulator:buildExecProbe UP-TO-DATE
+> Task :terminal-emulator:preBuild UP-TO-DATE
+> Task :sealed-runtime:compileJava UP-TO-DATE
+> Task :terminal-emulator:preDebugBuild UP-TO-DATE
+> Task :terminal-emulator:generateDebugResValues UP-TO-DATE
+> Task :harness-core:generateDebugResources UP-TO-DATE
+> Task :app:fetchCoreDebs UP-TO-DATE
+> Task :terminal-emulator:generateDebugResources UP-TO-DATE
+> Task :sealed-runtime:processResources NO-SOURCE
+> Task :sealed-runtime:classes UP-TO-DATE
+> Task :harness-core:packageDebugResources UP-TO-DATE
+> Task :harness-core:processDebugNavigationResources UP-TO-DATE
+> Task :sealed-runtime:jar UP-TO-DATE
+> Task :terminal-view:preBuild UP-TO-DATE
+> Task :terminal-view:preDebugBuild UP-TO-DATE
+> Task :terminal-view:generateDebugResValues UP-TO-DATE
+> Task :terminal-view:generateDebugResources UP-TO-DATE
+> Task :app:buildSealedPayload UP-TO-DATE
+> Task :app:preBuild UP-TO-DATE
+> Task :terminal-emulator:packageDebugResources UP-TO-DATE
+> Task :terminal-emulator:processDebugNavigationResources UP-TO-DATE
+> Task :pack_buildtools:fetchPackDebs UP-TO-DATE
+> Task :terminal-view:packageDebugResources UP-TO-DATE
+> Task :terminal-view:processDebugNavigationResources UP-TO-DATE
+> Task :pack_buildtools:buildPackPayload UP-TO-DATE
+> Task :pack_buildtools:preBuild UP-TO-DATE
+> Task :pack_buildtools:preSealedBuild UP-TO-DATE
+> Task :pack_buildtools:featureSealedWriter UP-TO-DATE
+> Task :pack_buildtools:generateSealedResValues UP-TO-DATE
+> Task :harness-core:parseDebugLocalResources FROM-CACHE
+> Task :terminal-emulator:parseDebugLocalResources FROM-CACHE
+> Task :terminal-view:parseDebugLocalResources FROM-CACHE
+> Task :terminal-emulator:generateDebugRFile FROM-CACHE
+> Task :terminal-emulator:javaPreCompileDebug UP-TO-DATE
+> Task :harness-core:generateDebugRFile FROM-CACHE
+> Task :terminal-view:generateDebugRFile FROM-CACHE
+> Task :harness-core:javaPreCompileDebug UP-TO-DATE
+> Task :terminal-view:javaPreCompileDebug UP-TO-DATE
+> Task :terminal-view:processDebugJavaRes NO-SOURCE
+> Task :pack_buildtools:javaPreCompileSealed UP-TO-DATE
+> Task :terminal-view:extractDeepLinksDebug UP-TO-DATE
+> Task :pack_buildtools:generateSealedResources UP-TO-DATE
+> Task :harness-core:processDebugJavaRes UP-TO-DATE
+> Task :harness-core:extractDeepLinksDebug UP-TO-DATE
+> Task :pack_buildtools:packageSealedResources UP-TO-DATE
+> Task :terminal-view:processDebugManifest FROM-CACHE
+> Task :terminal-view:writeDebugAarMetadata UP-TO-DATE
+> Task :harness-core:processDebugManifest FROM-CACHE
+> Task :terminal-view:compileDebugLibraryResources UP-TO-DATE
+> Task :harness-core:writeDebugAarMetadata UP-TO-DATE
+> Task :terminal-view:mergeDebugShaders UP-TO-DATE
+> Task :terminal-view:compileDebugShaders NO-SOURCE
+> Task :terminal-view:generateDebugAssets UP-TO-DATE
+> Task :harness-core:compileDebugLibraryResources UP-TO-DATE
+> Task :harness-core:mergeDebugShaders UP-TO-DATE
+> Task :harness-core:compileDebugShaders NO-SOURCE
+> Task :harness-core:generateDebugAssets UP-TO-DATE
+> Task :terminal-view:mergeDebugAssets UP-TO-DATE
+> Task :harness-core:mergeDebugAssets UP-TO-DATE
+> Task :harness-core:mergeDebugJniLibFolders UP-TO-DATE
+> Task :harness-core:mergeDebugNativeLibs NO-SOURCE
+> Task :terminal-view:mergeDebugJniLibFolders UP-TO-DATE
+> Task :harness-core:copyDebugJniLibsProjectOnly UP-TO-DATE
+> Task :terminal-view:mergeDebugNativeLibs NO-SOURCE
+> Task :terminal-view:copyDebugJniLibsProjectOnly UP-TO-DATE
+> Task :terminal-emulator:compileDebugJavaWithJavac FROM-CACHE
+> Task :terminal-emulator:bundleLibCompileToJarDebug UP-TO-DATE
+> Task :terminal-emulator:bundleLibRuntimeToJarDebug UP-TO-DATE
+> Task :terminal-emulator:processDebugJavaRes NO-SOURCE
+> Task :terminal-emulator:createFullJarDebug UP-TO-DATE
+> Task :pack_buildtools:mergeSealedShaders
+> Task :terminal-emulator:extractDeepLinksDebug UP-TO-DATE
+> Task :terminal-emulator:processDebugManifest FROM-CACHE
+> Task :pack_buildtools:compileSealedShaders NO-SOURCE
+> Task :pack_buildtools:generateSealedAssets UP-TO-DATE
+> Task :pack_buildtools:processSealedJavaRes NO-SOURCE
+> Task :terminal-emulator:writeDebugAarMetadata UP-TO-DATE
+> Task :terminal-emulator:compileDebugLibraryResources UP-TO-DATE
+> Task :terminal-emulator:bundleLibRuntimeToDirDebug UP-TO-DATE
+> Task :terminal-view:compileDebugJavaWithJavac FROM-CACHE
+> Task :terminal-view:bundleLibRuntimeToJarDebug UP-TO-DATE
+> Task :terminal-view:createFullJarDebug UP-TO-DATE
+> Task :terminal-view:bundleLibRuntimeToDirDebug UP-TO-DATE
+> Task :terminal-view:bundleLibCompileToJarDebug UP-TO-DATE
+> Task :terminal-emulator:mergeDebugShaders UP-TO-DATE
+> Task :terminal-emulator:compileDebugShaders NO-SOURCE
+> Task :terminal-emulator:generateDebugAssets UP-TO-DATE
+> Task :terminal-emulator:mergeDebugAssets UP-TO-DATE
+> Task :pack_buildtools:mergeSealedJniLibFolders
+> Task :terminal-emulator:configureNdkBuildDebug[arm64-v8a]
+> Task :harness-core:compileDebugJavaWithJavac FROM-CACHE
+> Task :harness-core:bundleLibRuntimeToJarDebug UP-TO-DATE
+> Task :harness-core:createFullJarDebug UP-TO-DATE
+> Task :harness-core:bundleLibRuntimeToDirDebug UP-TO-DATE
+> Task :harness-core:bundleLibCompileToJarDebug UP-TO-DATE
+> Task :app:generateSealedFeatureTransitiveDeps UP-TO-DATE
+> Task :pack_buildtools:generateSealedFeatureTransitiveDeps UP-TO-DATE
+> Task :app:checkSealedLibraries UP-TO-DATE
+> Task :pack_buildtools:desugarSealedFileDependencies UP-TO-DATE
+> Task :app:preSealedBuild UP-TO-DATE
+> Task :terminal-emulator:buildNdkBuildDebug[arm64-v8a]
+> Task :terminal-emulator:configureNdkBuildDebug[x86_64]
+> Task :app:processSealedNavigationResources UP-TO-DATE
+> Task :app:compileSealedNavigationResources UP-TO-DATE
+> Task :app:generateSealedResValues UP-TO-DATE
+> Task :pack_buildtools:checkSealedAarMetadata
+> Task :app:mapSealedSourceSetPaths UP-TO-DATE
+> Task :pack_buildtools:mapSealedSourceSetPaths UP-TO-DATE
+> Task :app:generateSealedResources UP-TO-DATE
+> Task :pack_buildtools:mergeSealedResources UP-TO-DATE
+> Task :terminal-emulator:buildNdkBuildDebug[x86_64]
+> Task :app:mergeSealedResources UP-TO-DATE
+> Task :app:createSealedCompatibleScreenManifests UP-TO-DATE
+> Task :terminal-emulator:mergeDebugJniLibFolders UP-TO-DATE
+> Task :app:extractDeepLinksSealed UP-TO-DATE
+> Task :app:writeSealedModuleMetadata UP-TO-DATE
+> Task :app:generateSealedFeatureMetadata UP-TO-DATE
+> Task :terminal-emulator:mergeDebugNativeLibs UP-TO-DATE
+> Task :terminal-emulator:copyDebugJniLibsProjectOnly UP-TO-DATE
+> Task :app:checkSealedAarMetadata
+> Task :app:packageSealedResources UP-TO-DATE
+> Task :pack_buildtools:checkSealedDuplicateClasses
+> Task :pack_buildtools:extractDeepLinksSealed UP-TO-DATE
+> Task :app:parseSealedLocalResources FROM-CACHE
+> Task :app:checkSealedDuplicateClasses UP-TO-DATE
+> Task :app:desugarSealedFileDependencies UP-TO-DATE
+> Task :app:mergeExtDexSealed UP-TO-DATE
+> Task :app:mergeLibDexSealed UP-TO-DATE
+> Task :app:javaPreCompileSealed UP-TO-DATE
+> Task :app:mergeSealedShaders UP-TO-DATE
+> Task :app:compileSealedShaders NO-SOURCE
+> Task :app:generateSealedAssets UP-TO-DATE
+> Task :app:mergeSealedAssets UP-TO-DATE
+> Task :app:processSealedJavaRes NO-SOURCE
+> Task :app:mergeSealedJavaResource UP-TO-DATE
+> Task :app:mergeSealedJniLibFolders UP-TO-DATE
+> Task :app:mergeSealedNativeLibs UP-TO-DATE
+> Task :pack_buildtools:processSealedMainManifest
+> Task :pack_buildtools:copySealedMergedManifest
+> Task :app:stripSealedDebugSymbols UP-TO-DATE
+> Task :app:writeSealedAppMetadata UP-TO-DATE
+> Task :app:parseSealedIntegrityConfig FROM-CACHE
+> Task :app:validateSigningSealed UP-TO-DATE
+> Task :pack_buildtools:processApplicationManifestSealedForBundle
+> Task :pack_buildtools:processManifestSealedForFeature
+> Task :pack_buildtools:processSealedNavigationResources UP-TO-DATE
+> Task :pack_buildtools:compileSealedNavigationResources UP-TO-DATE
+> Task :pack_buildtools:parseSealedLocalResources FROM-CACHE
+> Task :pack_buildtools:processSealedManifestForPackage
+> Task :pack_buildtools:mergeExtDexSealed
+
+> Task :app:processSealedMainManifest
+/home/runner/work/t1/t1/app/src/sealed/AndroidManifest.xml:17:18-50 Warning:
+	android:extractNativeLibs should not be specified in this source AndroidManifest.xml file. See https://d.android.com/guide/topics/manifest/application-element#extractNativeLibs for more information.
+The AGP Upgrade Assistant can remove the attribute from the AndroidManifest.xml file and update the build file accordingly. See https://d.android.com/studio/build/agp-upgrade-assistant for more information.
+
+> Task :pack_buildtools:mergeSealedAssets
+> Task :app:processSealedManifest
+> Task :app:processApplicationManifestSealedForBundle
+> Task :app:processSealedManifestForPackage
+> Task :pack_buildtools:mergeSealedNativeLibs
+> Task :pack_buildtools:mergeSealedJavaResource
+
+> Task :pack_buildtools:stripSealedDebugSymbols
+Unable to strip the following libraries, packaging them as they are: libgapplication.so, libgdbus.so, libgi_compile_repository.so, libgi_decompile_typelib.so, libgi_inspect_typelib.so, libgio.so, libgio_launch_desktop.so, libgio_querymodules.so, libglib_compile_resources.so, libglib_compile_schemas.so, libgobject_query.so, libgresource.so, libgsettings.so, libgtester.so, libmake.so, libpkg_config.so. Run with --info option to learn more.
+
+> Task :app:processSealedResources
+> Task :app:compileSealedJavaWithJavac FROM-CACHE
+> Task :app:dexBuilderSealed UP-TO-DATE
+> Task :app:mergeProjectDexSealed UP-TO-DATE
+> Task :app:bundleSealedClassesToRuntimeJar UP-TO-DATE
+> Task :app:bundleSealedClassesToCompileJar UP-TO-DATE
+> Task :pack_buildtools:mergeLibDexSealed FROM-CACHE
+> Task :pack_buildtools:processSealedResources
+> Task :pack_buildtools:compileSealedJavaWithJavac NO-SOURCE
+> Task :pack_buildtools:dexBuilderSealed UP-TO-DATE
+> Task :app:bundleSealedResources
+> Task :pack_buildtools:featureGlobalSyntheticsSealedMerge UP-TO-DATE
+> Task :app:mergeSealedGlobalSynthetics UP-TO-DATE
+> Task :pack_buildtools:bundleSealedResources
+> Task :pack_buildtools:mergeProjectDexSealed
+> Task :pack_buildtools:buildSealedPreBundle
+> Task :app:buildSealedPreBundle
+> Task :app:packageSealedBundle
+> Task :app:signSealedBundle
+> Task :app:produceSealedBundleIdeListingFile
+> Task :app:createSealedBundleListingFileRedirect
+
+> Task :app:bundleSealed
+bundleSealed: no release key: this artefact is unsigned and cannot be uploaded
+
+[Incubating] Problems report is available at: file:///home/runner/work/t1/t1/build/reports/problems/problems-report.html
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 10.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+For more on this, please refer to https://docs.gradle.org/9.2.1/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+
+BUILD SUCCESSFUL in 21s
+156 actionable tasks: 35 executed, 17 from cache, 104 up-to-date
+Consider enabling configuration cache to speed up this build: https://docs.gradle.org/9.2.1/userguide/configuration_cache_enabling.html
