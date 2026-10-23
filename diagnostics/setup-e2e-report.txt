@@ -1,0 +1,4 @@
+sealed-shell: payload abi=x86_64 targetSdk=34
+sealed-shell: sealed payload (x86_64): 13873 data files, 1172 data links, 544 executables from the APK
+sealed-shell: bin/bash -> /data/app/~~6X8wCq8MzA-wUUCx9LsDEA==/io.mcyber12.codingharness-HTulNNRF4eN_fN9UDaAAHA==/lib/x86_64/libbash.so
+sealed-shell: bash -> exit 0 : SEALED-SHELL-OK | version=5.3.9(1)-release | prefix=/data/user/0/io.mcyber12.codingharness/files/coding-harness/rootfs/data/data/com.termux/files/usr | path=/data/user/0/io.mcyber12.codingharness/files/coding-harness/rootfs/data/data/com.termux/files/usr/bin:/data/user/0/io.mcyber12.codingharness/files/coding-harness/workspace/node_modules/.bin:/system/bin:/system/xbin | /data/user/0/io.mcyber12.codingharness/files/coding-harness/rootfs/data/data/com.termux/files/usr/bin/sed | exit-ok |
