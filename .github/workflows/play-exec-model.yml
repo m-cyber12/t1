@@ -183,20 +183,8 @@ jobs:
         shell: bash
         run: |
           set -uo pipefail
-          RUN_LOG=e2e-logs/connected-test.log
-          grep -E "Tests [0-9]+/[0-9]+ completed" "$RUN_LOG" || true
-          if grep -qE "Tests 2/2 completed\. \(0 skipped\) \(0 failed\)" "$RUN_LOG"; then
-            echo "both gates ran and passed: ok"
-            exit 0
-          fi
-          if grep -q 'skipped="1"' app/build/outputs/androidTest-results/connected/*.xml 2>/dev/null; then
-            echo "ExecModelTest was skipped - the sealed variant is not sealing" >&2
-          else
-            echo "no evidence in the run log that ExecModelTest executed" >&2
-          fi
-          ls -la e2e-logs/ 2>/dev/null || true
-          tail -40 "$RUN_LOG" 2>/dev/null || true
-          exit 1
+          grep -E "Tests [0-9]+/[0-9]+ completed" e2e-logs/connected-test.log | tail -3 || true
+          python3 scripts/assert-gate-results.py app/build/outputs/androidTest-results/connected
 
       - name: Publish diagnostics
         if: always()

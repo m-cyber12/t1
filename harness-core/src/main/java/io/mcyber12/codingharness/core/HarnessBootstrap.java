@@ -51,6 +51,11 @@ public final class HarnessBootstrap {
             byte[] bytes = new byte[128];
             int count = input.read(bytes);
             String value = new String(bytes, 0, Math.max(0, count), StandardCharsets.UTF_8).trim();
+            // A sealed install is a different kind of "installed": its userland
+            // came from the APK, not from a bootstrap archive. The marker says
+            // which payload it was, and any caller asking "is a runtime here?"
+            // has to get a true answer.
+            if (value.startsWith("sealed:")) return true;
             return BOOTSTRAP_VERSION.equals(value);
         } catch (IOException e) {
             return false;
