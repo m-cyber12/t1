@@ -69,6 +69,9 @@ jobs:
       E2E_TARGET_SDK: ${{ matrix.target_sdk }}
       E2E_COMPILE_SDK: ${{ matrix.compile_sdk }}
       E2E_SYSTEM_IMAGE: ${{ matrix.image }}
+      # Every matrix leg publishes its own branch: both legs push diagnostics,
+      # and a shared name meant the second push silently replaced the first.
+      API_LEVEL: ${{ matrix.api }}
       E2E_TEST_TASK: ":app:connectedSealedAndroidTest"
       E2E_TEST_CLASS: "io.mcyber12.codingharness.SealedShellTest,io.mcyber12.codingharness.ExecModelTest"
       E2E_LEAN: "1"
@@ -113,7 +116,7 @@ jobs:
           cp app/build/fetch-core-debs-*.log diagnostics/ 2>/dev/null || true
           git add diagnostics/ || true
           git -c user.email=ci@invalid -c user.name=ci commit -qm "sealed build failure ${GITHUB_RUN_ID} [ci]" || true
-          git push origin "HEAD:refs/heads/diagnostics/sealed-${GITHUB_RUN_ID}" --force || true
+          git push origin "HEAD:refs/heads/diagnostics/sealed-${GITHUB_RUN_ID}-sdk${E2E_TARGET_SDK}" --force || true
 
       # The whole point of the variant: prove the APK really carries the exec
       # policy it claims to. If extractNativeLibs silently stayed false, the
@@ -204,7 +207,7 @@ jobs:
           git add diagnostics/
           git -c user.email=ci@invalid -c user.name=ci-e2e \
             commit -qm "exec model results ${GITHUB_RUN_ID} [ci]" || true
-          git push origin "HEAD:refs/heads/diagnostics/exec-model-${GITHUB_RUN_ID}" --force
+          git push origin "HEAD:refs/heads/diagnostics/exec-model-${GITHUB_RUN_ID}-sdk${E2E_TARGET_SDK}-api${API_LEVEL}" --force
 
       - name: Upload results
         if: always()
