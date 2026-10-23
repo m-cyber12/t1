@@ -405,9 +405,12 @@ confined to builds that are not publishable, because Android 10+ forbids
 `files/`. A sealed build does not have that problem: its executables are in
 `nativeLibraryDir` and its data files are never executed.
 
-**Gate:** CI builds and runs the sealed variant at target 36 on API 36, and the
-target SDK is a `-PharnessTargetSdk` property so the same source can be measured
-at 28 and 34 for the evidence table.
+**Gate:** CI builds and runs the sealed variant at target 36 on API 36, builds
+the App Bundle at 36 on every leg, and refuses to bundle below 36 at all (AGP 8
+has no per-build-type targetSdk, so the check lives in `app/build.gradle` and
+quotes the command that fixes it). The target SDK stays a `-PharnessTargetSdk`
+property so the same source can still be measured at 28 and 34 for the evidence
+table.
 
 ### 3. Release engineering
 

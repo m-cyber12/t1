@@ -43,18 +43,13 @@ android {
 
     // A dynamic feature must offer every variant its base module has; `sealed`
     // is the store-shaped one and has to exist here or a sealed base cannot
-    // resolve it. Both store variants then take the base's target: a feature
-    // module may not target a newer API than the APK it extends, and the store
-    // build of the base runs at 36 by default.
-    def storeTargetSdk = Math.min(
-        ((findProperty("harnessTargetSdk") ?: 36) as Integer),
-        rootProject.ext.compileSdkVersion as Integer)
+    // resolve it. targetSdk is project-wide (AGP 8 does not allow a build type
+    // to override it), so the base and the pack always agree.
     buildTypes {
         debug { }
-        release { targetSdk storeTargetSdk }
+        release { }
         sealed {
             initWith(getByName("debug"))
-            targetSdk storeTargetSdk
             matchingFallbacks.addAll(["debug", "release"])
         }
     }

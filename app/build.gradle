@@ -35,57 +35,27 @@ ext.sealedDebDir = layout.buildDirectory.dir("generated/sealed-debs")
 ext.sealedRepo = (findProperty("harnessSealedRepo") ?: "https://packages-cf.termux.dev/apt/termux-main").toString()
 
 // ---------------------------------------------------------------------------
-// Target API level, per build shape.
+// Target API level.
 //
-// Play requires API 36 for new apps and updates from 2026-08-31, so the store
-// variants (`sealed` for instrumentation, `release` for upload) default to it.
-// The apt build cannot follow: Android 10+ refuses execve() on files under app
-// data, and that build runs its userland from there — it stays at the project
-// default (28) until the sealed layout is the only layout.
+// Play requires API 36 for new apps and updates from 2026-08-31. The apt build
+// cannot follow: Android 10+ refuses execve() on files under app data, and that
+// build runs its userland from there, so the default target stays 28 (like
+// Termux). A store build is built with -PharnessTargetSdk=36 and would run at 36
+// without any change: its executables come out of the APK.
 //
-// -PharnessTargetSdk still overrides both, because the evidence table needs the
-// same source measured at 28, 34 and 36. compileSdk cannot be lower than
-// targetSdk, so the value is clamped for ordinary builds and a store build that
-// asks for a target the installed SDK cannot compile is refused loudly instead
-// of silently shipping at a lower level.
+// AGP 8 does not let a build type override targetSdk (it was removed), so the
+// value is project-wide and the store artefact is identified by the task that
+// makes it. A bundle built at a target Play rejects is refused here, with the
+// command that fixes it, instead of at upload time.
 // ---------------------------------------------------------------------------
-
-// ---------------------------------------------------------------------------
-// Release signing is supplied from outside the repository and fails closed:
-// a build that cannot find a real key stays debug-signed (and therefore
-// cannot be uploaded), rather than shipping a silently unverifiable app.
-//   keystore.properties in the repo root, or the same four values in the
-//   environment (HARNESS_KEYSTORE, HARNESS_KEYSTORE_PASSWORD,
-//   HARNESS_KEY_ALIAS, HARNESS_KEY_PASSWORD).
-def signingProperties = new Properties()
-File signingFile = rootProject.file("keystore.properties")
-boolean hasSigningFile = signingFile.isFile()
-if (hasSigningFile) {
-    signingFile.withInputStream { signingProperties.load(it) }
-}
-def signingValue = { String key, String env ->
-    (hasSigningFile ? signingProperties.getProperty(key) : null)
-        ?: System.getenv(env)
-}
-def releaseStoreFile = signingValue("storeFile", "HARNESS_KEYSTORE")
-def releaseStorePassword = signingValue("storePassword", "HARNESS_KEYSTORE_PASSWORD")
-def releaseKeyAlias = signingValue("keyAlias", "HARNESS_KEY_ALIAS")
-def releaseKeyPassword = signingValue("keyPassword", "HARNESS_KEY_PASSWORD")
-boolean canSignRelease = releaseStoreFile && releaseStorePassword
-    && releaseKeyAlias && releaseKeyPassword
-    && rootProject.file(releaseStoreFile).isFile()
-// ---------------------------------------------------------------------------
-
-def storeRequestedTargetSdk = ((findProperty("harnessTargetSdk") ?: 36) as Integer)
-def storeTargetSdk = Math.min(storeRequestedTargetSdk, rootProject.ext.compileSdkVersion as Integer)
-def requestedTasks = gradle.startParameter.taskNames.join(" ").toLowerCase()
-def requestsStoreArtifact = requestedTasks.contains("sealed") || requestedTasks.contains("release")
-if (requestsStoreArtifact
-        && rootProject.ext.compileSdkVersion < storeRequestedTargetSdk) {
+def bundleTargetSdk = 36
+def requestedTaskNames = gradle.startParameter.taskNames.join(" ").toLowerCase()
+def requestsBundle = requestedTaskNames.contains("bundle")
+if (requestsBundle && (rootProject.ext.targetSdkVersion as Integer) < bundleTargetSdk) {
     throw new GradleException(
-        "this build asks for targetSdk ${storeRequestedTargetSdk} but compileSdk is "
-            + "${rootProject.ext.compileSdkVersion}: re-run with "
-            + "-PharnessCompileSdk=${storeRequestedTargetSdk}")
+        "a Play bundle must target API ${bundleTargetSdk}, but this build targets "
+            + "${rootProject.ext.targetSdkVersion}: re-run with "
+            + "-PharnessTargetSdk=${bundleTargetSdk} -PharnessCompileSdk=${bundleTargetSdk}")
 }
 
 android {
@@ -153,8 +123,8 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
-            // The uploaded artefact: store-legal target, payload from the APK.
-            targetSdk storeTargetSdk
+            // The uploaded artefact: it carries the payload and extracts its
+            // libraries. Built with -PharnessTargetSdk=36 it is the store shape.
             if (canSignRelease) {
                 signingConfig signingConfigs.release
             }
@@ -176,8 +146,8 @@ android {
         sealed {
             initWith(getByName("debug"))
             debuggable = true
-            // Same shape as `release`, measured at the target under test.
-            targetSdk storeTargetSdk
+            // Same shape as `release`, debuggable so instrumentation can run
+            // against it; measured at whatever target the gate asks for.
             matchingFallbacks.addAll(["debug", "release"])
         }
     }

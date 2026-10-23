@@ -328,8 +328,9 @@ whether the project can get there. Three reasons the apt build cannot:
   available to new users on newer devices.
 
 A submission with `targetSdk 28` is rejected at upload. This is a hard,
-mechanical blocker for the apt build — and the reason the `release` and `sealed`
-build types default to 36 while `defaultConfig` stays at 28.
+mechanical blocker for the apt build — and the reason the store bundle is built
+with `-PharnessTargetSdk=36` and the build refuses to produce one at a lower
+target, while the default stays 28 for the apt shape.
 
 ### 10.2 Why the target cannot simply be raised (W^X)
 
@@ -428,7 +429,7 @@ submission needs except a key and a click:
 | Requirement | Where it is | Proved by |
 |---|---|---|
 | Executables out of the APK | `sealed-runtime`, `SealedLayout` | `ExecModelTest` on API 34 and 36 |
-| targetSdk 36 | `release` / `sealed` build types default to 36 | CI builds the bundle at 36 |
+| targetSdk 36 | `-PharnessTargetSdk=36`, refused below 36 for any bundle | CI builds the bundle at 36 |
 | No downloaded executable code | core tier shipped in the APK, packs via Play Feature Delivery | `SealedShellTest.packsComeFromTheStoreAndNeverFromApt` |
 | Base module under 200 MB | clang lives in `pack-buildtools/` | `scripts/check-bundle-size.py` in CI |
 | Release signing | `keystore.properties` / env, fails closed | `bundleRelease` logs which key signed it |

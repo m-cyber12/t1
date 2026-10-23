@@ -109,7 +109,7 @@ jobs:
             -PharnessCompileSdk="${E2E_COMPILE_SDK}" \
             -PharnessTestBuildType=sealed \
             :app:assembleSealed :app:assembleSealedAndroidTest \
-            :app:bundleRelease :app:bundleSealed 2>&1 | tee gradle-sealed.log
+            2>&1 | tee gradle-sealed.log
 
       - name: Publish build failure log
         if: failure()
@@ -117,6 +117,7 @@ jobs:
         run: |
           mkdir -p diagnostics
           tail -c 60000 gradle-sealed.log > diagnostics/gradle-sealed-tail.log 2>/dev/null || true
+          tail -c 60000 gradle-bundles.log > diagnostics/gradle-bundles-tail.log 2>/dev/null || true
           grep -E 'error:|What went wrong|FAILED' -A5 gradle-sealed.log > diagnostics/gradle-sealed-errors.log 2>/dev/null || true
           # The build steps write their own transcripts; Gradle drops a failed
           # child's output, so these files are the only account of why.
@@ -213,6 +214,19 @@ jobs:
           #    nobody reads is not a gate.
           python3 scripts/check-bundle-size.py "$AAB" ${APK:+--apk "$APK"} \
             --json sealed-aab-size.json 2>&1 | tee -a sealed-aab.txt
+
+      # The bundle is built at the target Play requires, on every leg: a bundle
+      # at 28 or 34 is an artefact nobody can upload, and the gate would be
+      # measuring a shape that will never be shipped. Building it here also
+      # exercises the guard in app/build.gradle that refuses a bad bundle.
+      - name: Build the store bundles at the target Play requires
+        shell: bash
+        run: |
+          set -o pipefail
+          ./gradlew --no-daemon --stacktrace \
+            -PharnessTargetSdk=36 -PharnessCompileSdk=36 \
+            -PharnessTestBuildType=sealed \
+            :app:bundleRelease :app:bundleSealed 2>&1 | tee gradle-bundles.log
 
       - name: Run the exec-model measurement on an emulator
         shell: bash
