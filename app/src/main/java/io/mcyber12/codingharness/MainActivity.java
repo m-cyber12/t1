@@ -47,6 +47,8 @@ public final class MainActivity extends Activity {
     private HarnessSession harnessSession;
     private HarnessConfig harnessConfig;
     private Provisioning.Service provisioning;
+    /** Where optional packs come from: Play Feature Delivery or apt. */
+    private io.mcyber12.codingharness.core.packs.PackInstaller packs;
     private TextView statusView;
     private int fontSize = 14;
     private final AtomicBoolean setupRunning = new AtomicBoolean(false);
@@ -130,6 +132,9 @@ public final class MainActivity extends Activity {
             .build();
 
         provisioning = HarnessPackageInstaller.service(harnessConfig);
+        // One port, two channels: a sealed (store) build installs packs from a
+        // Play module, the installable build from apt.
+        packs = io.mcyber12.codingharness.core.packs.Packs.installer(this, harnessConfig);
         // React to provisioning events instead of inferring completion: the
         // status line, the terminal and the TOOLS dialog all follow the
         // published state, so setup finishing is visible immediately.
@@ -332,7 +337,8 @@ public final class MainActivity extends Activity {
             }
             text.append('\n')
                 .append(io.mcyber12.codingharness.core.HarnessSizeReport.summarize(harnessConfig));
-            boolean buildReady = HarnessPackageInstaller.isBuildToolchainReady(harnessConfig);
+            boolean buildReady = packs != null && packs
+                .state(io.mcyber12.codingharness.core.packs.Pack.BUILD_TOOLS).isInstalled();
             runOnUiThread(() -> {
                 setStatus(provisioning != null && provisioning.isReady()
                     ? "ready: coding toolchain installed"
@@ -350,12 +356,16 @@ public final class MainActivity extends Activity {
     }
 
     /**
-     * Adds or removes the on-demand native build toolchain. Both directions
-     * go through the provisioning service and report through the same
-     * listener, so the status line reflects the outcome without a restart.
+     * Adds or removes the on-demand native build toolchain.
+     *
+     * <p>Both directions go through {@code PackInstaller}, so this method is
+     * identical on a store build (a Play Feature Delivery module) and on an
+     * installable build ({@code apt}). The result names the channel that
+     * answered, which is what a user needs when it fails: "no Play Store on
+     * this device" is a different sentence from "the repository refused us".</p>
      */
     private void changeBuildTools(boolean install) {
-        if (harnessConfig == null || provisioning == null) {
+        if (harnessConfig == null || provisioning == null || packs == null) {
             setStatus("base runtime is still preparing...");
             return;
         }
@@ -364,12 +374,17 @@ public final class MainActivity extends Activity {
             : "removing build tools...");
         new Thread(() -> {
             try {
-                ProvisioningState state = install
-                    ? provisioning.installTier(PackageTier.BUILD_TOOLS.id)
-                    : provisioning.removeTier(PackageTier.BUILD_TOOLS.id);
-                writeSetupResult(state);
-                if (state.isFailed()) {
-                    runOnUiThread(() -> showSetupFailure(state.message));
+                io.mcyber12.codingharness.core.packs.Pack pack =
+                    io.mcyber12.codingharness.core.packs.Pack.BUILD_TOOLS;
+                io.mcyber12.codingharness.core.packs.PackResult result = install
+                    ? packs.install(pack)
+                    : packs.remove(pack);
+                runOnUiThread(() -> setStatus(result.describe()));
+                if (!result.isSuccess()) {
+                    // The message names the channel that failed (a store module
+                    // download or the package manager), which is the difference
+                    // between "tap again" and "this device has no Play Store".
+                    runOnUiThread(() -> showSetupFailure(result.describe()));
                 }
             } catch (Throwable failure) {
                 logBootstrapError("build tools", failure);

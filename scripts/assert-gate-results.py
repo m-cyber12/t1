@@ -17,7 +17,7 @@ import xml.etree.ElementTree as ET
 # Class -> minimum number of test methods. Counts are floors, not equals, so
 # adding a test does not require touching the gate.
 EXPECTED = {
-    "io.mcyber12.codingharness.SealedShellTest": 2,
+    "io.mcyber12.codingharness.SealedShellTest": 3,
     "io.mcyber12.codingharness.ExecModelTest": 1,
 }
 

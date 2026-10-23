@@ -300,6 +300,82 @@ echo "$E2E_TEST_TASK exit=$RC" | tee -a e2e-logs/phases.log
 "$ADB" shell run-as io.mcyber12.codingharness cat files/coding-harness/rootfs/data/data/com.termux/files/usr/var/log/harness-command.log > e2e-logs/harness-command.log 2>&1 || true
 "$ADB" logcat -d > e2e-logs/logcat.log 2>&1 || true
 
+# ---------------------------------------------------------------------------
+# The pack, delivered the way Play delivers it.
+#
+# An on-demand feature module is not part of `:app:assembleSealed` — Gradle
+# builds the base module and the feature module as separate APKs, and only
+# bundletool fuses them (that is what `dist:fusing include="true"` is for). So
+# the pack install/remove claim is proved the way a store build gets it: build
+# the App Bundle, ask bundletool for a universal APK, install that, and run the
+# one test that installs the pack, runs its tool, removes it and checks that the
+# core runtime still works. No Play Store is involved, which is the point: it is
+# the same artefact shape Play would hand the device.
+# ---------------------------------------------------------------------------
+if [ "${E2E_PACK_UNIVERSAL:-0}" = "1" ]; then
+  phase "pack-universal"
+  BUNDLETOOL_VERSION="${E2E_BUNDLETOOL_VERSION:-1.17.2}"
+  BUNDLETOOL="e2e-logs/bundletool-all-${BUNDLETOOL_VERSION}.jar"
+  PACK_RC=0
+  : > e2e-logs/pack-universal.log
+  if [ ! -f "$BUNDLETOOL" ]; then
+    curl -fsSL --retry 3 -o "$BUNDLETOOL" \
+      "https://github.com/google/bundletool/releases/download/${BUNDLETOOL_VERSION}/bundletool-all-${BUNDLETOOL_VERSION}.jar" \
+      >> e2e-logs/pack-universal.log 2>&1 || PACK_RC=1
+  fi
+  AAB=$(ls app/build/outputs/bundle/sealed/*.aab 2>/dev/null | head -1)
+  if [ -z "${AAB:-}" ]; then
+    echo "no sealed bundle to fuse" >> e2e-logs/pack-universal.log
+    PACK_RC=1
+  fi
+  if [ "$PACK_RC" = "0" ]; then
+    # The debug key signs both the universal APK and the test APK: instrumentation
+    # needs the two to match, and the sealed variant is debuggable by design.
+    java -jar "$BUNDLETOOL" build-apks \
+      --bundle="$AAB" \
+      --output=e2e-logs/universal.apks \
+      --mode=universal \
+      --ks="$HOME/.android/debug.keystore" \
+      --ks-pass=pass:android --key-pass=pass:android \
+      --ks-key-alias=androiddebugkey >> e2e-logs/pack-universal.log 2>&1 || PACK_RC=1
+  fi
+  if [ "$PACK_RC" = "0" ]; then
+    unzip -o -q e2e-logs/universal.apks universal.apk -d e2e-logs >> e2e-logs/pack-universal.log 2>&1 || PACK_RC=1
+  fi
+  if [ "$PACK_RC" = "0" ]; then
+    # A clean install, so the core payload and the pack are installed in the
+    # same run and the test proves the pair, not a leftover.
+    "$ADB" uninstall io.mcyber12.codingharness >> e2e-logs/pack-universal.log 2>&1 || true
+    "$ADB" install -r e2e-logs/universal.apk >> e2e-logs/pack-universal.log 2>&1 || PACK_RC=1
+  fi
+  TEST_APK=$(ls app/build/outputs/apk/androidTest/sealed/*.apk 2>/dev/null | head -1)
+  if [ "$PACK_RC" = "0" ] && [ -n "${TEST_APK:-}" ]; then
+    "$ADB" install -r "$TEST_APK" >> e2e-logs/pack-universal.log 2>&1 || PACK_RC=1
+  fi
+  if [ "$PACK_RC" = "0" ]; then
+    "$ADB" shell am instrument -w \
+      -e class "io.mcyber12.codingharness.SealedShellTest#packsComeFromTheStoreAndNeverFromApt" \
+      io.mcyber12.codingharness.test/androidx.test.runner.AndroidJUnitRunner \
+      >> e2e-logs/pack-universal.log 2>&1 || true
+    if ! grep -q "OK (1 test)" e2e-logs/pack-universal.log; then
+      echo "the pack test did not pass on the universal APK" >> e2e-logs/pack-universal.log
+      PACK_RC=1
+    fi
+  fi
+  # What the device kept, so a failure can be read without a rerun.
+  {
+    echo "--- pack state on the device ---"
+    "$ADB" shell run-as io.mcyber12.codingharness \
+      ls -l files/coding-harness/rootfs/data/data/com.termux/files/usr/bin 2>&1 | head -20
+    "$ADB" shell run-as io.mcyber12.codingharness \
+      cat files/coding-harness/pack-build-tools-installed.txt 2>&1 || true
+    "$ADB" shell run-as io.mcyber12.codingharness \
+      cat files/coding-harness/sealed-payload-pack-buildtools.txt 2>&1 || true
+  } >> e2e-logs/pack-universal.log 2>&1
+  echo "pack-universal exit=$PACK_RC" >> e2e-logs/phases.log
+  [ "$PACK_RC" = "0" ] || RC=1
+fi
+
 kill "$PUBLISHER_PID" >/dev/null 2>&1
 PHASE="done rc=$RC"
 exit $RC

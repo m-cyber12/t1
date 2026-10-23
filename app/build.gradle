@@ -34,6 +34,60 @@ ext.sealedDebDir = layout.buildDirectory.dir("generated/sealed-debs")
 // Mirror override, mainly so the pipeline can be exercised against a snapshot.
 ext.sealedRepo = (findProperty("harnessSealedRepo") ?: "https://packages-cf.termux.dev/apt/termux-main").toString()
 
+// ---------------------------------------------------------------------------
+// Target API level, per build shape.
+//
+// Play requires API 36 for new apps and updates from 2026-08-31, so the store
+// variants (`sealed` for instrumentation, `release` for upload) default to it.
+// The apt build cannot follow: Android 10+ refuses execve() on files under app
+// data, and that build runs its userland from there — it stays at the project
+// default (28) until the sealed layout is the only layout.
+//
+// -PharnessTargetSdk still overrides both, because the evidence table needs the
+// same source measured at 28, 34 and 36. compileSdk cannot be lower than
+// targetSdk, so the value is clamped for ordinary builds and a store build that
+// asks for a target the installed SDK cannot compile is refused loudly instead
+// of silently shipping at a lower level.
+// ---------------------------------------------------------------------------
+
+// ---------------------------------------------------------------------------
+// Release signing is supplied from outside the repository and fails closed:
+// a build that cannot find a real key stays debug-signed (and therefore
+// cannot be uploaded), rather than shipping a silently unverifiable app.
+//   keystore.properties in the repo root, or the same four values in the
+//   environment (HARNESS_KEYSTORE, HARNESS_KEYSTORE_PASSWORD,
+//   HARNESS_KEY_ALIAS, HARNESS_KEY_PASSWORD).
+def signingProperties = new Properties()
+File signingFile = rootProject.file("keystore.properties")
+boolean hasSigningFile = signingFile.isFile()
+if (hasSigningFile) {
+    signingFile.withInputStream { signingProperties.load(it) }
+}
+def signingValue = { String key, String env ->
+    (hasSigningFile ? signingProperties.getProperty(key) : null)
+        ?: System.getenv(env)
+}
+def releaseStoreFile = signingValue("storeFile", "HARNESS_KEYSTORE")
+def releaseStorePassword = signingValue("storePassword", "HARNESS_KEYSTORE_PASSWORD")
+def releaseKeyAlias = signingValue("keyAlias", "HARNESS_KEY_ALIAS")
+def releaseKeyPassword = signingValue("keyPassword", "HARNESS_KEY_PASSWORD")
+boolean canSignRelease = releaseStoreFile && releaseStorePassword
+    && releaseKeyAlias && releaseKeyPassword
+    && rootProject.file(releaseStoreFile).isFile()
+// ---------------------------------------------------------------------------
+
+def storeRequestedTargetSdk = ((findProperty("harnessTargetSdk") ?: 36) as Integer)
+def storeTargetSdk = Math.min(storeRequestedTargetSdk, rootProject.ext.compileSdkVersion as Integer)
+def requestedTasks = gradle.startParameter.taskNames.join(" ").toLowerCase()
+def requestsStoreArtifact = requestedTasks.contains("sealed") || requestedTasks.contains("release")
+if (requestsStoreArtifact
+        && rootProject.ext.compileSdkVersion < storeRequestedTargetSdk) {
+    throw new GradleException(
+        "this build asks for targetSdk ${storeRequestedTargetSdk} but compileSdk is "
+            + "${rootProject.ext.compileSdkVersion}: re-run with "
+            + "-PharnessCompileSdk=${storeRequestedTargetSdk}")
+}
+
 android {
     namespace "io.mcyber12.codingharness"
     compileSdk rootProject.ext.compileSdkVersion
@@ -46,6 +100,11 @@ android {
         versionName "0.33.1"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
+
+    // The base module has to name its feature modules, or the bundle is built
+    // without them and the pack simply does not exist for Play to deliver. This
+    // list is also what makes the pack APK a build output of this project.
+    dynamicFeatures = [":pack-buildtools"]
 
     sourceSets {
         main {
@@ -73,10 +132,32 @@ android {
         }
     }
 
+    signingConfigs {
+        release {
+            if (canSignRelease) {
+                storeFile rootProject.file(releaseStoreFile)
+                storePassword releaseStorePassword
+                keyAlias releaseKeyAlias
+                keyPassword releaseKeyPassword
+                // v1 is still needed by API 24-27 era tooling on some devices;
+                // v2/v3 are what Play verifies, and v4 enables fast installs.
+                enableV1Signing true
+                enableV2Signing true
+                enableV3Signing true
+                enableV4Signing true
+            }
+        }
+    }
+
     buildTypes {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
+            // The uploaded artefact: store-legal target, payload from the APK.
+            targetSdk storeTargetSdk
+            if (canSignRelease) {
+                signingConfig signingConfigs.release
+            }
         }
         // `sealed`: the store-shaped build (docs/play-store-plan.md).
         //
@@ -95,15 +176,24 @@ android {
         sealed {
             initWith(getByName("debug"))
             debuggable = true
+            // Same shape as `release`, measured at the target under test.
+            targetSdk storeTargetSdk
             matchingFallbacks.addAll(["debug", "release"])
         }
     }
 
-    // The sealed variant is the only one that carries the split userland: the
-    // payload trees are per-ABI, so they cannot live in the shared `main`
-    // source set.
+    // Only the store-shaped variants carry the split userland: the payload
+    // trees are per-ABI, so they cannot live in the shared `main` source set.
+    //
+    // `sealed` is the one instrumentation runs against (debuggable), `release`
+    // is the one uploaded (Play refuses a debuggable bundle). They share the
+    // payload, so the gate exercises the artefact's own shape.
     sourceSets {
         sealed {
+            assets.srcDir(new File(project.sealedPayloadDir.get().asFile, "assets"))
+            jniLibs.srcDir(new File(project.sealedPayloadDir.get().asFile, "jniLibs"))
+        }
+        release {
             assets.srcDir(new File(project.sealedPayloadDir.get().asFile, "assets"))
             jniLibs.srcDir(new File(project.sealedPayloadDir.get().asFile, "jniLibs"))
         }
@@ -112,6 +202,16 @@ android {
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
+    }
+}
+
+/** Logged once, so an AAB never leaves without saying which key signed it. */
+tasks.matching { it.name in ["bundleRelease", "bundleSealed", "assembleRelease"] }.configureEach {
+    doFirst {
+        logger.lifecycle(canSignRelease
+            ? "signing ${it.name} with the release key (${releaseKeyAlias})"
+            : "signing ${it.name} with the debug key - set keystore.properties "
+                + "before uploading this artifact")
     }
 }
 
@@ -261,7 +361,10 @@ def buildSealedPayload = tasks.register("buildSealedPayload") {
     }
 }
 
-tasks.matching { it.name.startsWith("mergeSealed") || it.name.startsWith("preSealed") }.configureEach {
+tasks.matching {
+    it.name.startsWith("mergeSealed") || it.name.startsWith("preSealed")
+        || it.name.startsWith("mergeRelease") || it.name == "preReleaseBuild"
+}.configureEach {
     dependsOn(buildSealedPayload)
 }
 

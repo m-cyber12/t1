@@ -35,6 +35,7 @@ on:
     paths:
       - "app/**"
       - "harness-core/**"
+      - "pack-buildtools/**"
       - "sealed-runtime/**"
       - "terminal-emulator/**"
       - "scripts/**"
@@ -78,6 +79,9 @@ jobs:
       E2E_TEST_TASK: ":app:connectedSealedAndroidTest"
       E2E_TEST_CLASS: "io.mcyber12.codingharness.SealedShellTest,io.mcyber12.codingharness.ExecModelTest"
       E2E_LEAN: "1"
+      # After the APK gate, install the bundle's universal APK (the pack fused
+      # the way Play fuses it) and prove install/remove on the same emulator.
+      E2E_PACK_UNIVERSAL: "1"
       E2E_GRADLE_PROPS: "-PharnessTargetSdk=${{ matrix.target_sdk }} -PharnessCompileSdk=${{ matrix.compile_sdk }} -PharnessTestBuildType=sealed"
 
     steps:
@@ -104,7 +108,8 @@ jobs:
             -PharnessTargetSdk="${E2E_TARGET_SDK}" \
             -PharnessCompileSdk="${E2E_COMPILE_SDK}" \
             -PharnessTestBuildType=sealed \
-            :app:assembleSealed :app:assembleSealedAndroidTest 2>&1 | tee gradle-sealed.log
+            :app:assembleSealed :app:assembleSealedAndroidTest \
+            :app:bundleRelease :app:bundleSealed 2>&1 | tee gradle-sealed.log
 
       - name: Publish build failure log
         if: failure()
@@ -172,6 +177,43 @@ jobs:
             --report sealed-apk-16kb.txt --require-compliant
           cat app/build/generated/sealed-payload/assets/sealed-payload-*.json | tee sealed-payload.json
 
+      # The store artifact, not just the APK: a pack that is not in the bundle
+      # cannot be delivered, and a pack that is in it as an install-time module
+      # makes every install pay for clang.
+      - name: Verify the App Bundle carries the pack on demand
+        shell: bash
+        run: |
+          set -euo pipefail
+          AAB="$(ls app/build/outputs/bundle/release/*.aab | head -1)"
+          APK="$(ls app/build/outputs/apk/sealed/*.apk | head -1 || true)"
+          echo "aab=$AAB ($(stat -c%s "$AAB") bytes)" | tee sealed-aab.txt
+          unzip -l "$AAB" | grep "pack_buildtools/" | head -20 >> sealed-aab.txt || true
+
+          # 1. The module is in the bundle, with its payload.
+          unzip -l "$AAB" | grep -q "pack_buildtools/manifest/AndroidManifest.xml" \
+            || { echo "the pack module is not in the bundle" >&2; exit 1; }
+          unzip -l "$AAB" | grep -q "pack_buildtools/assets/pack-buildtools-userland-" \
+            || { echo "the pack module carries no payload" >&2; exit 1; }
+          # 2. It is delivered on demand, not fused into every install. The
+          #    bundle stores this manifest as protobuf, so the merged XML from
+          #    the build is what can be read; the source manifest says the same.
+          grep -q "on-demand" pack-buildtools/src/main/AndroidManifest.xml \
+            || { echo "the pack is not on-demand in its manifest" >&2; exit 1; }
+          MERGED="$(grep -rl "dist:on-demand" pack-buildtools/build/intermediates \
+            --include=AndroidManifest.xml 2>/dev/null | head -1 || true)"
+          if [ -n "$MERGED" ]; then
+            echo "merged feature manifest: $MERGED" >> sealed-aab.txt
+            grep -E "dist:module|dist:on-demand|dist:fusing" "$MERGED" >> sealed-aab.txt
+          else
+            echo "note: no merged feature manifest retained; source manifest checked" \
+              >> sealed-aab.txt
+          fi
+          # 3. The base module still fits Play's 200 MB limit, and the pack is
+          #    what makes that true. The script fails the job; a printed number
+          #    nobody reads is not a gate.
+          python3 scripts/check-bundle-size.py "$AAB" ${APK:+--apk "$APK"} \
+            --json sealed-aab-size.json 2>&1 | tee -a sealed-aab.txt
+
       - name: Run the exec-model measurement on an emulator
         shell: bash
         run: bash scripts/run-emulator-e2e.sh
@@ -199,6 +241,8 @@ jobs:
           cp sealed-apk-identity.txt diagnostics/ 2>/dev/null || true
           cp sealed-payload.json diagnostics/ 2>/dev/null || true
           cp sealed-apk-16kb.txt diagnostics/ 2>/dev/null || true
+          cp sealed-aab.txt diagnostics/ 2>/dev/null || true
+          cp e2e-logs/pack-universal.log diagnostics/ 2>/dev/null || true
           cp app/build/generated/harness-bootstrap/sealed-payload-*.log diagnostics/ 2>/dev/null || true
           cp app/build/fetch-core-debs-*.log diagnostics/ 2>/dev/null || true
           for x in app/build/outputs/androidTest-results/connected/*.xml; do
@@ -223,6 +267,11 @@ jobs:
             sealed-payload.json
             sealed-exec-*.txt
             sealed-apk-16kb.txt
+            sealed-aab.txt
+            sealed-aab-size.json
+            e2e-logs/pack-universal.log
+            app/build/outputs/bundle/release/*.aab
+            app/build/outputs/bundle/sealed/*.aab
             gradle-sealed.log
             app/build/outputs/apk/sealed/*.apk
             app/build/outputs/androidTest-results/
