@@ -1,0 +1,244 @@
+/home/runner/work/t1/t1/harness-core/src/main/java/io/mcyber12/codingharness/core/packs/PlayPackInstaller.java:6: error: package com.google.android.play.core.install does not exist
+import com.google.android.play.core.install.InstallStateUpdatedListener;
+                                           ^
+/home/runner/work/t1/t1/harness-core/src/main/java/io/mcyber12/codingharness/core/packs/PlayPackInstaller.java:7: error: package com.google.android.play.core.install.model does not exist
+import com.google.android.play.core.install.model.InstallStatus;
+                                                 ^
+/home/runner/work/t1/t1/harness-core/src/main/java/io/mcyber12/codingharness/core/packs/PackCommands.java:68: error: cannot find symbol
+        for (String raw : execLines == null ? Collections.<String>emptyList() : execLines) {
+                                              ^
+  symbol:   variable Collections
+  location: class PackCommands
+/home/runner/work/t1/t1/harness-core/src/main/java/io/mcyber12/codingharness/core/packs/PlayPackInstaller.java:294: error: cannot find symbol
+        InstallStateUpdatedListener listener = null;
+        ^
+  symbol:   class InstallStateUpdatedListener
+  location: class PlayPackInstaller
+/home/runner/work/t1/t1/harness-core/src/main/java/io/mcyber12/codingharness/core/packs/PlayPackInstaller.java:300: error: cannot find symbol
+            final InstallStatus[] finalStatus = new InstallStatus[] {InstallStatus.PENDING};
+                  ^
+  symbol:   class InstallStatus
+  location: class PlayPackInstaller
+/home/runner/work/t1/t1/harness-core/src/main/java/io/mcyber12/codingharness/core/packs/PlayPackInstaller.java:300: error: cannot find symbol
+            final InstallStatus[] finalStatus = new InstallStatus[] {InstallStatus.PENDING};
+                                                    ^
+  symbol:   class InstallStatus
+  location: class PlayPackInstaller
+/home/runner/work/t1/t1/harness-core/src/main/java/io/mcyber12/codingharness/core/packs/PlayPackInstaller.java:300: error: cannot find symbol
+            final InstallStatus[] finalStatus = new InstallStatus[] {InstallStatus.PENDING};
+                                                                     ^
+  symbol:   variable InstallStatus
+  location: class PlayPackInstaller
+/home/runner/work/t1/t1/harness-core/src/main/java/io/mcyber12/codingharness/core/packs/PlayPackInstaller.java:302: error: lambda expression not expected here
+            listener = state -> {
+                       ^
+/home/runner/work/t1/t1/harness-core/src/main/java/io/mcyber12/codingharness/core/packs/PlayPackInstaller.java:303: error: cannot find symbol
+                if (state.status() == InstallStatus.DOWNLOADED
+                                      ^
+  symbol:   variable InstallStatus
+  location: class PlayPackInstaller
+/home/runner/work/t1/t1/harness-core/src/main/java/io/mcyber12/codingharness/core/packs/PlayPackInstaller.java:304: error: cannot find symbol
+                    || state.status() == InstallStatus.INSTALLED) {
+                                         ^
+  symbol:   variable InstallStatus
+  location: class PlayPackInstaller
+/home/runner/work/t1/t1/harness-core/src/main/java/io/mcyber12/codingharness/core/packs/PlayPackInstaller.java:307: error: cannot find symbol
+                } else if (state.status() == InstallStatus.FAILED
+                                             ^
+  symbol:   variable InstallStatus
+  location: class PlayPackInstaller
+/home/runner/work/t1/t1/harness-core/src/main/java/io/mcyber12/codingharness/core/packs/PlayPackInstaller.java:308: error: cannot find symbol
+                    || state.status() == InstallStatus.CANCELED) {
+                                         ^
+  symbol:   variable InstallStatus
+  location: class PlayPackInstaller
+/home/runner/work/t1/t1/harness-core/src/main/java/io/mcyber12/codingharness/core/packs/PlayPackInstaller.java:333: error: cannot find symbol
+            if (finalStatus[0] == InstallStatus.DOWNLOADED) {
+                                  ^
+  symbol:   variable InstallStatus
+  location: class PlayPackInstaller
+/home/runner/work/t1/t1/harness-core/src/main/java/io/mcyber12/codingharness/core/packs/PlayPackInstaller.java:337: error: cannot find symbol
+                manager.completeInstall();
+                       ^
+  symbol:   method completeInstall()
+  location: variable manager of type SplitInstallManager
+/home/runner/work/t1/t1/harness-core/src/main/java/io/mcyber12/codingharness/core/packs/PlayPackInstaller.java:339: error: cannot find symbol
+            if (finalStatus[0] != InstallStatus.INSTALLED
+                                  ^
+  symbol:   variable InstallStatus
+  location: class PlayPackInstaller
+/home/runner/work/t1/t1/harness-core/src/main/java/io/mcyber12/codingharness/core/packs/PlayPackInstaller.java:340: error: cannot find symbol
+                && finalStatus[0] != InstallStatus.DOWNLOADED) {
+                                     ^
+  symbol:   variable InstallStatus
+  location: class PlayPackInstaller
+16 errors
+--
+> Task :harness-core:compileDebugJavaWithJavac FAILED
+
+> Task :pack-buildtools:fetchPackDebs
+fetched 23 packages (73740 KiB installed) for aarch64
+fetched 23 packages (74168 KiB installed) for x86_64
+
+--
+* What went wrong:
+Execution failed for task ':harness-core:compileDebugJavaWithJavac'.
+> Compilation failed; see the compiler output below.
+  /home/runner/work/t1/t1/harness-core/src/main/java/io/mcyber12/codingharness/core/packs/PackCommands.java:68: error: cannot find symbol
+          for (String raw : execLines == null ? Collections.<String>emptyList() : execLines) {
+                                                ^
+    symbol:   variable Collections
+    location: class PackCommands
+  /home/runner/work/t1/t1/harness-core/src/main/java/io/mcyber12/codingharness/core/packs/PlayPackInstaller.java:294: error: cannot find symbol
+          InstallStateUpdatedListener listener = null;
+          ^
+    symbol:   class InstallStateUpdatedListener
+    location: class PlayPackInstaller
+  /home/runner/work/t1/t1/harness-core/src/main/java/io/mcyber12/codingharness/core/packs/PlayPackInstaller.java:300: error: cannot find symbol
+              final InstallStatus[] finalStatus = new InstallStatus[] {InstallStatus.PENDING};
+                    ^
+    symbol:   class InstallStatus
+    location: class PlayPackInstaller
+  /home/runner/work/t1/t1/harness-core/src/main/java/io/mcyber12/codingharness/core/packs/PlayPackInstaller.java:300: error: cannot find symbol
+              final InstallStatus[] finalStatus = new InstallStatus[] {InstallStatus.PENDING};
+                                                      ^
+    symbol:   class InstallStatus
+    location: class PlayPackInstaller
+  /home/runner/work/t1/t1/harness-core/src/main/java/io/mcyber12/codingharness/core/packs/PlayPackInstaller.java:300: error: cannot find symbol
+              final InstallStatus[] finalStatus = new InstallStatus[] {InstallStatus.PENDING};
+                                                                       ^
+    symbol:   variable InstallStatus
+    location: class PlayPackInstaller
+  /home/runner/work/t1/t1/harness-core/src/main/java/io/mcyber12/codingharness/core/packs/PlayPackInstaller.java:303: error: cannot find symbol
+                  if (state.status() == InstallStatus.DOWNLOADED
+                                        ^
+    symbol:   variable InstallStatus
+    location: class PlayPackInstaller
+  /home/runner/work/t1/t1/harness-core/src/main/java/io/mcyber12/codingharness/core/packs/PlayPackInstaller.java:304: error: cannot find symbol
+                      || state.status() == InstallStatus.INSTALLED) {
+                                           ^
+    symbol:   variable InstallStatus
+    location: class PlayPackInstaller
+  /home/runner/work/t1/t1/harness-core/src/main/java/io/mcyber12/codingharness/core/packs/PlayPackInstaller.java:307: error: cannot find symbol
+                  } else if (state.status() == InstallStatus.FAILED
+                                               ^
+    symbol:   variable InstallStatus
+    location: class PlayPackInstaller
+  /home/runner/work/t1/t1/harness-core/src/main/java/io/mcyber12/codingharness/core/packs/PlayPackInstaller.java:308: error: cannot find symbol
+                      || state.status() == InstallStatus.CANCELED) {
+                                           ^
+    symbol:   variable InstallStatus
+    location: class PlayPackInstaller
+  /home/runner/work/t1/t1/harness-core/src/main/java/io/mcyber12/codingharness/core/packs/PlayPackInstaller.java:333: error: cannot find symbol
+              if (finalStatus[0] == InstallStatus.DOWNLOADED) {
+                                    ^
+    symbol:   variable InstallStatus
+    location: class PlayPackInstaller
+  /home/runner/work/t1/t1/harness-core/src/main/java/io/mcyber12/codingharness/core/packs/PlayPackInstaller.java:339: error: cannot find symbol
+              if (finalStatus[0] != InstallStatus.INSTALLED
+                                    ^
+    symbol:   variable InstallStatus
+    location: class PlayPackInstaller
+  /home/runner/work/t1/t1/harness-core/src/main/java/io/mcyber12/codingharness/core/packs/PlayPackInstaller.java:340: error: cannot find symbol
+                  && finalStatus[0] != InstallStatus.DOWNLOADED) {
+                                       ^
+    symbol:   variable InstallStatus
+    location: class PlayPackInstaller
+  /home/runner/work/t1/t1/harness-core/src/main/java/io/mcyber12/codingharness/core/packs/PlayPackInstaller.java:337: error: cannot find symbol
+                  manager.completeInstall();
+                         ^
+    symbol:   method completeInstall()
+    location: variable manager of type SplitInstallManager
+  /home/runner/work/t1/t1/harness-core/src/main/java/io/mcyber12/codingharness/core/packs/PlayPackInstaller.java:302: error: lambda expression not expected here
+              listener = state -> {
+                         ^
+  /home/runner/work/t1/t1/harness-core/src/main/java/io/mcyber12/codingharness/core/packs/PlayPackInstaller.java:6: error: package com.google.android.play.core.install does not exist
+  import com.google.android.play.core.install.InstallStateUpdatedListener;
+                                             ^
+  /home/runner/work/t1/t1/harness-core/src/main/java/io/mcyber12/codingharness/core/packs/PlayPackInstaller.java:7: error: package com.google.android.play.core.install.model does not exist
+  import com.google.android.play.core.install.model.InstallStatus;
+                                                   ^
+  16 errors
+
+* Try:
+--
+/home/runner/work/t1/t1/harness-core/src/main/java/io/mcyber12/codingharness/core/packs/PackCommands.java:68: error: cannot find symbol
+        for (String raw : execLines == null ? Collections.<String>emptyList() : execLines) {
+                                              ^
+  symbol:   variable Collections
+  location: class PackCommands
+/home/runner/work/t1/t1/harness-core/src/main/java/io/mcyber12/codingharness/core/packs/PlayPackInstaller.java:294: error: cannot find symbol
+        InstallStateUpdatedListener listener = null;
+        ^
+  symbol:   class InstallStateUpdatedListener
+  location: class PlayPackInstaller
+/home/runner/work/t1/t1/harness-core/src/main/java/io/mcyber12/codingharness/core/packs/PlayPackInstaller.java:300: error: cannot find symbol
+            final InstallStatus[] finalStatus = new InstallStatus[] {InstallStatus.PENDING};
+                  ^
+  symbol:   class InstallStatus
+  location: class PlayPackInstaller
+/home/runner/work/t1/t1/harness-core/src/main/java/io/mcyber12/codingharness/core/packs/PlayPackInstaller.java:300: error: cannot find symbol
+            final InstallStatus[] finalStatus = new InstallStatus[] {InstallStatus.PENDING};
+                                                    ^
+  symbol:   class InstallStatus
+  location: class PlayPackInstaller
+/home/runner/work/t1/t1/harness-core/src/main/java/io/mcyber12/codingharness/core/packs/PlayPackInstaller.java:300: error: cannot find symbol
+            final InstallStatus[] finalStatus = new InstallStatus[] {InstallStatus.PENDING};
+                                                                     ^
+  symbol:   variable InstallStatus
+  location: class PlayPackInstaller
+/home/runner/work/t1/t1/harness-core/src/main/java/io/mcyber12/codingharness/core/packs/PlayPackInstaller.java:303: error: cannot find symbol
+                if (state.status() == InstallStatus.DOWNLOADED
+                                      ^
+  symbol:   variable InstallStatus
+  location: class PlayPackInstaller
+/home/runner/work/t1/t1/harness-core/src/main/java/io/mcyber12/codingharness/core/packs/PlayPackInstaller.java:304: error: cannot find symbol
+                    || state.status() == InstallStatus.INSTALLED) {
+                                         ^
+  symbol:   variable InstallStatus
+  location: class PlayPackInstaller
+/home/runner/work/t1/t1/harness-core/src/main/java/io/mcyber12/codingharness/core/packs/PlayPackInstaller.java:307: error: cannot find symbol
+                } else if (state.status() == InstallStatus.FAILED
+                                             ^
+  symbol:   variable InstallStatus
+  location: class PlayPackInstaller
+/home/runner/work/t1/t1/harness-core/src/main/java/io/mcyber12/codingharness/core/packs/PlayPackInstaller.java:308: error: cannot find symbol
+                    || state.status() == InstallStatus.CANCELED) {
+                                         ^
+  symbol:   variable InstallStatus
+  location: class PlayPackInstaller
+/home/runner/work/t1/t1/harness-core/src/main/java/io/mcyber12/codingharness/core/packs/PlayPackInstaller.java:333: error: cannot find symbol
+            if (finalStatus[0] == InstallStatus.DOWNLOADED) {
+                                  ^
+  symbol:   variable InstallStatus
+  location: class PlayPackInstaller
+/home/runner/work/t1/t1/harness-core/src/main/java/io/mcyber12/codingharness/core/packs/PlayPackInstaller.java:339: error: cannot find symbol
+            if (finalStatus[0] != InstallStatus.INSTALLED
+                                  ^
+  symbol:   variable InstallStatus
+  location: class PlayPackInstaller
+/home/runner/work/t1/t1/harness-core/src/main/java/io/mcyber12/codingharness/core/packs/PlayPackInstaller.java:340: error: cannot find symbol
+                && finalStatus[0] != InstallStatus.DOWNLOADED) {
+                                     ^
+  symbol:   variable InstallStatus
+  location: class PlayPackInstaller
+/home/runner/work/t1/t1/harness-core/src/main/java/io/mcyber12/codingharness/core/packs/PlayPackInstaller.java:337: error: cannot find symbol
+                manager.completeInstall();
+                       ^
+  symbol:   method completeInstall()
+  location: variable manager of type SplitInstallManager
+/home/runner/work/t1/t1/harness-core/src/main/java/io/mcyber12/codingharness/core/packs/PlayPackInstaller.java:302: error: lambda expression not expected here
+            listener = state -> {
+                       ^
+/home/runner/work/t1/t1/harness-core/src/main/java/io/mcyber12/codingharness/core/packs/PlayPackInstaller.java:6: error: package com.google.android.play.core.install does not exist
+import com.google.android.play.core.install.InstallStateUpdatedListener;
+                                           ^
+/home/runner/work/t1/t1/harness-core/src/main/java/io/mcyber12/codingharness/core/packs/PlayPackInstaller.java:7: error: package com.google.android.play.core.install.model does not exist
+import com.google.android.play.core.install.model.InstallStatus;
+                                                 ^
+16 errors
+	at org.gradle.api.internal.tasks.compile.JdkJavaCompiler.execute(JdkJavaCompiler.java:89)
+	at org.gradle.api.internal.tasks.compile.JdkJavaCompiler.execute(JdkJavaCompiler.java:50)
+--
+BUILD FAILED in 1m 3s
+61 actionable tasks: 52 executed, 9 from cache
