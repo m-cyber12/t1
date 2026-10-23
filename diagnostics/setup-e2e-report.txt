@@ -1,0 +1,22 @@
+sealed-shell: second startup took 19 ms (no re-extract)
+sealed-shell: dpkg records the shipped packages as installed
+sealed-shell: payload abi=x86_64 targetSdk=34
+sealed-shell: sealed payload (x86_64): 13858 data files, 1173 data links, 535 executables from the APK, 13858 verified
+sealed-shell: bin/bash -> /data/app/~~82gOnlAK6Qg5jMEHW5GlCQ==/io.mcyber12.codingharness-D25A-ebpMyCvTrE6XigLlQ==/lib/x86_64/libbash.so
+sealed-shell: bash -> exit 0 : SEALED-SHELL-OK | version=5.3.9(1)-release | prefix=/data/user/0/io.mcyber12.codingharness/files/coding-harness/rootfs/data/data/com.termux/files/usr | path=/data/user/0/io.mcyber12.codingharness/files/coding-harness/rootfs/data/data/com.termux/files/usr/bin:/data/user/0/io.mcyber12.codingharness/files/coding-harness/workspace/node_modules/.bin:/system/bin:/system/xbin | /data/user/0/io.mcyber12.codingharness/files/coding-harness/rootfs/data/data/com.termux/files/usr/bin/sed | exit-ok |
+sealed-shell: sed -> exit 0 : A1 | A2 |
+sealed-shell: bin/git -> exit 0 : git version 2.56.0
+sealed-shell: bin/python -> exit 0 : py-ssl OpenSSL 3.6.5 29 Sep 2026
+sealed-shell: bin/node -> exit 0 : v26.12.1
+sealed-shell: bin/perl -> exit 0 : v5.44.0
+sealed-shell: bin/ruby -> exit 0 : ruby 4.0.7 (2026-09-15 revision 229531a6cf) +PRISM [x86_64-linux-android]
+sealed-shell: bin/rg -> exit 0 : ripgrep 15.2.0  features:+pcre2 simd(compile):+SSE2,+SSSE3,-AVX2 simd(runtime):+SSE2,+SSSE3,-AVX2  PCRE2 10.45 is available (JIT is availabl
+sealed-shell: exec audit: 560 executable entries, 535 shipped in the APK, 0 binary executables outside it, 25 scripts outside it (run through the preload) | native libraries: /data/app/~~82gOnlAK6Qg5jMEHW5GlCQ==/io.mcyber12.codingharness-D25A-ebpMyCvTrE6XigLlQ==/lib/x86_64 | scanned paths: 7610 | verdict: publishable at any targetSdk (no binaries outside the APK) | 
+sealed-shell: 25 scripts in the payload run through the interpreter layer
+exec-model: targetSdk=34 abi=x86_64
+exec-model: exec audit: 560 executable entries, 535 shipped in the APK, 0 binary executables outside it, 25 scripts outside it (run through the preload) | native libraries: /data/app/~~82gOnlAK6Qg5jMEHW5GlCQ==/io.mcyber12.codingharness-D25A-ebpMyCvTrE6XigLlQ==/lib/x86_64 | scanned paths: 7610 | verdict: publishable at any targetSdk (no binaries outside the APK) | 
+exec-model: native library directory -> ok (harness-probe-ok argv0=/data/app/~~82gOnlAK6Qg5jMEHW5GlCQ==/io.mcyber12.codingharness-D25A-ebpMyCvTrE6XigLlQ==/lib/x86_64/libharnessprobe.so exe=/data/app/~~82gOnlAK6Qg5jMEHW5GlCQ==/io.mcyber12.codingharness-D25A-ebpMyCvTrE6XigLlQ==/lib/x86_64/libharnessprobe.so ld_preload=(unset) argc=1)
+exec-model: data-dir exec denied as required (Cannot run program "/data/user/0/io.mcyber12.codingharness/files/exec-probe-copy.bin": error=13, Permission denied)
+exec-model: prefix symlink into the APK -> ok (harness-probe-ok argv0=/data/user/0/io.mcyber12.codingharness/files/coding-harness/rootfs/data/data/com.termux/files/usr/bin/harness-probe exe=/data/app/~~82gOnlAK6Qg5jMEHW5GlCQ==/io.mcyber12.codingharness-D25A-ebpMyCvTrE6XigLlQ==/lib/x86_64/libharnessprobe.so ld_preload=(unset) argc=1)
+exec-model: shebang translated by the preload -> ok (harness-probe-ok argv0=/data/user/0/io.mcyber12.codingharness/files/coding-harness/rootfs/data/data/com.termux/files/usr/bin/harness-probe exe=/data/app/~~82gOnlAK6Qg5jMEHW5GlCQ==/io.mcyber12.codingharness-D25A-ebpMyCvTrE6XigLlQ==/lib/x86_64/libharnessprobe.so ld_preload=/data/app/~~82gOnlAK6Qg5jMEHW5GlCQ==/io.mcyber12.codingharness-D25A-ebpMyCvTrE6XigLlQ==/lib/x86_64/libharness-exec.so argc=2 arg1=/data/user/0/io.mcyber12.codingharness/files/sealed-shebang.sh)
+exec-model: direct script exec denied as required
