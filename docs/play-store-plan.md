@@ -428,9 +428,18 @@ that makes that true).
 
 ### 4. Size
 
-Play caps a base module at 200 MB. The toolchain fits, and the heavy optional
-piece (clang and friends) is the pack. CI prints the base-module byte count on
-every run and the number is recorded with the run rather than in prose.
+Play caps a base module at 200 MB, measured **per device**: a bundle carrying
+two ABIs is not twice the download, it is one ABI's worth on either device. The
+first run of the new gate quoted 329.6 MB for the base and looked like a
+failure; that was both ABIs summed. Measured the way Play measures it, the
+sealed base is ~165 MB per ABI, and the heavy optional piece (clang and
+friends) is in the pack either way.
+
+`scripts/check-bundle-size.py` reports both numbers — the per-device size that
+the limit applies to, and the total for the record — and fails when the
+per-device figure crosses 200 MB. Its arithmetic is unit-tested, including the
+per-ABI split, because a size gate that measures the wrong thing is worse than
+no gate: it fails bundles that are fine and passes ones that are not.
 
 ### 5. What is still not closed (and cannot be from here)
 

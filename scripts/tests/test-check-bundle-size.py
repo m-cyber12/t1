@@ -70,6 +70,25 @@ class LimitTest(unittest.TestCase):
                            base_bytes=1024)
             self.assertEqual(check.main([aab]), 0)
 
+    def test_the_limit_is_per_device_not_the_sum_of_every_abi(self):
+        # Two ABIs of the same 60 MB of libraries are a 65 MB download on either
+        # device, not 125 MB: Play measures what one device fetches.
+        with tempfile.TemporaryDirectory() as directory:
+            aab = os.path.join(directory, "app.aab")
+            with zipfile.ZipFile(aab, "w", zipfile.ZIP_STORED) as bundle:
+                bundle.writestr("base/manifest/AndroidManifest.xml", b"m" * 1000)
+                for abi in ("arm64-v8a", "x86_64"):
+                    bundle.writestr(f"base/lib/{abi}/libbig.so", b"x" * 60_000)
+            sizing = check.base_size_by_abi(aab)
+            self.assertAlmostEqual(sizing["common"], 1000, delta=32)
+            self.assertEqual(set(sizing["perAbi"]), {"arm64-v8a", "x86_64"})
+            for size in sizing["perAbi"].values():
+                self.assertLess(size, 70_000)
+            # 100 MB limit: passes, because no device downloads more than ~61 KB.
+            self.assertEqual(check.main([aab, "--limit-mb", "1"]), 0)
+            # ...and a limit below the per-device size fails.
+            self.assertEqual(check.main([aab, "--limit-mb", "0"]), 1)
+
     def test_a_base_over_the_limit_fails(self):
         with tempfile.TemporaryDirectory() as directory:
             aab = os.path.join(directory, "app.aab")
@@ -95,6 +114,7 @@ class LimitTest(unittest.TestCase):
         self.assertEqual(written["limit_mb"], 200)
         self.assertIn("base", written["modules"])
         self.assertIn("pack_buildtools", written["modules"])
+        self.assertIn("base_module_total_mb", written)
         self.assertEqual(written["universal_apk_bytes"], 5000)
 
     def test_a_bundle_without_a_base_module_is_an_error(self):

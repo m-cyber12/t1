@@ -56,6 +56,39 @@ def measure(aab_path):
     return modules
 
 
+def abi_of(entry_name):
+    """The ABI an AAB entry is delivered for, or None for ABI-independent ones.
+
+    Play measures the base module against its limit **per device**: a bundle
+    that carries arm64-v8a and x86_64 libraries is not 330 MB of download, it is
+    165 MB on either device. Summing both ABIs would fail every real bundle.
+    """
+    parts = entry_name.split("/")
+    if len(parts) >= 4 and parts[0] == "base" and parts[1] == "lib":
+        return parts[2]
+    return None
+
+
+def base_size_by_abi(aab_path):
+    """Base-module download size as Play would see it, per ABI.
+
+    Returns {"common": bytes, "abis": {abi: bytes_of_that_abi}, "perAbi": {abi: total}}.
+    """
+    common = 0
+    per_abi = {}
+    with zipfile.ZipFile(aab_path) as bundle:
+        for info in bundle.infolist():
+            if info.is_dir() or module_of(info.filename) != "base":
+                continue
+            abi = abi_of(info.filename)
+            if abi is None:
+                common += info.compress_size
+            else:
+                per_abi[abi] = per_abi.get(abi, 0) + info.compress_size
+    totals = {abi: common + size for abi, size in per_abi.items()}
+    return {"common": common, "abis": per_abi, "perAbi": totals}
+
+
 def universal_apk_size(apk_path):
     """The APK a device would install from a universal build, if one exists."""
     try:
@@ -83,12 +116,24 @@ def main(argv=None):
         print(f"no base module in {args.aab}", file=sys.stderr)
         return 2
 
-    base_bytes = modules["base"]["bytes"]
+    base_total = modules["base"]["bytes"]
+    sizing = base_size_by_abi(args.aab)
+    # The number that matters: the largest per-device base module.
+    if sizing["perAbi"]:
+        base_bytes = max(sizing["perAbi"].values())
+    else:
+        base_bytes = sizing["common"]
     report = {
         "aab": args.aab,
         "limit_mb": args.limit_mb,
+        "base_module_total_bytes": base_total,
+        "base_module_total_mb": round(base_total / 1_000_000, 1),
         "base_module_bytes": base_bytes,
         "base_module_mb": round(base_bytes / 1_000_000, 1),
+        "base_common_mb": round(sizing["common"] / 1_000_000, 1),
+        "base_per_abi_mb": {
+            abi: round(size / 1_000_000, 1) for abi, size in sizing["perAbi"].items()
+        },
         "modules": {
             name: {
                 "bytes": slot["bytes"],
@@ -114,9 +159,15 @@ def main(argv=None):
               f"({slot['entries']} entries)")
     if apk_bytes is not None:
         print(f"  universal APK         {apk_bytes / 1_000_000:8.1f} MB")
+    if sizing["perAbi"]:
+        for abi, size in sorted(sizing["perAbi"].items()):
+            print(f"  base module on {abi:<10} {size / 1_000_000:8.1f} MB "
+                  f"({sizing['common'] / 1_000_000:.1f} MB shared + "
+                  f"{sizing['abis'][abi] / 1_000_000:.1f} MB of libraries)")
+    share = f" ({100.0 * base_bytes / limit:.1f}% of it)" if limit else ""
     print(f"  base module against Play's {args.limit_mb} MB limit: "
-          f"{base_bytes / 1_000_000:.1f} MB "
-          f"({100.0 * base_bytes / limit:.1f}% of it)")
+          f"{base_bytes / 1_000_000:.1f} MB per device{share}; "
+          f"{base_total / 1_000_000:.1f} MB for every ABI at once")
 
     if args.json_path:
         with open(args.json_path, "w", encoding="utf-8") as handle:
@@ -124,9 +175,10 @@ def main(argv=None):
             handle.write("\n")
 
     if base_bytes > limit:
-        print(f"base module is over Play's {args.limit_mb} MB limit by "
-              f"{(base_bytes - limit) / 1_000_000:.1f} MB — move weight into a "
-              f"dynamic feature module (see pack-buildtools/)", file=sys.stderr)
+        print(f"the base module a device would download is over Play's "
+              f"{args.limit_mb} MB limit by {(base_bytes - limit) / 1_000_000:.1f} MB "
+              f"— move weight into a dynamic feature module (see pack_buildtools/)",
+              file=sys.stderr)
         return 1
     if base_bytes > warn:
         print(f"warning: base module is within {(limit - base_bytes) / 1_000_000:.1f} MB "
