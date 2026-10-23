@@ -1,0 +1,8 @@
+* What went wrong:
+A problem occurred evaluating project ':app'.
+> Could not find method targetSdk() for arguments [34] on BuildType$AgpDecorated_Decorated{name=release, debuggable=false, testCoverageEnabled=false, jniDebuggable=false, pseudoLocalesEnabled=false, renderscriptDebuggable=false, renderscriptOptimLevel=3, minifyEnabled=false, zipAlignEnabled=true, signingConfig=null, embedMicroApp=true, mBuildConfigFields={}, mResValues={}, mProguardFiles=[/home/runner/work/t1/t1/app/build/intermediates/default_proguard_files/global/proguard-android-optimize.txt-8.13.2, /home/runner/work/t1/t1/app/proguard-rules.pro], mConsumerProguardFiles=[], mManifestPlaceholders={}} of type com.android.build.gradle.internal.dsl.BuildType$AgpDecorated.
+
+* Try:
+> Run with --info or --debug option to get more log output.
+--
+BUILD FAILED in 24s
