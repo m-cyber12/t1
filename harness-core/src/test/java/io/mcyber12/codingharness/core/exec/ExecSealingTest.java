@@ -219,9 +219,12 @@ public class ExecSealingTest {
             new File("../libexec/git-core/git").toPath());
 
         ExecAudit.Report report = ExecAudit.audit(prefix, temporary.newFolder("libdir"));
-        assertEquals(report.toText(), 1, report.outsideApk().size());
+        // Two executables live in app data: the binary itself and the link to
+        // it. The versioned library must not be counted at all.
+        assertEquals(report.toText(), 2, report.outsideApk().size());
         assertTrue(report.toText(), report.toText().contains("bin/git"));
-        assertFalse(report.toText(), report.toText().contains("lib/libssl.so"));
+        assertTrue(report.toText(), report.toText().contains("libexec/git-core/git"));
+        assertFalse(report.toText(), report.toText().contains("libssl"));
     }
 
     @Test
