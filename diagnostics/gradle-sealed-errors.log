@@ -1,0 +1,8 @@
+* What went wrong:
+A problem occurred evaluating project ':app'.
+> Could not get unknown property 'canSignRelease' for SigningConfig$AgpDecorated_Decorated{name=release, storeFile=null, storePassword=null, keyAlias=null, keyPassword=null, storeType=pkcs12, v1SigningEnabled=true, v2SigningEnabled=true, enableV1Signing=null, enableV2Signing=null, enableV3Signing=null, enableV4Signing=null} of type com.android.build.gradle.internal.dsl.SigningConfig$AgpDecorated.
+
+* Try:
+> Run with --info or --debug option to get more log output.
+--
+BUILD FAILED in 29s
