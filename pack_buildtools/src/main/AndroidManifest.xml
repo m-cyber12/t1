@@ -13,12 +13,12 @@
     xmlns:dist="http://schemas.android.com/apk/distribution">
 
     <!--
-      No dist:title: bundletool resolves a module title against the base
-      module's resource table, which failed the bundle even with the string
-      declared in both places. Play shows the module's own name instead, and
-      the in-app label comes from Pack.BUILD_TOOLS where it is under test.
+      dist:title is mandatory for an on-demand module and is resolved against
+      the base module's resource table, where the string is declared. It is
+      deliberately not declared here: a copy in this module would be linked to
+      an ID this module's own table allocated, and the base does not have it.
     -->
-    <dist:module dist:instant="false">
+    <dist:module dist:instant="false" dist:title="@string/pack_buildtools_title">
         <dist:delivery>
             <dist:on-demand />
         </dist:delivery>

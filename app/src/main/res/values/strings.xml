@@ -1,3 +1,10 @@
 <resources>
     <string name="app_name">Coding Harness</string>
+    <!--
+      bundletool requires a dist:title for an on-demand module and resolves it
+      against the base module's resource table. It must be declared here and
+      NOT in the feature module: a feature's own copy would be linked to an ID
+      its own table allocated, which the base does not have.
+    -->
+    <string name="pack_buildtools_title">Build tools (clang, cmake, make)</string>
 </resources>
