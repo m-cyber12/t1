@@ -132,6 +132,14 @@ jobs:
             exit 1
           fi
 
+      # The payload pipeline is pure Python (mirror + .deb unpacking + split),
+      # so it is tested here against a synthetic repository: no network, no
+      # emulator, and it covers dependency resolution, hard-link dedupe and the
+      # hash check that protects a pinned payload.
+      - name: Test the sealed payload pipeline
+        shell: bash
+        run: python3 scripts/tests/test-sealed-payload.py
+
       - name: Verify APK contents
         shell: bash
         run: |

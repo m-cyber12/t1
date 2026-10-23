@@ -97,6 +97,33 @@ public class SealedShellTest {
             sedRun.output.contains("A1") && sedRun.output.contains("A2")
                 && !sedRun.output.contains("B1"));
 
+        // The core tier, when this payload carries it: the same tools the apt
+        // build installs on first run, executed at a store-legal targetSdk.
+        File python = new File(config.prefix, "bin/python");
+        if (python.exists()) {
+            String[][] commands = {
+                {"bin/git", "--version"},
+                {"bin/python", "-c", "import ssl, json, sqlite3; print('py-ssl', ssl.OPENSSL_VERSION)"},
+                {"bin/node", "--version"},
+                {"bin/perl", "-e", "print $^V"},
+                {"bin/ruby", "--version"},
+                {"bin/rg", "--version"},
+            };
+            for (String[] command : commands) {
+                File tool = new File(config.prefix, command[0]);
+                assertTrue("core tool missing from the sealed payload: " + tool, tool.exists());
+                String[] arguments = java.util.Arrays.copyOfRange(command, 1, command.length);
+                HarnessCommandRunner.CommandResult result = runner.run(tool.getAbsolutePath(), arguments);
+                String shown = result.output.replace("\n", " ").trim();
+                if (shown.length() > 140) shown = shown.substring(0, 140);
+                report("sealed-shell: " + command[0] + " -> exit " + result.exitCode + " : " + shown);
+                assertTrue(command[0] + " failed in the sealed payload (exit "
+                    + result.exitCode + "): " + result.output, result.isSuccess());
+            }
+        } else {
+            report("sealed-shell: payload has no core tier (bootstrap only)");
+        }
+
         // And the whole prefix is executable without the exemption.
         ExecAudit.Report audit = ExecAudit.audit(config.prefix, nativeDir);
         report("sealed-shell: " + audit.toText().replace("\n", " | "));

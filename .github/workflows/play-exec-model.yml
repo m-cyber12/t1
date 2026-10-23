@@ -117,6 +117,20 @@ jobs:
               echo "no sealed-exec manifest for ${abi}" >&2; exit 1; }
             unzip -l "$APK" | grep -q "lib/${abi}/libbash.so" || {
               echo "the shell is not shipped as a JNI library for ${abi}" >&2; exit 1; }
+            # The core tier, not just the shell: every tool below has to be in
+            # the manifest, and the library it names has to be in the APK.
+            unzip -p "$APK" "assets/sealed-exec-${abi}.txt" > "sealed-exec-${abi}.txt"
+            for path in bin/git bin/python bin/node bin/perl bin/ruby bin/rg; do
+              line=$(awk -v p="${path}" -F'\t' '$1==p {print; exit}' "sealed-exec-${abi}.txt")
+              if [ -z "$line" ]; then
+                echo "${path} is not sealed in ${abi}" >&2; exit 1
+              fi
+              library=$(printf '%s' "$line" | cut -f2)
+              unzip -l "$APK" | grep -q "lib/${abi}/${library}" || {
+                echo "${path} -> ${library} is missing from the APK (${abi})" >&2; exit 1; }
+              echo "sealed ${path} -> lib/${abi}/${library}"
+            done
+            echo "sealed executables: $(grep -vc '^#' "sealed-exec-${abi}.txt")"
           done
           cat app/build/generated/sealed-payload/assets/sealed-payload-*.json | tee sealed-payload.json
 
@@ -176,6 +190,7 @@ jobs:
             manifest-tree.txt
             sealed-apk-identity.txt
             sealed-payload.json
+            sealed-exec-*.txt
             gradle-sealed.log
             app/build/outputs/apk/sealed/*.apk
             app/build/outputs/androidTest-results/

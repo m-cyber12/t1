@@ -22,6 +22,17 @@ def bootstrapOutput = layout.buildDirectory.dir("generated/harness-bootstrap/ass
 // configured inside an AGP closure whose delegate resolves properties first,
 // so a plain local would not be visible there.
 ext.sealedPayloadDir = layout.buildDirectory.dir("generated/sealed-payload")
+// Packages the apt build installs on first run (PackageTier.CORE). The sealed
+// build fetches exactly these at build time, because it may not fetch them at
+// runtime: Play's Device & Network Abuse policy and the exec model both require
+// the binaries to come out of the APK.
+ext.sealedCorePackages = [
+    "git", "ripgrep", "python", "python-pip", "nodejs", "npm",
+    "perl", "ruby", "jq", "tree", "which", "file", "openssh",
+]
+ext.sealedDebDir = layout.buildDirectory.dir("generated/sealed-debs")
+// Mirror override, mainly so the pipeline can be exercised against a snapshot.
+ext.sealedRepo = (findProperty("harnessSealedRepo") ?: "https://packages-cf.termux.dev/apt/termux-main").toString()
 
 android {
     namespace "io.mcyber12.codingharness"
@@ -158,10 +169,51 @@ def downloadBootstrap = tasks.register("downloadHarnessBootstrap") {
 // the payload's own verification live in scripts/build-sealed-payload.py so the
 // same logic runs on a CI runner and on a workstation.
 // ---------------------------------------------------------------------------
-def buildSealedPayload = tasks.register("buildSealedPayload") {
-    description = "Splits the Termux bootstrap into a sealed payload for the sealed variant"
+// ---------------------------------------------------------------------------
+// Build-time package fetch: the sealed userland's toolchain.
+//
+// The apt build installs these on first run; the sealed build may not (Play's
+// Device & Network Abuse policy, and the exec model needs the bytes in the
+// APK). So they are downloaded here, pinned by the repository's SHA-256, and
+// unpacked by build-sealed-payload.py. Dependency resolution, alternatives and
+// virtual names are handled by fetch-core-debs.py, and the bootstrap's own dpkg
+// database decides what is already present.
+// ---------------------------------------------------------------------------
+def fetchCoreDebs = tasks.register("fetchCoreDebs") {
+    description = "Fetches the core-tier Termux packages for the sealed payload"
     dependsOn(downloadBootstrap)
     inputs.dir(bootstrapOutput)
+    inputs.property("packages", project.sealedCorePackages.join(" "))
+    inputs.property("repo", project.sealedRepo)
+    inputs.file(rootProject.file("scripts/fetch-core-debs.py"))
+    outputs.dir(project.sealedDebDir)
+    doLast {
+        File script = rootProject.file("scripts/fetch-core-debs.py")
+        if (!script.isFile()) throw new GradleException("missing ${script}")
+        [["aarch64", "arm64-v8a"], ["x86_64", "x86_64"]].each { arch, abi ->
+            File zip = new File(bootstrapOutput.get().asFile, "bootstrap-${arch}.zip")
+            File output = new File(project.sealedDebDir.get().asFile, abi)
+            output.mkdirs()
+            def fetch = providers.exec {
+                commandLine(["python3", script.absolutePath,
+                    "--arch", arch,
+                    "--out", output.absolutePath,
+                    "--bootstrap", zip.absolutePath,
+                    "--repo", project.sealedRepo] + project.sealedCorePackages)
+            }
+            def result = fetch.result.get()
+            fetch.standardOutput.asText.get().readLines().each { logger.lifecycle(it) }
+            fetch.standardError.asText.get().readLines().each { logger.lifecycle(it) }
+            result.assertNormalExitValue()
+        }
+    }
+}
+
+def buildSealedPayload = tasks.register("buildSealedPayload") {
+    description = "Splits the Termux bootstrap and core packages into a sealed payload"
+    dependsOn(downloadBootstrap, fetchCoreDebs)
+    inputs.dir(bootstrapOutput)
+    inputs.dir(project.sealedDebDir)
     inputs.file(rootProject.file("scripts/build-sealed-payload.py"))
     outputs.dir(project.sealedPayloadDir)
     doLast {
@@ -172,11 +224,16 @@ def buildSealedPayload = tasks.register("buildSealedPayload") {
             if (!zip.isFile()) {
                 throw new GradleException("bootstrap for ${abi} not found: ${zip}")
             }
+            File debs = new File(project.sealedDebDir.get().asFile, abi)
+            if (!debs.isDirectory()) {
+                throw new GradleException("core packages for ${abi} were not fetched: ${debs}")
+            }
             def split = providers.exec {
                 commandLine "python3", script.absolutePath,
                     "--bootstrap", zip.absolutePath,
                     "--abi", abi,
-                    "--out", project.sealedPayloadDir.get().asFile.absolutePath
+                    "--out", project.sealedPayloadDir.get().asFile.absolutePath,
+                    "--deb-dir", debs.absolutePath
             }
             def result = split.result.get()
             split.standardOutput.asText.get().readLines().each { logger.lifecycle(it) }
