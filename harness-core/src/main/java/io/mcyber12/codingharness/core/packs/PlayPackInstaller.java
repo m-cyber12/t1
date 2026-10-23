@@ -3,11 +3,12 @@ package io.mcyber12.codingharness.core.packs;
 import android.content.Context;
 import android.content.pm.PackageManager;
 
-import com.google.android.play.core.install.InstallStateUpdatedListener;
-import com.google.android.play.core.install.model.InstallStatus;
 import com.google.android.play.core.splitinstall.SplitInstallManager;
 import com.google.android.play.core.splitinstall.SplitInstallManagerFactory;
 import com.google.android.play.core.splitinstall.SplitInstallRequest;
+import com.google.android.play.core.splitinstall.SplitInstallSessionState;
+import com.google.android.play.core.splitinstall.SplitInstallStateUpdatedListener;
+import com.google.android.play.core.splitinstall.model.SplitInstallSessionStatus;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -291,22 +292,23 @@ public final class PlayPackInstaller implements PackInstaller {
      */
     private PackResult requestDelivery(Pack pack) {
         SplitInstallManager manager;
-        InstallStateUpdatedListener listener = null;
+        SplitInstallStateUpdatedListener listener = null;
         try {
             manager = SplitInstallManagerFactory.create(context);
             if (manager.getInstalledModules().contains(pack.moduleName)) return null;
 
             CountDownLatch done = new CountDownLatch(1);
-            final InstallStatus[] finalStatus = new InstallStatus[] {InstallStatus.PENDING};
+            final int[] finalStatus = new int[] {SplitInstallSessionStatus.PENDING};
             final int[] errorCode = new int[] {0};
             listener = state -> {
-                if (state.status() == InstallStatus.DOWNLOADED
-                    || state.status() == InstallStatus.INSTALLED) {
-                    finalStatus[0] = state.status();
+                int status = state.status();
+                if (status == SplitInstallSessionStatus.DOWNLOADED
+                    || status == SplitInstallSessionStatus.INSTALLED) {
+                    finalStatus[0] = status;
                     done.countDown();
-                } else if (state.status() == InstallStatus.FAILED
-                    || state.status() == InstallStatus.CANCELED) {
-                    finalStatus[0] = state.status();
+                } else if (status == SplitInstallSessionStatus.FAILED
+                    || status == SplitInstallSessionStatus.CANCELED) {
+                    finalStatus[0] = status;
                     errorCode[0] = state.errorCode();
                     done.countDown();
                 }
@@ -330,14 +332,14 @@ public final class PlayPackInstaller implements PackInstaller {
                     "the store download did not finish in "
                         + (DELIVERY_TIMEOUT_SECONDS / 60) + " minutes");
             }
-            if (finalStatus[0] == InstallStatus.DOWNLOADED) {
+            if (finalStatus[0] == SplitInstallSessionStatus.DOWNLOADED) {
                 // Everything is on the device; the split is usable as soon as the
                 // session completes, which Play does at the next app boundary on
                 // some devices. Applying the payload needs no restart.
                 manager.completeInstall();
             }
-            if (finalStatus[0] != InstallStatus.INSTALLED
-                && finalStatus[0] != InstallStatus.DOWNLOADED) {
+            if (finalStatus[0] != SplitInstallSessionStatus.INSTALLED
+                && finalStatus[0] != SplitInstallSessionStatus.DOWNLOADED) {
                 return PackResult.failed(PackResult.Kind.DELIVERY_FAILED, pack.id,
                     describeDeliveryError(errorCode[0]));
             }
