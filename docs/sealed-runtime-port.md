@@ -46,6 +46,16 @@ this repository it is newly added; the kernel treats a missing manifest as "no
 verification", so an older payload still installs and the report says
 `0 verified`.
 
+## One command
+
+```bash
+scripts/export-sealed-runtime.sh app/src/main/java --package io.github.mcyber12.opencode.runtime
+```
+
+That copies the seven classes and both test classes into the receiving module,
+rewriting the package, and prints the four build facts the app needs. Nothing
+else from this repository travels.
+
 ## What to copy into OpenCode-app
 
 1. `sealed-runtime/src/main/java/io/mcyber12/sealed/*` into

@@ -21,6 +21,7 @@ import io.mcyber12.sealed.ExecAudit;
 import io.mcyber12.codingharness.core.exec.SealedPayloadInstaller;
 
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assume.assumeTrue;
@@ -56,6 +57,11 @@ public class SealedShellTest {
         assertNotNull("payload present but install returned nothing", install);
         report("sealed-shell: " + install.summary());
         assertTrue(install.summary(), install.ok());
+        // The payload is hashed as it is written: every extracted file must have
+        // matched its manifest record. A payload that ships without the manifest
+        // reports 0 here, which is a packaging bug, not a tolerable difference.
+        assertEquals("payload was not verified against its manifest: " + install.summary(),
+            install.files, install.verified);
 
         File nativeDir = new File(context.getApplicationInfo().nativeLibraryDir);
         File bash = new File(config.prefix, "bin/bash");
