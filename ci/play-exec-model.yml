@@ -159,17 +159,14 @@ jobs:
             done
             echo "sealed executables: $(grep -vc '^#' "sealed-exec-${abi}.txt")"
           done
-          # 16 KB page support: Play checks the zipalign of the packaged
-          # libraries. NDK r27 does not align by itself, so the flags in
-          # Android.mk have to be visible here as a pass, not assumed.
-          ZIPALIGN="$(ls "$ANDROID_HOME"/build-tools/*/zipalign | head -1)"
-          if "$ZIPALIGN" -c -P 16 -v 4 "$APK" | tee sealed-apk-16kb.txt | grep -q "Verification successful"; then
-            echo "16 KB page alignment: verified"
-          else
-            echo "APK is not 16 KB aligned" >&2
-            grep -E "BAD|FAILED" sealed-apk-16kb.txt | head -20 >&2 || true
-            exit 1
-          fi
+          # 16 KB page support is an ELF property (p_align of the loadable
+          # segments), not a zip property: these libraries are packaged
+          # compressed and extracted at install time, so `zipalign -P 16` has
+          # nothing to say about them. The objects compiled here are gated; the
+          # shipped userland is reported, because its alignment is decided by
+          # how the Termux packages were built.
+          python3 scripts/check-page-alignment.py "$APK" \
+            --report sealed-apk-16kb.txt --require-compliant
           cat app/build/generated/sealed-payload/assets/sealed-payload-*.json | tee sealed-payload.json
 
       - name: Run the exec-model measurement on an emulator
