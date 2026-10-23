@@ -1,0 +1,392 @@
+Downloading https://services.gradle.org/distributions/gradle-9.2.1-bin.zip
+............10%.............20%.............30%.............40%.............50%.............60%.............70%.............80%.............90%.............100%
+
+Welcome to Gradle 9.2.1!
+
+Here are the highlights of this release:
+ - Windows ARM support
+ - Improved publishing APIs
+ - Better guidance for dependency verification failures
+
+For more details see https://docs.gradle.org/9.2.1/release-notes.html
+
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/9.2.1/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build 
+> Task :harness-core:preBuild UP-TO-DATE
+> Task :terminal-view:preBuild UP-TO-DATE
+> Task :harness-core:preDebugBuild UP-TO-DATE
+> Task :terminal-view:preDebugBuild UP-TO-DATE
+> Task :terminal-view:writeDebugAarMetadata
+> Task :harness-core:writeDebugAarMetadata
+> Task :harness-core:processDebugNavigationResources
+> Task :terminal-view:processDebugNavigationResources
+> Task :terminal-view:generateDebugResValues
+> Task :harness-core:generateDebugResValues FROM-CACHE
+> Task :terminal-view:generateDebugResources
+> Task :harness-core:generateDebugResources
+> Task :harness-core:packageDebugResources
+
+> Task :terminal-emulator:buildExecProbe
+exec probe: /home/runner/work/t1/t1/terminal-emulator/build/generated/probe-jniLibs/arm64-v8a/libharnessprobe.so (7904 bytes)
+exec probe: /home/runner/work/t1/t1/terminal-emulator/build/generated/probe-jniLibs/x86_64/libharnessprobe.so (7312 bytes)
+
+> Task :terminal-emulator:preBuild
+> Task :terminal-emulator:preDebugBuild
+> Task :terminal-emulator:writeDebugAarMetadata
+> Task :harness-core:extractDeepLinksDebug
+> Task :terminal-emulator:processDebugNavigationResources FROM-CACHE
+> Task :terminal-view:packageDebugResources
+> Task :terminal-emulator:generateDebugResValues FROM-CACHE
+> Task :terminal-view:extractDeepLinksDebug FROM-CACHE
+> Task :terminal-emulator:generateDebugResources FROM-CACHE
+> Task :terminal-emulator:packageDebugResources
+> Task :terminal-emulator:extractDeepLinksDebug FROM-CACHE
+> Task :harness-core:processDebugManifest
+> Task :terminal-view:processDebugManifest
+> Task :terminal-emulator:processDebugManifest
+> Task :harness-core:compileDebugLibraryResources
+> Task :terminal-emulator:compileDebugLibraryResources
+
+> Task :app:downloadHarnessBootstrap
+Downloading Termux bootstrap for aarch64
+Downloading Termux bootstrap for x86_64
+
+> Task :terminal-view:compileDebugLibraryResources
+> Task :terminal-emulator:parseDebugLocalResources
+> Task :harness-core:parseDebugLocalResources
+> Task :terminal-view:parseDebugLocalResources
+> Task :harness-core:generateDebugRFile
+> Task :terminal-emulator:generateDebugRFile
+> Task :terminal-view:generateDebugRFile
+> Task :terminal-view:javaPreCompileDebug
+> Task :terminal-emulator:javaPreCompileDebug
+> Task :harness-core:javaPreCompileDebug
+> Task :terminal-view:mergeDebugShaders
+> Task :harness-core:mergeDebugShaders
+> Task :harness-core:compileDebugShaders NO-SOURCE
+> Task :harness-core:generateDebugAssets UP-TO-DATE
+> Task :terminal-view:compileDebugShaders NO-SOURCE
+> Task :terminal-view:generateDebugAssets UP-TO-DATE
+> Task :harness-core:mergeDebugAssets
+> Task :terminal-view:mergeDebugAssets
+> Task :terminal-view:processDebugJavaRes NO-SOURCE
+> Task :terminal-view:mergeDebugJniLibFolders
+> Task :terminal-view:mergeDebugNativeLibs NO-SOURCE
+> Task :harness-core:processDebugJavaRes
+> Task :harness-core:mergeDebugJniLibFolders
+> Task :harness-core:mergeDebugNativeLibs NO-SOURCE
+> Task :terminal-view:copyDebugJniLibsProjectOnly
+> Task :harness-core:copyDebugJniLibsProjectOnly
+
+> Task :app:buildSealedPayload
+sealed payload arm64-v8a: 323 executables -> 200 JNI libraries (16.2 MiB), 3167 data files (21.9 MiB), 956 data symlinks
+sealed payload arm64-v8a: 112 scripts stay in the payload (run through the preload)
+sealed payload x86_64: 324 executables -> 199 JNI libraries (16.2 MiB), 3169 data files (21.7 MiB), 956 data symlinks
+sealed payload x86_64: 112 scripts stay in the payload (run through the preload)
+
+> Task :app:preBuild UP-TO-DATE
+> Task :app:preSealedBuild
+> Task :app:mergeSealedNativeDebugMetadata NO-SOURCE
+> Task :app:javaPreCompileSealed FROM-CACHE
+> Task :app:checkSealedAarMetadata
+> Task :app:processSealedNavigationResources
+
+> Task :terminal-emulator:compileDebugJavaWithJavac
+Note: /home/runner/work/t1/t1/terminal-emulator/src/main/java/com/termux/terminal/TerminalSession.java uses or overrides a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+
+> Task :app:generateSealedResValues FROM-CACHE
+> Task :app:compileSealedNavigationResources
+> Task :app:mapSealedSourceSetPaths
+> Task :app:generateSealedResources
+> Task :app:packageSealedResources
+> Task :app:createSealedCompatibleScreenManifests
+> Task :app:extractDeepLinksSealed
+> Task :app:parseSealedLocalResources
+
+> Task :app:processSealedMainManifest
+/home/runner/work/t1/t1/app/src/sealed/AndroidManifest.xml:17:18-50 Warning:
+	android:extractNativeLibs should not be specified in this source AndroidManifest.xml file. See https://d.android.com/guide/topics/manifest/application-element#extractNativeLibs for more information.
+The AGP Upgrade Assistant can remove the attribute from the AndroidManifest.xml file and update the build file accordingly. See https://d.android.com/studio/build/agp-upgrade-assistant for more information.
+
+> Task :app:mergeSealedResources
+> Task :app:processSealedManifest
+> Task :app:mergeSealedShaders
+> Task :app:processSealedManifestForPackage
+> Task :app:compileSealedShaders NO-SOURCE
+> Task :app:generateSealedAssets UP-TO-DATE
+> Task :app:checkSealedDuplicateClasses
+> Task :app:desugarSealedFileDependencies
+> Task :app:processSealedResources
+> Task :terminal-emulator:bundleLibCompileToJarDebug
+> Task :terminal-emulator:mergeDebugShaders
+> Task :terminal-emulator:compileDebugShaders NO-SOURCE
+> Task :terminal-emulator:generateDebugAssets UP-TO-DATE
+> Task :terminal-emulator:mergeDebugAssets
+> Task :terminal-emulator:bundleLibRuntimeToDirDebug
+> Task :harness-core:compileDebugJavaWithJavac
+> Task :harness-core:bundleLibCompileToJarDebug
+> Task :harness-core:bundleLibRuntimeToDirDebug
+
+> Task :terminal-view:compileDebugJavaWithJavac
+Note: /home/runner/work/t1/t1/terminal-view/src/main/java/com/termux/view/TerminalView.java uses or overrides a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+
+> Task :terminal-view:bundleLibCompileToJarDebug
+> Task :terminal-view:bundleLibRuntimeToDirDebug
+> Task :harness-core:bundleLibRuntimeToJarDebug
+> Task :terminal-view:bundleLibRuntimeToJarDebug
+> Task :terminal-emulator:bundleLibRuntimeToJarDebug
+> Task :terminal-emulator:processDebugJavaRes NO-SOURCE
+> Task :terminal-emulator:configureNdkBuildDebug[arm64-v8a]
+> Task :terminal-emulator:buildNdkBuildDebug[arm64-v8a]
+> Task :terminal-emulator:configureNdkBuildDebug[x86_64]
+> Task :terminal-emulator:buildNdkBuildDebug[x86_64]
+> Task :terminal-emulator:mergeDebugJniLibFolders
+> Task :terminal-emulator:mergeDebugNativeLibs
+> Task :terminal-emulator:copyDebugJniLibsProjectOnly
+
+> Task :app:compileSealedJavaWithJavac
+Note: /home/runner/work/t1/t1/app/src/main/java/io/mcyber12/codingharness/MainActivity.java uses or overrides a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+
+> Task :app:mergeSealedAssets
+> Task :app:mergeLibDexSealed
+> Task :app:dexBuilderSealed
+> Task :app:mergeExtDexSealed
+> Task :app:processSealedJavaRes NO-SOURCE
+> Task :app:mergeSealedGlobalSynthetics
+> Task :app:mergeProjectDexSealed
+> Task :app:mergeSealedJavaResource
+> Task :app:mergeSealedJniLibFolders
+> Task :app:mergeSealedNativeLibs
+> Task :app:validateSigningSealed
+> Task :app:writeSealedAppMetadata
+> Task :app:writeSealedSigningConfigVersions
+> Task :app:preSealedAndroidTestBuild SKIPPED
+> Task :app:bundleSealedClassesToCompileJar
+> Task :app:javaPreCompileSealedAndroidTest FROM-CACHE
+
+> Task :app:stripSealedDebugSymbols
+Unable to strip the following libraries, packaging them as they are: libaddpart.so, libapt.so, libapt_cache.so, libapt_config.so, libapt_get.so, libapt_mark.so, libarp.so, libattr.so, libbash.so, libbits.so, libblkpr.so, libblockdev.so, libbzip2.so, libbzip2recover.so, libcal.so, libcaptest.so, libchacl.so, libchcpu.so, libchoom.so, libchrt.so, libclear.so, libcmd.so, libcmp.so, libcol.so, libcolcrt.so, libcolrm.so, libcolumn.so, libcommand_not_found.so, libcoresched.so, libcoreutils.so, libctrlaltdel.so, libcurl.so, libdash.so, libdelpart.so, libdialog.so, libdiff.so, libdiff3.so, libdmesg.so, libdnsdomainname.so, libdos2unix.so, libdpkg.so, libdpkg_deb.so, libdpkg_divert.so, libdpkg_query.so, libdpkg_split.so, libdpkg_trigger.so, libdumpsexp.so, libed.so, libenosys.so, libexch.so, libfadvise.so, libfallocate.so, libfilecap.so, libfincore.so, libfind.so, libflock.so, libfrcode.so, libfree.so, libfsck_cramfs.so, libfsck_minix.so, libfsfreeze.so, libftp.so, libfunzip.so, libfuser.so, libgawk.so, libgetfacl.so, libgetfattr.so, libgetopt.so, libgpg_error.so, libgpgv.so, libgrcat.so, libgrep.so, libgzip.so, libhardlink.so, libharness-exec.so, libhexdump.so, libhmac256.so, libhostname.so, libhwclock.so, libidn2.so, libifconfig.so, libinetd.so, libionice.so, libipmaddr.so, libiptunnel.so, libirqtop.so, libischroot.so, libisosize.so, libkillall.so, libldattach.so, libless.so, liblessecho.so, liblesskey.so, liblibstdbuf_so.so, liblibtermux_core_nos_c_tre_unit_binary_tests_fsanitize.so, liblibtermux_core_nos_c_tre_unit_binary_tests_nofsanitize.so, liblibtermux_exec_nos_c_tre_runtime_binary_tests_fsanitize.so, liblibtermux_exec_nos_c_tre_runtime_binary_tests_fsanitize28.so, liblibtermux_exec_nos_c_tre_runtime_binary_tests_nofsanitize.so, liblibtermux_exec_nos_c_tre_runtime_binary_tests_nofsanitize28.so, liblibtermux_exec_nos_c_tre_unit_binary_tests_fsanitize.so, liblibtermux_exec_nos_c_tre_unit_binary_tests_nofsanitize.so, liblogger.so, liblook.so, liblosetup.so, liblsclocks.so, liblscpu.so, liblsfd.so, liblsipc.so, liblsirq.so, liblsof.so, liblzmadec.so, liblzmainfo.so, libmcookie.so, libmii_tool.so, libmkfs.so, libmkfs_bfs.so, libmkfs_cramfs.so, libmkfs_minix.so, libmore.so, libmpicalc.so, libnamei.so, libnameif.so, libnano.so, libnetcap.so, libnetstat.so, libnsenter.so, libpatch.so, libpeekfd.so, libpgrep.so, libpidof.so, libpipesz.so, libpkill.so, libplipconfig.so, libpmap.so, libprint_args_binary.so, libprlimit.so, libprtstat.so, libps.so, libpscap.so, libpslog.so, libpstree.so, libpwait.so, libpwcat.so, libpwdx.so, librarp.so, libreadprofile.so, librename.so, librenice.so, libresizepart.so, librev.so, librmt.so, libroute.so, librtcwake.so, librun_parts.so, libscript.so, libscriptlive.so, libscriptreplay.so, libsdiff.so, libsed.so, libsetarch.so, libsetfacl.so, libsetfattr.so, libsetpgid.so, libsetpriv.so, libsetsid.so, libsetterm.so, libslattach.so, libstart_stop_daemon.so, libsysctl.so, libsyslogd.so, libtar.so, libtaskset.so, libtelnet.so, libtelnetd.so, libtempfile.so, libtermux.so, libtermux_am_socket.so, libtftp.so, libtftpd.so, libtload.so, libtset.so, libuclampset.so, libul.so, libunix2dos.so, libunshare.so, libunzip.so, libunzipsfx.so, libupdate_alternatives.so, libuptime.so, libvmstat.so, libwaitpid.so, libwatch.so, libwdctl.so, libwhereis.so, libxargs.so, libxxhsum.so, libxz.so, libxzdec.so, libyat2m.so, libzramctl.so, libzstd.so. Run with --info option to learn more.
+
+> Task :app:compressSealedAssets
+> Task :app:checkSealedAndroidTestAarMetadata
+> Task :app:processSealedAndroidTestNavigationResources FROM-CACHE
+> Task :app:compileSealedAndroidTestNavigationResources FROM-CACHE
+> Task :app:generateSealedAndroidTestResValues FROM-CACHE
+> Task :app:mapSealedAndroidTestSourceSetPaths
+> Task :app:generateSealedAndroidTestResources FROM-CACHE
+> Task :app:mergeSealedAndroidTestResources
+> Task :app:processSealedAndroidTestManifest
+> Task :app:mergeSealedAndroidTestShaders
+> Task :app:compileSealedAndroidTestShaders NO-SOURCE
+> Task :app:generateSealedAndroidTestAssets UP-TO-DATE
+> Task :app:mergeSealedAndroidTestAssets
+> Task :app:compressSealedAndroidTestAssets
+> Task :app:processSealedAndroidTestResources
+> Task :app:checkSealedAndroidTestDuplicateClasses
+
+> Task :app:compileSealedAndroidTestJavaWithJavac FAILED
+/home/runner/work/t1/t1/app/src/androidTest/java/io/mcyber12/codingharness/SealedShellTest.java:67: error: readLink(File) is not public in ExecAudit; cannot be accessed from outside package
+        String target = ExecAudit.readLink(bash);
+                                 ^
+1 error
+
+> Task :app:packageSealed
+PackagingOptions.jniLibs.useLegacyPackaging should be set to true because android:extractNativeLibs is set to "true" in AndroidManifest.xml.
+
+> Task :app:createSealedApkListingFileRedirect
+
+[Incubating] Problems report is available at: file:///home/runner/work/t1/t1/build/reports/problems/problems-report.html
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':app:compileSealedAndroidTestJavaWithJavac'.
+> Compilation failed; see the compiler output below.
+  /home/runner/work/t1/t1/app/src/androidTest/java/io/mcyber12/codingharness/SealedShellTest.java:67: error: readLink(File) is not public in ExecAudit; cannot be accessed from outside package
+          String target = ExecAudit.readLink(bash);
+                                   ^
+  1 error
+
+* Try:
+> Check your code and dependencies to fix the compilation error(s)
+> Run with --scan to generate a Build Scan (powered by Develocity).
+
+* Exception is:
+org.gradle.api.tasks.TaskExecutionException: Execution failed for task ':app:compileSealedAndroidTestJavaWithJavac'.
+	at org.gradle.api.internal.tasks.execution.ExecuteActionsTaskExecuter.lambda$executeIfValid$1(ExecuteActionsTaskExecuter.java:135)
+	at org.gradle.internal.Try$Failure.ifSuccessfulOrElse(Try.java:288)
+	at org.gradle.api.internal.tasks.execution.ExecuteActionsTaskExecuter.executeIfValid(ExecuteActionsTaskExecuter.java:133)
+	at org.gradle.api.internal.tasks.execution.ExecuteActionsTaskExecuter.execute(ExecuteActionsTaskExecuter.java:121)
+	at org.gradle.api.internal.tasks.execution.ProblemsTaskPathTrackingTaskExecuter.execute(ProblemsTaskPathTrackingTaskExecuter.java:41)
+	at org.gradle.api.internal.tasks.execution.FinalizePropertiesTaskExecuter.execute(FinalizePropertiesTaskExecuter.java:46)
+	at org.gradle.api.internal.tasks.execution.ResolveTaskExecutionModeExecuter.execute(ResolveTaskExecutionModeExecuter.java:51)
+	at org.gradle.api.internal.tasks.execution.SkipTaskWithNoActionsExecuter.execute(SkipTaskWithNoActionsExecuter.java:57)
+	at org.gradle.api.internal.tasks.execution.SkipOnlyIfTaskExecuter.execute(SkipOnlyIfTaskExecuter.java:74)
+	at org.gradle.api.internal.tasks.execution.CatchExceptionTaskExecuter.execute(CatchExceptionTaskExecuter.java:36)
+	at org.gradle.api.internal.tasks.execution.EventFiringTaskExecuter$1.executeTask(EventFiringTaskExecuter.java:77)
+	at org.gradle.api.internal.tasks.execution.EventFiringTaskExecuter$1.call(EventFiringTaskExecuter.java:55)
+	at org.gradle.api.internal.tasks.execution.EventFiringTaskExecuter$1.call(EventFiringTaskExecuter.java:52)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$CallableBuildOperationWorker.execute(DefaultBuildOperationRunner.java:209)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$CallableBuildOperationWorker.execute(DefaultBuildOperationRunner.java:204)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:66)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:59)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:166)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:59)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.call(DefaultBuildOperationRunner.java:53)
+	at org.gradle.api.internal.tasks.execution.EventFiringTaskExecuter.execute(EventFiringTaskExecuter.java:52)
+	at org.gradle.execution.plan.DefaultNodeExecutor.executeLocalTaskNode(DefaultNodeExecutor.java:55)
+	at org.gradle.execution.plan.DefaultNodeExecutor.execute(DefaultNodeExecutor.java:34)
+	at org.gradle.execution.taskgraph.DefaultTaskExecutionGraph$InvokeNodeExecutorsAction.execute(DefaultTaskExecutionGraph.java:355)
+	at org.gradle.execution.taskgraph.DefaultTaskExecutionGraph$InvokeNodeExecutorsAction.execute(DefaultTaskExecutionGraph.java:343)
+	at org.gradle.execution.taskgraph.DefaultTaskExecutionGraph$BuildOperationAwareExecutionAction.lambda$execute$0(DefaultTaskExecutionGraph.java:339)
+	at org.gradle.internal.operations.CurrentBuildOperationRef.with(CurrentBuildOperationRef.java:84)
+	at org.gradle.execution.taskgraph.DefaultTaskExecutionGraph$BuildOperationAwareExecutionAction.execute(DefaultTaskExecutionGraph.java:339)
+	at org.gradle.execution.taskgraph.DefaultTaskExecutionGraph$BuildOperationAwareExecutionAction.execute(DefaultTaskExecutionGraph.java:328)
+	at org.gradle.execution.plan.DefaultPlanExecutor$ExecutorWorker.execute(DefaultPlanExecutor.java:459)
+	at org.gradle.execution.plan.DefaultPlanExecutor$ExecutorWorker.run(DefaultPlanExecutor.java:376)
+	at org.gradle.internal.concurrent.ExecutorPolicy$CatchAndRecordFailures.onExecute(ExecutorPolicy.java:64)
+	at org.gradle.internal.concurrent.AbstractManagedExecutor$1.run(AbstractManagedExecutor.java:47)
+Caused by: org.gradle.api.internal.tasks.compile.CompilationFailedException: Compilation failed; see the compiler output below.
+/home/runner/work/t1/t1/app/src/androidTest/java/io/mcyber12/codingharness/SealedShellTest.java:67: error: readLink(File) is not public in ExecAudit; cannot be accessed from outside package
+        String target = ExecAudit.readLink(bash);
+                                 ^
+1 error
+	at org.gradle.api.internal.tasks.compile.JdkJavaCompiler.execute(JdkJavaCompiler.java:89)
+	at org.gradle.api.internal.tasks.compile.JdkJavaCompiler.execute(JdkJavaCompiler.java:50)
+	at org.gradle.api.internal.tasks.compile.NormalizingJavaCompiler.delegateAndHandleErrors(NormalizingJavaCompiler.java:98)
+	at org.gradle.api.internal.tasks.compile.NormalizingJavaCompiler.execute(NormalizingJavaCompiler.java:52)
+	at org.gradle.api.internal.tasks.compile.NormalizingJavaCompiler.execute(NormalizingJavaCompiler.java:38)
+	at org.gradle.api.internal.tasks.compile.AnnotationProcessorDiscoveringCompiler.execute(AnnotationProcessorDiscoveringCompiler.java:52)
+	at org.gradle.api.internal.tasks.compile.AnnotationProcessorDiscoveringCompiler.execute(AnnotationProcessorDiscoveringCompiler.java:38)
+	at org.gradle.api.internal.tasks.compile.ModuleApplicationNameWritingCompiler.execute(ModuleApplicationNameWritingCompiler.java:46)
+	at org.gradle.api.internal.tasks.compile.ModuleApplicationNameWritingCompiler.execute(ModuleApplicationNameWritingCompiler.java:36)
+	at org.gradle.jvm.toolchain.internal.DefaultToolchainJavaCompiler.execute(DefaultToolchainJavaCompiler.java:57)
+	at org.gradle.api.tasks.compile.JavaCompile.lambda$createToolchainCompiler$3(JavaCompile.java:206)
+	at org.gradle.api.internal.tasks.compile.CleaningJavaCompiler.execute(CleaningJavaCompiler.java:53)
+	at org.gradle.api.internal.tasks.compile.incremental.IncrementalCompilerFactory.lambda$createRebuildAllCompiler$0(IncrementalCompilerFactory.java:55)
+	at org.gradle.api.internal.tasks.compile.incremental.SelectiveCompiler.execute(SelectiveCompiler.java:70)
+	at org.gradle.api.internal.tasks.compile.incremental.SelectiveCompiler.execute(SelectiveCompiler.java:44)
+	at org.gradle.api.internal.tasks.compile.incremental.IncrementalResultStoringCompiler.execute(IncrementalResultStoringCompiler.java:66)
+	at org.gradle.api.internal.tasks.compile.incremental.IncrementalResultStoringCompiler.execute(IncrementalResultStoringCompiler.java:52)
+	at org.gradle.api.internal.tasks.compile.CompileJavaBuildOperationReportingCompiler$1.call(CompileJavaBuildOperationReportingCompiler.java:64)
+	at org.gradle.api.internal.tasks.compile.CompileJavaBuildOperationReportingCompiler$1.call(CompileJavaBuildOperationReportingCompiler.java:48)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$CallableBuildOperationWorker.execute(DefaultBuildOperationRunner.java:209)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$CallableBuildOperationWorker.execute(DefaultBuildOperationRunner.java:204)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:66)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:59)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:166)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:59)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.call(DefaultBuildOperationRunner.java:53)
+	at org.gradle.api.internal.tasks.compile.CompileJavaBuildOperationReportingCompiler.execute(CompileJavaBuildOperationReportingCompiler.java:48)
+	at org.gradle.api.tasks.compile.JavaCompile.performCompilation(JavaCompile.java:224)
+	at org.gradle.api.tasks.compile.JavaCompile.performIncrementalCompilation(JavaCompile.java:165)
+	at org.gradle.api.tasks.compile.JavaCompile.compile(JavaCompile.java:150)
+	at org.gradle.internal.reflect.JavaMethod.invoke(JavaMethod.java:125)
+	at org.gradle.api.internal.project.taskfactory.IncrementalTaskAction.doExecute(IncrementalTaskAction.java:45)
+	at org.gradle.api.internal.project.taskfactory.StandardTaskAction.execute(StandardTaskAction.java:51)
+	at org.gradle.api.internal.project.taskfactory.IncrementalTaskAction.execute(IncrementalTaskAction.java:26)
+	at org.gradle.api.internal.project.taskfactory.StandardTaskAction.execute(StandardTaskAction.java:29)
+	at org.gradle.api.internal.tasks.execution.TaskExecution$3.run(TaskExecution.java:252)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$1.execute(DefaultBuildOperationRunner.java:29)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$1.execute(DefaultBuildOperationRunner.java:26)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:66)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:59)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:166)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:59)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.run(DefaultBuildOperationRunner.java:47)
+	at org.gradle.api.internal.tasks.execution.TaskExecution.executeAction(TaskExecution.java:237)
+	at org.gradle.api.internal.tasks.execution.TaskExecution.executeActions(TaskExecution.java:220)
+	at org.gradle.api.internal.tasks.execution.TaskExecution.executeWithPreviousOutputFiles(TaskExecution.java:203)
+	at org.gradle.api.internal.tasks.execution.TaskExecution.execute(TaskExecution.java:170)
+	at org.gradle.internal.execution.steps.ExecuteStep.executeInternal(ExecuteStep.java:105)
+	at org.gradle.internal.execution.steps.ExecuteStep.access$000(ExecuteStep.java:44)
+	at org.gradle.internal.execution.steps.ExecuteStep$1.call(ExecuteStep.java:59)
+	at org.gradle.internal.execution.steps.ExecuteStep$1.call(ExecuteStep.java:56)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$CallableBuildOperationWorker.execute(DefaultBuildOperationRunner.java:209)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$CallableBuildOperationWorker.execute(DefaultBuildOperationRunner.java:204)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:66)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:59)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:166)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:59)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.call(DefaultBuildOperationRunner.java:53)
+	at org.gradle.internal.execution.steps.ExecuteStep.execute(ExecuteStep.java:56)
+	at org.gradle.internal.execution.steps.ExecuteStep.execute(ExecuteStep.java:44)
+	at org.gradle.internal.execution.steps.CancelExecutionStep.execute(CancelExecutionStep.java:42)
+	at org.gradle.internal.execution.steps.TimeoutStep.executeWithoutTimeout(TimeoutStep.java:75)
+	at org.gradle.internal.execution.steps.TimeoutStep.execute(TimeoutStep.java:55)
+	at org.gradle.internal.execution.steps.PreCreateOutputParentsStep.execute(PreCreateOutputParentsStep.java:50)
+	at org.gradle.internal.execution.steps.PreCreateOutputParentsStep.execute(PreCreateOutputParentsStep.java:28)
+	at org.gradle.internal.execution.steps.RemovePreviousOutputsStep.execute(RemovePreviousOutputsStep.java:68)
+	at org.gradle.internal.execution.steps.RemovePreviousOutputsStep.execute(RemovePreviousOutputsStep.java:38)
+	at org.gradle.internal.execution.steps.BroadcastChangingOutputsStep.execute(BroadcastChangingOutputsStep.java:61)
+	at org.gradle.internal.execution.steps.BroadcastChangingOutputsStep.execute(BroadcastChangingOutputsStep.java:26)
+	at org.gradle.internal.execution.steps.CaptureOutputsAfterExecutionStep.execute(CaptureOutputsAfterExecutionStep.java:69)
+	at org.gradle.internal.execution.steps.CaptureOutputsAfterExecutionStep.execute(CaptureOutputsAfterExecutionStep.java:46)
+	at org.gradle.internal.execution.steps.ResolveInputChangesStep.execute(ResolveInputChangesStep.java:39)
+	at org.gradle.internal.execution.steps.ResolveInputChangesStep.execute(ResolveInputChangesStep.java:28)
+	at org.gradle.internal.execution.steps.BuildCacheStep.executeWithoutCache(BuildCacheStep.java:189)
+	at org.gradle.internal.execution.steps.BuildCacheStep.executeAndStoreInCache(BuildCacheStep.java:145)
+	at org.gradle.internal.execution.steps.BuildCacheStep.lambda$executeWithCache$4(BuildCacheStep.java:101)
+	at org.gradle.internal.execution.steps.BuildCacheStep.lambda$executeWithCache$5(BuildCacheStep.java:101)
+	at org.gradle.internal.Try$Success.map(Try.java:170)
+	at org.gradle.internal.execution.steps.BuildCacheStep.executeWithCache(BuildCacheStep.java:85)
+	at org.gradle.internal.execution.steps.BuildCacheStep.lambda$execute$0(BuildCacheStep.java:74)
+	at org.gradle.internal.Either$Left.fold(Either.java:116)
+	at org.gradle.internal.execution.caching.CachingState.fold(CachingState.java:62)
+	at org.gradle.internal.execution.steps.BuildCacheStep.execute(BuildCacheStep.java:73)
+	at org.gradle.internal.execution.steps.BuildCacheStep.execute(BuildCacheStep.java:48)
+	at org.gradle.internal.execution.steps.StoreExecutionStateStep.execute(StoreExecutionStateStep.java:46)
+	at org.gradle.internal.execution.steps.StoreExecutionStateStep.execute(StoreExecutionStateStep.java:35)
+	at org.gradle.internal.execution.steps.SkipUpToDateStep.executeBecause(SkipUpToDateStep.java:75)
+	at org.gradle.internal.execution.steps.SkipUpToDateStep.lambda$execute$2(SkipUpToDateStep.java:53)
+	at org.gradle.internal.execution.steps.SkipUpToDateStep.execute(SkipUpToDateStep.java:53)
+	at org.gradle.internal.execution.steps.SkipUpToDateStep.execute(SkipUpToDateStep.java:35)
+	at org.gradle.internal.execution.steps.legacy.MarkSnapshottingInputsFinishedStep.execute(MarkSnapshottingInputsFinishedStep.java:37)
+	at org.gradle.internal.execution.steps.legacy.MarkSnapshottingInputsFinishedStep.execute(MarkSnapshottingInputsFinishedStep.java:27)
+	at org.gradle.internal.execution.steps.ResolveIncrementalCachingStateStep.executeDelegate(ResolveIncrementalCachingStateStep.java:49)
+	at org.gradle.internal.execution.steps.ResolveIncrementalCachingStateStep.executeDelegate(ResolveIncrementalCachingStateStep.java:27)
+	at org.gradle.internal.execution.steps.AbstractResolveCachingStateStep.execute(AbstractResolveCachingStateStep.java:71)
+	at org.gradle.internal.execution.steps.AbstractResolveCachingStateStep.execute(AbstractResolveCachingStateStep.java:39)
+	at org.gradle.internal.execution.steps.ResolveChangesStep.execute(ResolveChangesStep.java:64)
+	at org.gradle.internal.execution.steps.ResolveChangesStep.execute(ResolveChangesStep.java:35)
+	at org.gradle.internal.execution.steps.ValidateStep.execute(ValidateStep.java:62)
+	at org.gradle.internal.execution.steps.ValidateStep.execute(ValidateStep.java:40)
+	at org.gradle.internal.execution.steps.AbstractCaptureStateBeforeExecutionStep.execute(AbstractCaptureStateBeforeExecutionStep.java:76)
+	at org.gradle.internal.execution.steps.AbstractCaptureStateBeforeExecutionStep.execute(AbstractCaptureStateBeforeExecutionStep.java:45)
+	at org.gradle.internal.execution.steps.AbstractSkipEmptyWorkStep.executeWithNonEmptySources(AbstractSkipEmptyWorkStep.java:136)
+	at org.gradle.internal.execution.steps.AbstractSkipEmptyWorkStep.execute(AbstractSkipEmptyWorkStep.java:66)
+	at org.gradle.internal.execution.steps.AbstractSkipEmptyWorkStep.execute(AbstractSkipEmptyWorkStep.java:38)
+	at org.gradle.internal.execution.steps.legacy.MarkSnapshottingInputsStartedStep.execute(MarkSnapshottingInputsStartedStep.java:38)
+	at org.gradle.internal.execution.steps.LoadPreviousExecutionStateStep.execute(LoadPreviousExecutionStateStep.java:36)
+	at org.gradle.internal.execution.steps.LoadPreviousExecutionStateStep.execute(LoadPreviousExecutionStateStep.java:23)
+	at org.gradle.internal.execution.steps.HandleStaleOutputsStep.execute(HandleStaleOutputsStep.java:75)
+	at org.gradle.internal.execution.steps.HandleStaleOutputsStep.execute(HandleStaleOutputsStep.java:41)
+	at org.gradle.internal.execution.steps.AssignMutableWorkspaceStep.lambda$execute$0(AssignMutableWorkspaceStep.java:35)
+	at org.gradle.api.internal.tasks.execution.TaskExecution$4.withWorkspace(TaskExecution.java:297)
+	at org.gradle.internal.execution.steps.AssignMutableWorkspaceStep.execute(AssignMutableWorkspaceStep.java:31)
+	at org.gradle.internal.execution.steps.AssignMutableWorkspaceStep.execute(AssignMutableWorkspaceStep.java:22)
+	at org.gradle.internal.execution.steps.ChoosePipelineStep.execute(ChoosePipelineStep.java:40)
+	at org.gradle.internal.execution.steps.ChoosePipelineStep.execute(ChoosePipelineStep.java:23)
+	at org.gradle.internal.execution.steps.ExecuteWorkBuildOperationFiringStep.lambda$execute$2(ExecuteWorkBuildOperationFiringStep.java:67)
+	at org.gradle.internal.execution.steps.ExecuteWorkBuildOperationFiringStep.execute(ExecuteWorkBuildOperationFiringStep.java:67)
+	at org.gradle.internal.execution.steps.ExecuteWorkBuildOperationFiringStep.execute(ExecuteWorkBuildOperationFiringStep.java:39)
+	at org.gradle.internal.execution.steps.IdentityCacheStep.execute(IdentityCacheStep.java:46)
+	at org.gradle.internal.execution.steps.IdentityCacheStep.execute(IdentityCacheStep.java:34)
+	at org.gradle.internal.execution.steps.IdentifyStep.execute(IdentifyStep.java:44)
+	at org.gradle.internal.execution.steps.IdentifyStep.execute(IdentifyStep.java:31)
+	at org.gradle.internal.execution.impl.DefaultExecutionEngine$1.execute(DefaultExecutionEngine.java:64)
+	at org.gradle.api.internal.tasks.execution.ExecuteActionsTaskExecuter.executeIfValid(ExecuteActionsTaskExecuter.java:132)
+	... 30 more
+
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 10.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+For more on this, please refer to https://docs.gradle.org/9.2.1/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+
+BUILD FAILED in 1m 6s
+118 actionable tasks: 105 executed, 13 from cache
