@@ -108,7 +108,7 @@ public class PackCommandsTest {
         assertEquals(java.util.Collections.singletonList("make"),
             PackCommands.presentIn(bin, java.util.Arrays.asList("make", "pkg-config")));
         assertTrue(PackCommands.presentIn(bin, (java.util.List<String>) null).isEmpty());
-        assertTrue(PackCommands.missingFrom(bin, null).isEmpty());
+        assertTrue(PackCommands.missingFrom(bin, (java.util.List<String>) null).isEmpty());
     }
 
     @Test
