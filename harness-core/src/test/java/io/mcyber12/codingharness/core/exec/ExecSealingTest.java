@@ -177,19 +177,51 @@ public class ExecSealingTest {
     }
 
     @Test
-    public void auditSurvivesABrokenEntryInsteadOfThrowing() throws Exception {
+    public void auditSurvivesBrokenEntriesInsteadOfThrowing() throws Exception {
         File prefix = temporary.newFolder("prefix-broken");
         File bin = new File(prefix, "bin");
         assertTrue(bin.mkdirs());
-        // Dangling symlink with a target that does not exist, plus a link whose
-        // text is not a readable path: setup diagnostics must still answer.
+        // Dangling links cannot be executed, so they must not be reported as
+        // something that needs the exemption - and must not throw either.
         Files.createSymbolicLink(new File(bin, "dangling").toPath(),
             new File("/data/data/com.termux/files/usr/bin/absent").toPath());
         Files.createSymbolicLink(new File(bin, "weird").toPath(),
             new File("/nonexistent/with space/x").toPath());
         ExecAudit.Report report = ExecAudit.audit(prefix, null);
-        assertFalse(report.publishable());
-        assertEquals(2, report.outsideApk().size());
+        assertEquals(report.toText(), 0, report.examined());
+        assertTrue(report.publishable());
+    }
+
+    @Test
+    public void auditJudgesALinkByWhatItResolvesTo() throws Exception {
+        File prefix = temporary.newFolder("prefix-links");
+        File bin = new File(prefix, "bin");
+        File lib = new File(prefix, "lib");
+        assertTrue(bin.mkdirs());
+        assertTrue(lib.mkdirs());
+
+        // A versioned library link: dlopen only, never execve'd.
+        File versioned = new File(lib, "libssl.so.3");
+        try (FileOutputStream output = new FileOutputStream(versioned)) {
+            output.write(ELF_HEAD);
+        }
+        Files.createSymbolicLink(new File(lib, "libssl.so").toPath(),
+            new File("libssl.so.3").toPath());
+        // A link to an executable installed in app data: this one is the
+        // problem the audit exists to count.
+        File realBinary = new File(prefix, "libexec/git-core/git");
+        assertTrue(realBinary.getParentFile().mkdirs());
+        try (FileOutputStream output = new FileOutputStream(realBinary)) {
+            output.write(ELF_HEAD);
+        }
+        assertTrue(realBinary.setExecutable(true, false));
+        Files.createSymbolicLink(new File(bin, "git").toPath(),
+            new File("../libexec/git-core/git").toPath());
+
+        ExecAudit.Report report = ExecAudit.audit(prefix, temporary.newFolder("libdir"));
+        assertEquals(report.toText(), 1, report.outsideApk().size());
+        assertTrue(report.toText(), report.toText().contains("bin/git"));
+        assertFalse(report.toText(), report.toText().contains("lib/libssl.so"));
     }
 
     @Test

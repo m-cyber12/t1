@@ -84,6 +84,16 @@ android {
         }
     }
 
+    // The sealed variant is the only one that carries the split userland: the
+    // payload trees are per-ABI, so they cannot live in the shared `main`
+    // source set.
+    sourceSets {
+        sealed {
+            assets.srcDir(new File(sealedPayloadOutput.get().asFile, "assets"))
+            jniLibs.srcDir(new File(sealedPayloadOutput.get().asFile, "jniLibs"))
+        }
+    }
+
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
@@ -132,6 +142,50 @@ def downloadBootstrap = tasks.register("downloadHarnessBootstrap") {
             if (!temporary.renameTo(output)) throw new GradleException("Unable to activate ${output}")
         }
     }
+}
+
+// ---------------------------------------------------------------------------
+// Sealed payload (docs/play-store-plan.md)
+//
+// Splits each ABI's Termux bootstrap into the two halves a modern targetSdk
+// needs: the bytes the kernel executes (JNI libraries, which Android extracts
+// to the exec-allowed native library directory) and the bytes that are only
+// read (extracted into the prefix at first run). The split, the manifest and
+// the payload's own verification live in scripts/build-sealed-payload.py so the
+// same logic runs on a CI runner and on a workstation.
+// ---------------------------------------------------------------------------
+def sealedPayloadOutput = layout.buildDirectory.dir("generated/sealed-payload")
+
+def buildSealedPayload = tasks.register("buildSealedPayload") {
+    description = "Splits the Termux bootstrap into a sealed payload for the sealed variant"
+    dependsOn(downloadBootstrap)
+    inputs.dir(bootstrapOutput)
+    inputs.file(rootProject.file("scripts/build-sealed-payload.py"))
+    outputs.dir(sealedPayloadOutput)
+    doLast {
+        File script = rootProject.file("scripts/build-sealed-payload.py")
+        if (!script.isFile()) throw new GradleException("missing ${script}")
+        [["aarch64", "arm64-v8a"], ["x86_64", "x86_64"]].each { arch, abi ->
+            File zip = new File(bootstrapOutput.get().asFile, "bootstrap-${arch}.zip")
+            if (!zip.isFile()) {
+                throw new GradleException("bootstrap for ${abi} not found: ${zip}")
+            }
+            def split = providers.exec {
+                commandLine "python3", script.absolutePath,
+                    "--bootstrap", zip.absolutePath,
+                    "--abi", abi,
+                    "--out", sealedPayloadOutput.get().asFile.absolutePath
+            }
+            def result = split.result.get()
+            split.standardOutput.asText.get().readLines().each { logger.lifecycle(it) }
+            split.standardError.asText.get().readLines().each { logger.error(it) }
+            result.assertNormalExitValue()
+        }
+    }
+}
+
+tasks.matching { it.name.startsWith("mergeSealed") || it.name.startsWith("preSealed") }.configureEach {
+    dependsOn(buildSealedPayload)
 }
 
 // Every variant needs the bootstrap assets, not just debug/release: the

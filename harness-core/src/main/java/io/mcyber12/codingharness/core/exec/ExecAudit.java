@@ -185,14 +185,23 @@ public final class ExecAudit {
                 if (isSkipped(relative)) continue;
 
                 if (Files.isSymbolicLink(child.toPath())) {
-                    String target = readLink(child);
-                    boolean shipped = target != null && nativeRoot != null
-                        && target.startsWith(nativeRoot);
-                    ExecutableKind kind = target == null ? ExecutableKind.UNREADABLE
-                        : (target.contains("/lib/") || target.endsWith(".so"))
-                            ? ExecutableKind.ELF
-                            : ExecutableKind.DATA;
-                    entries.add(new Entry(relative, kind, shipped, target));
+                    // Judge a link by what it finally resolves to, not by its
+                    // name: a versioned library link (libssl.so ->
+                    // libssl.so.3) is dlopen'd and never execve'd, while
+                    // bin/bash -> <nativeLibraryDir>/libbash.so is exactly the
+                    // sealed case. Dangling links cannot be executed at all.
+                    File resolved = resolveLink(child, 0);
+                    if (resolved == null) continue;
+                    String resolvedPath = resolved.getAbsolutePath();
+                    boolean shipped = nativeRoot != null && resolvedPath.startsWith(nativeRoot);
+                    if (shipped) {
+                        entries.add(new Entry(relative, ExecutableKind.ELF, true, resolvedPath));
+                        continue;
+                    }
+                    if (isLibraryPath(relative)) continue;
+                    ExecutableKind kind = ExecutableProbe.kindOf(resolved);
+                    if (!ExecutableProbe.requiresExecAllowedPath(kind)) continue;
+                    entries.add(new Entry(relative, kind, false, resolvedPath));
                     continue;
                 }
                 if (child.isDirectory()) {
@@ -206,6 +215,26 @@ public final class ExecAudit {
             }
         }
         return new Report(entries, scanned, truncated, String.valueOf(nativeLibraryDirectory));
+    }
+
+    /** Follow a chain of symlinks to the regular file it ends at. */
+    static File resolveLink(File link, int depth) {
+        if (depth > 12 || link == null || !Files.isSymbolicLink(link.toPath())) return link;
+        String target = readLink(link);
+        if (target == null) return null;
+        File next = new File(target);
+        if (!next.isAbsolute()) {
+            File parent = link.getParentFile();
+            next = parent == null ? next : new File(parent, target);
+        }
+        if (!next.exists() && !Files.isSymbolicLink(next.toPath())) return null;
+        return resolveLink(next, depth + 1);
+    }
+
+    /** Directories whose contents are loaded with dlopen(), never executed. */
+    private static boolean isLibraryPath(String relative) {
+        return relative.startsWith("lib/") || relative.startsWith("lib64/")
+            || relative.contains("/lib/") || relative.endsWith(".so");
     }
 
     static String readLink(File file) {

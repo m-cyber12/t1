@@ -5,16 +5,22 @@ name: Exec model (targetSdk 34)
 # The shipping build targets API 28, because it executes the userland it
 # installed under its own data directory — which Android 10+ forbids for apps
 # targeting 29+. This workflow builds the *sealed* variant at targetSdk 34
-# (extractNativeLibs=true, executables shipped as JNI libraries) and runs a
-# single measurement test on an emulator that asserts, on the device:
+# (extractNativeLibs=true, executables shipped as JNI libraries, the rest of the
+# userland as an asset payload) and runs two tests on an emulator.
 #
+# SealedShellTest — the milestone: a real userland from the APK.
+#   * the payload installs, bin/bash is a symlink into the native library dir;
+#   * bash runs a script, reaches its last line, and reports its version/PATH;
+#   * sed filters through a pipe in the same shell;
+#   * the audit finds zero executables outside the APK.
+#
+# ExecModelTest — the rule underneath, measured:
 #   * a file in the native library directory executes;
 #   * the same bytes copied into app-private storage do NOT execute;
 #   * a prefix symlink into the native library directory DOES execute;
 #   * a script whose shebang names the official Termux prefix runs through the
 #     preload (interpreter translated, script only read);
-#   * direct execution of a data-dir script is denied;
-#   * the audit finds zero executables left outside the APK.
+#   * direct execution of a data-dir script is denied.
 #
 # It needs no network and no package installation, so it is fast and cannot
 # flake on a repository mirror. The full setup E2E (a01–a04) remains the
@@ -45,7 +51,7 @@ jobs:
 
     env:
       E2E_TEST_TASK: ":app:connectedSealedAndroidTest"
-      E2E_TEST_CLASS: "io.mcyber12.codingharness.ExecModelTest"
+      E2E_TEST_CLASS: "io.mcyber12.codingharness.SealedShellTest,io.mcyber12.codingharness.ExecModelTest"
       E2E_LEAN: "1"
       E2E_GRADLE_PROPS: "-PharnessTargetSdk=34 -PharnessTestBuildType=sealed"
 
@@ -103,6 +109,16 @@ jobs:
           fi
           unzip -l "$APK" | grep -E "lib/.*/(libharnessprobe|libharness-exec)\.so" || {
             echo "expected native libraries are missing from the APK" >&2; exit 1; }
+          # The sealed userland: the data half and the executables it points at.
+          for abi in x86_64 arm64-v8a; do
+            unzip -l "$APK" | grep -q "assets/userland-${abi}.zip" || {
+              echo "no sealed payload for ${abi} in the APK" >&2; exit 1; }
+            unzip -l "$APK" | grep -q "assets/sealed-exec-${abi}.txt" || {
+              echo "no sealed-exec manifest for ${abi}" >&2; exit 1; }
+            unzip -l "$APK" | grep -q "lib/${abi}/libbash.so" || {
+              echo "the shell is not shipped as a JNI library for ${abi}" >&2; exit 1; }
+          done
+          cat app/build/generated/sealed-payload/assets/sealed-payload-*.json | tee sealed-payload.json
 
       - name: Run the exec-model measurement on an emulator
         shell: bash
@@ -111,14 +127,14 @@ jobs:
       # A skipped test is not a pass: ExecModelTest skips itself in builds that
       # do not extract native libraries, so assert it actually ran. The run log
       # is the primary evidence; the JUnit XML is a cross-check.
-      - name: Assert the measurement actually ran
+      - name: Assert both gates actually ran
         shell: bash
         run: |
           set -uo pipefail
           RUN_LOG=e2e-logs/connected-test.log
           grep -E "Tests [0-9]+/[0-9]+ completed" "$RUN_LOG" || true
-          if grep -qE "Tests 1/1 completed\. \(0 skipped\) \(0 failed\)" "$RUN_LOG"; then
-            echo "measurement ran and passed: ok"
+          if grep -qE "Tests 2/2 completed\. \(0 skipped\) \(0 failed\)" "$RUN_LOG"; then
+            echo "both gates ran and passed: ok"
             exit 0
           fi
           if grep -q 'skipped="1"' app/build/outputs/androidTest-results/connected/*.xml 2>/dev/null; then
@@ -139,6 +155,7 @@ jobs:
             || echo "no setup-e2e-report.txt pulled" > diagnostics/setup-e2e-report.txt
           cp manifest-tree.txt diagnostics/ 2>/dev/null || true
           cp sealed-apk-identity.txt diagnostics/ 2>/dev/null || true
+          cp sealed-payload.json diagnostics/ 2>/dev/null || true
           for x in app/build/outputs/androidTest-results/connected/*.xml; do
             [ -f "$x" ] && cp "$x" diagnostics/
           done
@@ -153,11 +170,12 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: sealed-targetSdk34-MEASUREMENT-ONLY-not-for-use
+          name: sealed-targetSdk34-shell-from-APK-preview
           path: |
             setup-e2e-report.txt
             manifest-tree.txt
             sealed-apk-identity.txt
+            sealed-payload.json
             gradle-sealed.log
             app/build/outputs/apk/sealed/*.apk
             app/build/outputs/androidTest-results/
