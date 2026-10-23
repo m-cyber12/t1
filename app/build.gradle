@@ -58,6 +58,41 @@ if (requestsBundle && (rootProject.ext.targetSdkVersion as Integer) < bundleTarg
             + "-PharnessTargetSdk=${bundleTargetSdk} -PharnessCompileSdk=${bundleTargetSdk}")
 }
 
+// ---------------------------------------------------------------------------
+// Release signing, supplied from outside the repository and failing closed.
+//
+//   keystore.properties in the repository root, or the same four values in the
+//   environment:
+//     storeFile     / HARNESS_KEYSTORE
+//     storePassword / HARNESS_KEYSTORE_PASSWORD
+//     keyAlias      / HARNESS_KEY_ALIAS
+//     keyPassword   / HARNESS_KEY_PASSWORD
+//
+// With no key the release artefact is simply unsigned, and a bundle build says
+// which key signed it (or that none did) before it finishes. A key in the
+// repository would be a key leaked, so there is none.
+// ---------------------------------------------------------------------------
+def signingProperties = new Properties()
+File signingFile = rootProject.file("keystore.properties")
+boolean hasSigningFile = signingFile.isFile()
+if (hasSigningFile) {
+    signingFile.withInputStream { signingProperties.load(it) }
+}
+def signingValue = { String key, String env ->
+    (hasSigningFile ? signingProperties.getProperty(key) : null)
+        ?: System.getenv(env)
+}
+def releaseStoreFile = signingValue("storeFile", "HARNESS_KEYSTORE")
+def releaseStorePassword = signingValue("storePassword", "HARNESS_KEYSTORE_PASSWORD")
+def releaseKeyAlias = signingValue("keyAlias", "HARNESS_KEY_ALIAS")
+def releaseKeyPassword = signingValue("keyPassword", "HARNESS_KEY_PASSWORD")
+boolean canSignRelease = releaseStoreFile && releaseStorePassword
+    && releaseKeyAlias && releaseKeyPassword
+    && rootProject.file(releaseStoreFile).isFile()
+def signingNote = canSignRelease
+    ? "signing with the release key (${releaseKeyAlias})"
+    : "no release key: this artefact is unsigned and cannot be uploaded"
+
 android {
     namespace "io.mcyber12.codingharness"
     compileSdk rootProject.ext.compileSdkVersion
@@ -186,10 +221,7 @@ if (canSignRelease) {
 /** Logged once, so an AAB never leaves without saying which key signed it. */
 tasks.matching { it.name in ["bundleRelease", "bundleSealed", "assembleRelease"] }.configureEach {
     doFirst {
-        logger.lifecycle(canSignRelease
-            ? "signing ${it.name} with the release key (${releaseKeyAlias})"
-            : "signing ${it.name} with the debug key - set keystore.properties "
-                + "before uploading this artifact")
+        logger.lifecycle("${it.name}: ${signingNote}")
     }
 }
 
