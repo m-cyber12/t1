@@ -77,7 +77,7 @@ public class SealedInstallerTest {
             .manifest(new java.io.ByteArrayInputStream(
                 manifestText(manifest).getBytes(StandardCharsets.UTF_8)))
             .execManifest(Collections.singletonList("bin/bash\tlibbash.so"))
-            .linkManifest(Collections.singletonList("lib/libz.so\tlibz.so.1"));
+            .linkManifest(Collections.singletonList("lib/libz.so\tlib/libz.so.1"));
     }
 
     private static String manifestText(RuntimeManifest manifest) {
