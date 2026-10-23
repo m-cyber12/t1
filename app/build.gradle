@@ -1,4 +1,27 @@
-plugins {
+            // Run the builder directly rather than through providers.exec: a
+            // captured provider throws on a non-zero exit before its streams can
+            // be read, and then the reason for the failure is lost, which is
+            // exactly what happened the first time a library went missing.
+            def transcript = new StringBuilder()
+            def builder = new ProcessBuilder(
+                    "python3", script.absolutePath,
+                    "--bootstrap", zip.absolutePath,
+                    "--abi", abi,
+                    "--out", project.sealedPayloadDir.get().asFile.absolutePath,
+                    "--deb-dir", debs.absolutePath)
+                    .redirectErrorStream(true)
+                    .start()
+            builder.inputStream.eachLine("UTF-8") { line ->
+                transcript.append(line).append("\n")
+                logger.lifecycle(line)
+            }
+            int exit = builder.waitFor()
+            File log = new File(bootstrapOutput.get().asFile, "sealed-payload-${abi}.log")
+            log.parentFile.mkdirs()
+            log.text = transcript.toString()
+            if (exit != 0) {
+                throw new GradleException("payload builder for ${abi} failed (exit ${exit}); see ${log}")
+            }plugins {
     id "com.android.application"
 }
 
@@ -241,25 +264,31 @@ def buildSealedPayload = tasks.register("buildSealedPayload") {
             if (!debs.isDirectory()) {
                 throw new GradleException("core packages for ${abi} were not fetched: ${debs}")
             }
-            def split = providers.exec {
-                commandLine "python3", script.absolutePath,
+            // Run the builder as a plain process rather than through
+            // providers.exec: a captured provider throws on a non-zero exit
+            // before its streams can be read, so the reason for the failure is
+            // lost - which is exactly what happened the first time a library
+            // went missing from the payload.
+            def transcript = new StringBuilder()
+            def builder = new ProcessBuilder(
+                    "python3", script.absolutePath,
                     "--bootstrap", zip.absolutePath,
                     "--abi", abi,
                     "--out", project.sealedPayloadDir.get().asFile.absolutePath,
-                    "--deb-dir", debs.absolutePath
+                    "--deb-dir", debs.absolutePath)
+                    .redirectErrorStream(true)
+                    .start()
+            builder.inputStream.eachLine("UTF-8") { line ->
+                transcript.append(line).append("\n")
+                logger.lifecycle(line)
             }
-            def result = split.result.get()
-            // The child's diagnostics must survive a failing build: Gradle drops
-            // captured output when the task throws, and a "missing shared
-            // library" report is the whole point of the step.
-            List<String> stdoutLines = split.standardOutput.asText.get().readLines()
-            List<String> stderrLines = split.standardError.asText.get().readLines()
-            File transcript = new File(bootstrapOutput.get().asFile, "sealed-payload-${abi}.log")
-            transcript.parentFile.mkdirs()
-            transcript.text = (stdoutLines + stderrLines).join("\n") + "\n"
-            stdoutLines.each { logger.lifecycle(it) }
-            stderrLines.each { logger.error(it) }
-            result.assertNormalExitValue()
+            int exit = builder.waitFor()
+            File log = new File(bootstrapOutput.get().asFile, "sealed-payload-${abi}.log")
+            log.parentFile.mkdirs()
+            log.text = transcript.toString()
+            if (exit != 0) {
+                throw new GradleException("payload builder for ${abi} failed (exit ${exit}); see ${log}")
+            }
         }
     }
 }
