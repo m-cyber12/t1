@@ -27,6 +27,9 @@ dependencies {
     // The sealed runtime is Android-free (see docs/sealed-runtime-port.md), so
     // it is a plain Java library rather than part of this Android module.
     api project(":sealed-runtime")
+    // Optional packs arrive through Play Feature Delivery on a store build: an
+    // app may not download executable code at runtime, so the pack is an APK.
+    implementation "com.google.android.play:feature-delivery:2.1.0"
     api project(":terminal-emulator")
     implementation "androidx.annotation:annotation:1.9.1"
     testImplementation "junit:junit:4.13.2"

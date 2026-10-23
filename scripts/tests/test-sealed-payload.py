@@ -301,6 +301,23 @@ def main():
         # a package the payload did not ship keeps the bootstrap's own record
         assert "Package: libandroid-support" in status, status
 
+        # A pack payload carries only its own packages: no bootstrap, and the
+        # asset names are prefixed so it can share an AssetManager with the
+        # core payload instead of overwriting it.
+        pack_out = os.path.join(root, "pack-out")
+        run([sys.executable, os.path.join(SCRIPTS, "build-sealed-payload.py"),
+             "--abi", "arm64-v8a", "--out", pack_out, "--deb-dir", debs,
+             "--asset-prefix", "pack-demo-"])
+        pack_files = sorted(os.listdir(os.path.join(pack_out, "assets")))
+        assert "pack-demo-userland-arm64-v8a.zip" in pack_files, pack_files
+        assert "pack-demo-sealed-exec-arm64-v8a.txt" in pack_files, pack_files
+        assert "userland-arm64-v8a.zip" not in pack_files, pack_files
+        with _zip.ZipFile(os.path.join(pack_out, "assets", "pack-demo-userland-arm64-v8a.zip")) as z:
+            names = z.namelist()
+        # It contains the packages but not the bootstrap's own content.
+        assert "share/git/template" in names, names[:5]
+        assert "share/doc/readme.txt" not in names, names[:5]
+
         # the audit of the produced payload
         assert report["libraries"] == report["uniqueBinaries"]
         assert report["scripts"] >= 1, report

@@ -79,17 +79,41 @@ public final class SealedPayloadInstaller {
 
     /** Asset names are per ABI, because the bytes are per ABI. */
     public static String userlandAsset(String abi) { return "userland-" + abi + ".zip"; }
+    /**
+     * Asset names for a prefixed payload (an on-demand pack): the same files,
+     * named so a pack and the base payload can live in one AssetManager.
+     */
+    public static String userlandAsset(String abi, String prefix) {
+        return prefix + "userland-" + abi + ".zip";
+    }
     /** Short identity of the payload, written by the build script. */
     public static String idAsset(String abi) { return "sealed-payload-id-" + abi + ".txt"; }
+
+    private static String manifestAsset(String abi, String prefix) {
+        return prefix + "sealed-manifest-" + abi + ".txt";
+    }
+
+    private static String execAsset(String abi, String prefix) {
+        return prefix + "sealed-exec-" + abi + ".txt";
+    }
+
+    private static String linksAsset(String abi, String prefix) {
+        return prefix + "sealed-symlinks-" + abi + ".txt";
+    }
     public static String manifestAsset(String abi) { return "sealed-manifest-" + abi + ".txt"; }
     public static String execAsset(String abi) { return "sealed-exec-" + abi + ".txt"; }
     public static String linksAsset(String abi) { return "sealed-symlinks-" + abi + ".txt"; }
 
     /** True when this APK carries a sealed payload for {@code abi}. */
     public static boolean isAvailable(Context context, String abi) {
+        return isAvailable(context, abi, "");
+    }
+
+    /** True when the payload named by {@code prefix} is present for {@code abi}. */
+    public static boolean isAvailable(Context context, String abi, String prefix) {
         try {
             for (String name : context.getAssets().list("")) {
-                if (userlandAsset(abi).equals(name)) return true;
+                if (userlandAsset(abi, prefix).equals(name)) return true;
             }
         } catch (IOException ignored) {
             // An unreadable asset directory is simply "not available".
@@ -99,11 +123,29 @@ public final class SealedPayloadInstaller {
 
     /** Pick the sealed payload matching the device, or null when there is none. */
     public static String pickAbi(Context context) {
+        return pickAbi(context, "");
+    }
+
+    /** Pick the prefixed payload matching the device, or null. */
+    public static String pickAbi(Context context, String prefix) {
         for (String candidate : android.os.Build.SUPPORTED_ABIS) {
             if (!"arm64-v8a".equals(candidate) && !"x86_64".equals(candidate)) continue;
-            if (isAvailable(context, candidate)) return candidate;
+            if (isAvailable(context, candidate, prefix)) return candidate;
         }
         return null;
+    }
+
+    /** Read one of a payload's manifests as text lines; empty when absent. */
+    public static List<String> readManifestLines(Context context, String abi, String prefix,
+                                                 String which) {
+        String name = "manifest".equals(which) ? manifestAsset(abi, prefix)
+            : "exec".equals(which) ? execAsset(abi, prefix)
+            : linksAsset(abi, prefix);
+        try {
+            return readLines(context.getAssets(), name);
+        } catch (IOException absent) {
+            return new ArrayList<>();
+        }
     }
 
     /**
@@ -130,7 +172,16 @@ public final class SealedPayloadInstaller {
      *         build), otherwise the install result.
      */
     public static Result install(Context context, HarnessConfig config) throws IOException {
-        String abi = pickAbi(context);
+        return install(context, config, "");
+    }
+
+    /**
+     * Install the payload named by {@code prefix} — {@code ""} for the base
+     * userland, {@code "pack-buildtools-"} for an on-demand pack.
+     */
+    public static Result install(Context context, HarnessConfig config, String prefix)
+            throws IOException {
+        String abi = SealedPayloadInstaller.pickAbi(context, prefix);
         if (abi == null) return null;
         if (config.nativeLibraryDirectory == null) {
             throw new IOException("sealed payload needs the native library directory");
@@ -140,15 +191,16 @@ public final class SealedPayloadInstaller {
         SealedInstaller.Request request = new SealedInstaller.Request()
             .prefix(config.prefix)
             .nativeLibraryDirectory(config.nativeLibraryDirectory)
-            .execManifest(readLines(assets, execAsset(abi)))
-            .linkManifest(readLines(assets, linksAsset(abi)));
+            .execManifest(readLines(assets, execAsset(abi, prefix)))
+            .linkManifest(readLines(assets, linksAsset(abi, prefix)));
 
-        try (InputStream payload = assets.open(userlandAsset(abi), AssetManager.ACCESS_STREAMING);
-             InputStream manifest = openOptional(assets, manifestAsset(abi))) {
+        try (InputStream payload =
+                 assets.open(userlandAsset(abi, prefix), AssetManager.ACCESS_STREAMING);
+             InputStream manifest = openOptional(assets, manifestAsset(abi, prefix))) {
             request.payload(payload).manifest(manifest);
             SealedInstaller.Result kernel = SealedInstaller.install(request);
             Result result = Result.from(abi, kernel);
-            writeReport(config, result);
+            writeReport(config, result, prefix);
             return result;
         }
     }
@@ -173,11 +225,27 @@ public final class SealedPayloadInstaller {
         return lines;
     }
 
-    private static void writeReport(HarnessConfig config, Result result) {
+    /**
+     * Where a payload's own record goes.
+     *
+     * <p>A pack writes its own file, so installing one never overwrites the
+     * record of what the core userland did. Public because the pack installer
+     * writes its marker in the same directory, and two different ideas of
+     * "the harness root" is how diagnostics end up in the wrong place.</p>
+     */
+    public static File reportFile(HarnessConfig config, String prefix) {
         File root = config.rootfs != null ? config.rootfs.getParentFile() : config.prefix;
-        if (root == null) return;
-        try (FileOutputStream output =
-                 new FileOutputStream(new File(root, "sealed-payload.txt"))) {
+        if (root == null) return null;
+        String name = prefix == null || prefix.isEmpty()
+            ? "sealed-payload.txt"
+            : "sealed-payload-" + prefix.replaceAll("-$", "") + ".txt";
+        return new File(root, name);
+    }
+
+    private static void writeReport(HarnessConfig config, Result result, String prefix) {
+        File report = reportFile(config, prefix);
+        if (report == null) return;
+        try (FileOutputStream output = new FileOutputStream(report)) {
             output.write((result.summary() + "\n").getBytes(StandardCharsets.UTF_8));
         } catch (IOException ignored) {
             // Diagnostics must never fail an install.

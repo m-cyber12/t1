@@ -1,6 +1,8 @@
 plugins {
     id "com.android.application" version "8.13.2" apply false
     id "com.android.library" version "8.13.2" apply false
+    // The on-demand pack (pack-buildtools/) is a Play Feature Delivery module.
+    id "com.android.dynamic-feature" version "8.13.2" apply false
 }
 
 ext {

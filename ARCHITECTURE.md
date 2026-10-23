@@ -33,9 +33,14 @@ app/                 Host Activity + E2E instrumentation tests
 harness-core/        All provisioning logic (no UI, JVM-testable)
   core/              Bootstrap, environment, paths, session, size report
   core/provision/    Provisioning module (tiers, planner, service, port)
+  core/packs/        Optional packs: one port, two channels (Play / apt)
+  core/exec/         Sealed-payload adapter for the Android asset manager
+sealed-runtime/      Android-free kernel: install, verify, uninstall, audit
+pack-buildtools/     Play Feature Delivery module (on-demand build tools)
 terminal-emulator/   Termux terminal emulator + JNI helper + preload lib
 terminal-view/       Termux terminal view/renderer
-scripts/             Manual emulator E2E driver
+scripts/             Payload builder, gate checks, emulator E2E driver
+store/               Listing text, data-safety answers, release checklist
 .github/workflows/   JDK builder + emulator E2E
 docs/                Porting, size, architecture notes
 ```
@@ -305,10 +310,12 @@ so the main harness can take it whole — `docs/sealed-runtime-port.md`) and
 measured by the `ExecModelTest` gate. Read this section as the constraint analysis and that
 document as the way through it.**
 
-Short answer: **the current build cannot be published on Google Play, and
-that is not caused by anything in the recent work.** The blockers are
-structural and identical to the ones that pushed Termux itself off the Play
-Store. Three independent reasons:
+Short answer: **one of the two builds can be published, and it is the one this
+project now ships as `release`; the other cannot, by construction.** The
+blockers that pushed Termux itself off the Play Store are structural and apply
+to the apt build only — the sealed build is shaped so that they do not arise.
+The analysis below is therefore about *which shape* is publishable, not about
+whether the project can get there. Three reasons the apt build cannot:
 
 ### 10.1 Target API level
 
@@ -321,7 +328,8 @@ Store. Three independent reasons:
   available to new users on newer devices.
 
 A submission with `targetSdk 28` is rejected at upload. This is a hard,
-mechanical blocker.
+mechanical blocker for the apt build — and the reason the `release` and `sealed`
+build types default to 36 while `defaultConfig` stays at 28.
 
 ### 10.2 Why the target cannot simply be raised (W^X)
 
@@ -412,32 +420,61 @@ now handled where the payload is built, not where it fails:
    `sys.prefix` from `/proc/self/exe`, which points into `nativeLibraryDir`;
    `HarnessEnvironment` sets `PYTHONHOME` for the sealed layout.
 
-This changes nothing for the current `.deb`-based build, which remains the only
-one that can install new native code on demand — and the sealed build still
-lacks a first-run provisioning UI, and is measured at 34 while a submission
-needs 36 (the gate now also builds and measures 36-on-36).
+The `.deb`-based build stays as it is: it is the F-Droid/direct shape, where
+fetching packages at run time is allowed and `apt` can install new native code
+on demand. The sealed build is the store shape, and it now has everything a
+submission needs except a key and a click:
 
-### 10.6 Realistic distribution options
+| Requirement | Where it is | Proved by |
+|---|---|---|
+| Executables out of the APK | `sealed-runtime`, `SealedLayout` | `ExecModelTest` on API 34 and 36 |
+| targetSdk 36 | `release` / `sealed` build types default to 36 | CI builds the bundle at 36 |
+| No downloaded executable code | core tier shipped in the APK, packs via Play Feature Delivery | `SealedShellTest.packsComeFromTheStoreAndNeverFromApt` |
+| Base module under 200 MB | clang lives in `pack-buildtools/` | `scripts/check-bundle-size.py` in CI |
+| Release signing | `keystore.properties` / env, fails closed | `bundleRelease` logs which key signed it |
 
-1. **F-Droid / direct APK (recommended today).** Same model as Termux;
-   no target-API floor and no downloaded-code policy. This is what the
-   current build is suited for.
-2. **Play, with a VM-based execution model.** The policy exception for
-   code running in a VM underlies Google's own Linux Terminal approach
-   (Android Virtualization Framework). A harness that runs the userland
-   inside a VM, rather than `execve`-ing downloaded binaries from app
-   data, is the only architecturally clean Play path — a different
-   product, not a build flag.
-3. **Play, APK-packaged binaries only.** Ship every executable inside
-   the APK/AAB (native-library trick) and drop `apt`/`dpkg`. That
-   contradicts the requirement to use the Termux package layer, so it is
-   out of scope by design.
+What is left is not code: an upload key, listing graphics, a hosted privacy
+policy, and a smoke test of a build Play actually delivered
+(`store/release-checklist.md`).
 
-Nothing in the recent changes (provisioning module, tier policy, symlink
-relocation, argv translation, pack removal) affects this analysis
-either way: they all operate inside the existing execution model.
-If Play distribution becomes a goal, the decision to make is about the
-execution model (§10.5.2), not about SDK numbers alone.
+### 10.6 Why the apt build does not follow the sealed build
+
+The two shapes exist because the exec rule differs, and it is cheaper to keep
+both than to pretend one is enough:
+
+- **Sealed (store).** Every executable is a symlink into `nativeLibraryDir`.
+  Nothing that the kernel runs ever lives in app storage, so targeting 36 costs
+  nothing. Read-only files (Python's standard library, gems, the dpkg database)
+  are ordinary data, unpacked on first run.
+- **apt (direct/F-Droid).** The userland is unpacked under app data and run from
+  there, which Android 10+ forbids for apps targeting 29+. It therefore stays at
+  `targetSdk 28`, exactly like Termux.
+
+The seam between them is one predicate (`Packs.isSealedBuild`): packs come from
+Play on one side and from `apt` on the other, and neither can take the other's
+route by accident.
+
+### 10.7 Realistic distribution options
+
+1. **F-Droid / direct APK.** Same model as Termux; no target-API floor and no
+   downloaded-code policy. This is what the apt build is for, and it keeps
+   `apt`/`dpkg` fully live.
+2. **Play, executables in the APK (§10.5, implemented).** The sealed build ships
+   the core tier inside the APK as native libraries and unpacks only read-only
+   data. `apt` still exists in the prefix and still tells the truth about what
+   is installed (dpkg records the shipped packages as installed), but the store
+   build does not use it to *fetch* code: optional tools arrive as a Play
+   Feature Delivery module. This is the shipping shape.
+3. **Play, with a VM-based execution model.** The policy exception for code
+   running in a VM underlies Google's own Linux Terminal approach (Android
+   Virtualization Framework). A different product, not a build flag — still the
+   right answer if unrestricted `apt install` of arbitrary packages becomes a
+   requirement on Play.
+
+The trade that makes option 2 work is the one worth remembering: **what the
+kernel executes must come from the APK; what it only reads may come from
+anywhere.** Everything in this project follows from that sentence, including
+which build type is publishable and why the core tier is not a download.
 
 ---
 

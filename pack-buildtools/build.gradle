@@ -1,0 +1,146 @@
+plugins {
+    id "com.android.dynamic-feature"
+}
+
+// An on-demand Play Feature Delivery module for the optional build tools.
+//
+// The sealed base APK may not download executable code at runtime — that is the
+// Device & Network Abuse rule, and the reason the core tier ships inside the APK
+// (docs/play-store-plan.md). A pack is therefore also an APK: this module is
+// delivered by Play, installed on demand, and its executables arrive as
+// `lib<tool>.so` in the same native library directory the base payload uses.
+// The mechanism on the device is unchanged (`SealedInstaller`), which is why the
+// pack needs no new install code — only new bytes and a new source.
+//
+// `dist:fusing dist:include="true"` keeps the module inside universal APKs, which
+// is how the emulator gate exercises it: bundletool builds a universal APK from
+// the bundle (an emulator image has no Play Store), and the same AAB still
+// delivers the module on demand to real users. `:app:assembleSealed` alone does
+// not fuse anything — Gradle builds base and feature as separate APKs.
+def packId = "buildtools"
+def packAssetPrefix = "pack-${packId}-"
+def packOutput = layout.buildDirectory.dir("generated/sealed-pack")
+// The full pack is clang + cmake + make + pkg-config and is ~120 MB of payload,
+// which is not something to build on every push. CI builds the small half
+// (make, pkg-config) to prove the wiring; a release build passes
+// -PharnessFullBuildTools=true and gets the whole tier.
+def fullPack = (findProperty("harnessFullBuildTools") ?: "false").toString() == "true"
+def packPackages = fullPack
+    ? ["make", "pkg-config", "clang", "cmake"]
+    : ["make", "pkg-config"]
+def packArch = [["aarch64", "arm64-v8a"], ["x86_64", "x86_64"]]
+def packDebDir = layout.buildDirectory.dir("generated/pack-debs")
+def packRepo = (findProperty("harnessSealedRepo") ?: "https://packages-cf.termux.dev/apt/termux-main").toString()
+
+android {
+    namespace "io.mcyber12.codingharness.packs.buildtools"
+    compileSdk rootProject.ext.compileSdkVersion
+
+    defaultConfig {
+        minSdk rootProject.ext.minSdkVersion
+        targetSdk rootProject.ext.targetSdkVersion
+    }
+
+    // A dynamic feature must offer every variant its base module has; `sealed`
+    // is the store-shaped one and has to exist here or a sealed base cannot
+    // resolve it. Both store variants then take the base's target: a feature
+    // module may not target a newer API than the APK it extends, and the store
+    // build of the base runs at 36 by default.
+    def storeTargetSdk = Math.min(
+        ((findProperty("harnessTargetSdk") ?: 36) as Integer),
+        rootProject.ext.compileSdkVersion as Integer)
+    buildTypes {
+        debug { }
+        release { targetSdk storeTargetSdk }
+        sealed {
+            initWith(getByName("debug"))
+            targetSdk storeTargetSdk
+            matchingFallbacks.addAll(["debug", "release"])
+        }
+    }
+
+    sourceSets {
+        // The generated payload is per ABI, so it belongs to the variant that
+        // ships it rather than to `main`.
+        debug { assets.srcDir(new File(packOutput.get().asFile, "assets")); jniLibs.srcDir(new File(packOutput.get().asFile, "jniLibs")) }
+        release { assets.srcDir(new File(packOutput.get().asFile, "assets")); jniLibs.srcDir(new File(packOutput.get().asFile, "jniLibs")) }
+        sealed { assets.srcDir(new File(packOutput.get().asFile, "assets")); jniLibs.srcDir(new File(packOutput.get().asFile, "jniLibs")) }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}
+
+def fetchPackDebs = tasks.register("fetchPackDebs") {
+    description = "Fetches the build-tools packages for the on-demand pack"
+    inputs.property("packages", packPackages.join(" "))
+    inputs.property("repo", packRepo)
+    inputs.file(rootProject.file("scripts/fetch-core-debs.py"))
+    outputs.dir(packDebDir)
+    doLast {
+        File script = rootProject.file("scripts/fetch-core-debs.py")
+        packArch.each { arch, abi ->
+            File output = new File(packDebDir.get().asFile, abi)
+            output.mkdirs()
+            File record = new File(packDebDir.get().asFile, "fetch-pack-debs-${abi}.log")
+            def fetch = providers.exec {
+                commandLine(["python3", script.absolutePath,
+                    "--arch", arch,
+                    "--out", output.absolutePath,
+                    "--repo", packRepo,
+                    "--log", record.absolutePath,
+                    "--packages"] + packPackages)
+            }
+            def result = fetch.result.get()
+            fetch.standardOutput.asText.get().readLines().each { logger.lifecycle(it) }
+            result.assertNormalExitValue()
+        }
+    }
+}
+
+def buildPackPayload = tasks.register("buildPackPayload") {
+    description = "Splits the pack's packages into a sealed payload for the feature module"
+    dependsOn(fetchPackDebs)
+    inputs.dir(packDebDir)
+    inputs.property("prefix", packAssetPrefix)
+    inputs.file(rootProject.file("scripts/build-sealed-payload.py"))
+    outputs.dir(packOutput)
+    doLast {
+        File script = rootProject.file("scripts/build-sealed-payload.py")
+        packArch.each { arch, abi ->
+            File debs = new File(packDebDir.get().asFile, abi)
+            if (!debs.isDirectory()) throw new GradleException("pack packages missing: ${debs}")
+            File log = new File(packOutput.get().asFile, "pack-payload-${abi}.log")
+            log.parentFile.mkdirs()
+            // No --bootstrap: a pack carries only its own packages.
+            def split = providers.exec {
+                commandLine(["python3", script.absolutePath,
+                    "--abi", abi,
+                    "--out", packOutput.get().asFile.absolutePath,
+                    "--deb-dir", debs.absolutePath,
+                    "--asset-prefix", packAssetPrefix,
+                    "--log", log.absolutePath])
+            }
+            def result = split.result.get()
+            split.standardOutput.asText.get().readLines().each { logger.lifecycle(it) }
+            result.assertNormalExitValue()
+        }
+        new File(packOutput.get().asFile, "pack-id.txt").text = packId + "\n"
+    }
+}
+
+// Build the payload before anything packages it. Naming the tasks keeps the
+// dependency narrow: a `pre*` wildcard would also fire on prepare tasks that
+// have nothing to do with the payload and make the graph harder to read.
+tasks.matching {
+    (it.name.startsWith("merge") && (it.name.endsWith("Assets") || it.name.contains("JniLibFolders")))
+        || it.name in ["preBuild", "preDebugBuild", "preReleaseBuild", "preSealedBuild"]
+}.configureEach {
+    dependsOn(buildPackPayload)
+}
+
+dependencies {
+    implementation project(":app")
+}

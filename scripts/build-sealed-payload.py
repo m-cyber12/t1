@@ -558,7 +558,7 @@ def ensure_dependencies(sealed, libraries, payload, kept_links):
 # --------------------------------------------------------------------------- #
 
 def write_payload(out_dir, abi, tree, sealed, libraries, payload, kept_links,
-                  unique, scripts, sources):
+                  unique, scripts, sources, prefix=""):
     assets_dir = os.path.join(out_dir, "assets")
     jni_dir = os.path.join(out_dir, "jniLibs", abi)
     os.makedirs(assets_dir, exist_ok=True)
@@ -566,7 +566,7 @@ def write_payload(out_dir, abi, tree, sealed, libraries, payload, kept_links,
     for stale in os.listdir(jni_dir):
         os.unlink(os.path.join(jni_dir, stale))
 
-    userland = os.path.join(assets_dir, "userland-%s.zip" % abi)
+    userland = os.path.join(assets_dir, "%suserland-%s.zip" % (prefix, abi))
     with zipfile.ZipFile(userland, "w", zipfile.ZIP_DEFLATED, compresslevel=9) as archive:
         for path, content in sorted(payload.items()):
             archive.writestr(path, content)
@@ -577,7 +577,7 @@ def write_payload(out_dir, abi, tree, sealed, libraries, payload, kept_links,
             handle.write(content)
         os.chmod(target, 0o755)
 
-    with open(os.path.join(assets_dir, "sealed-exec-%s.txt" % abi), "w", encoding="utf-8") as handle:
+    with open(os.path.join(assets_dir, "%ssealed-exec-%s.txt" % (prefix, abi)), "w", encoding="utf-8") as handle:
         handle.write("# prefix-relative executable path\tJNI library (shipped by the APK)\n")
         for path, library in sorted(sealed.items()):
             handle.write("%s\t%s\n" % (path, library))
@@ -586,12 +586,12 @@ def write_payload(out_dir, abi, tree, sealed, libraries, payload, kept_links,
     # (runtime-manifest.json) but line-oriented so a Python build, a Java kernel
     # and a TypeScript harness all read it with no parser at all. The installer
     # hashes while it writes, so verification costs no extra I/O on device.
-    with open(os.path.join(assets_dir, "sealed-manifest-%s.txt" % abi), "w", encoding="utf-8") as handle:
+    with open(os.path.join(assets_dir, "%ssealed-manifest-%s.txt" % (prefix, abi)), "w", encoding="utf-8") as handle:
         handle.write("# sha256\tsize\tprefix-relative path\n")
         for path, content in sorted(payload.items()):
             handle.write("%s\t%d\t%s\n" % (hashlib.sha256(content).hexdigest(), len(content), path))
 
-    with open(os.path.join(assets_dir, "sealed-symlinks-%s.txt" % abi), "w", encoding="utf-8") as handle:
+    with open(os.path.join(assets_dir, "%ssealed-symlinks-%s.txt" % (prefix, abi)), "w", encoding="utf-8") as handle:
         handle.write("# prefix-relative link\tprefix-relative target (data, created at install)\n")
         for path, target in sorted(kept_links.items()):
             handle.write("%s\t%s\n" % (path, target))
@@ -601,12 +601,12 @@ def write_payload(out_dir, abi, tree, sealed, libraries, payload, kept_links,
     # first install of 13k files takes minutes on a phone) and a changed one is
     # always replaced - including across an app upgrade.
     identity = hashlib.sha256()
-    for name in ("sealed-manifest", "sealed-exec", "sealed-symlinks"):
+    for name in (("%ssealed-manifest" % prefix, "%ssealed-exec" % prefix, "%ssealed-symlinks" % prefix)):
         with open(os.path.join(assets_dir, "%s-%s.txt" % (name, abi)), "rb") as handle:
             identity.update(handle.read())
     identity.update(str(os.path.getsize(userland)).encode("ascii"))
     payload_id = identity.hexdigest()[:16]
-    with open(os.path.join(assets_dir, "sealed-payload-id-%s.txt" % abi), "w", encoding="utf-8") as handle:
+    with open(os.path.join(assets_dir, "%ssealed-payload-id-%s.txt" % (prefix, abi)), "w", encoding="utf-8") as handle:
         handle.write(payload_id + "\n")
 
     problems = []
@@ -618,7 +618,7 @@ def write_payload(out_dir, abi, tree, sealed, libraries, payload, kept_links,
     for name in sorted(os.listdir(jni_dir)):
         if not name.startswith("lib") or not name.endswith(".so"):
             problems.append("bad library name: %s" % name)
-    manifest_path = os.path.join(assets_dir, "sealed-manifest-%s.txt" % abi)
+    manifest_path = os.path.join(assets_dir, "%ssealed-manifest-%s.txt" % (prefix, abi))
     manifest_lines = [line for line in open(manifest_path, encoding="utf-8").read().splitlines()
                       if line and not line.startswith("#")]
     if len(manifest_lines) != len(payload):
@@ -657,7 +657,7 @@ def write_payload(out_dir, abi, tree, sealed, libraries, payload, kept_links,
             for name in sorted(libraries)
         },
     }
-    with open(os.path.join(assets_dir, "sealed-payload-%s.json" % abi), "w", encoding="utf-8") as handle:
+    with open(os.path.join(assets_dir, "%ssealed-payload-%s.json" % (prefix, abi)), "w", encoding="utf-8") as handle:
         json.dump(report, handle, indent=2, sort_keys=True)
 
     print("sealed payload %s: %d executables -> %d unique binaries shipped as JNI "
@@ -669,13 +669,14 @@ def write_payload(out_dir, abi, tree, sealed, libraries, payload, kept_links,
     return report
 
 
-def build(bootstrap, abi, out_dir, deb_dir=None):
-    if not os.path.isfile(bootstrap):
-        raise SystemExit("bootstrap not found: %s" % bootstrap)
-
+def build(bootstrap, abi, out_dir, deb_dir=None, prefix=""):
     tree = Tree()
-    read_bootstrap(bootstrap, tree)
-    sources = [{"kind": "bootstrap", "artifact": os.path.basename(bootstrap)}]
+    sources = []
+    if bootstrap:
+        if not os.path.isfile(bootstrap):
+            raise SystemExit("bootstrap not found: %s" % bootstrap)
+        read_bootstrap(bootstrap, tree)
+        sources.append({"kind": "bootstrap", "artifact": os.path.basename(bootstrap)})
 
     stanzas = []
     if deb_dir and os.path.isdir(deb_dir):
@@ -718,15 +719,19 @@ def build(bootstrap, abi, out_dir, deb_dir=None):
             print("sealed-payload: %s" % problem, file=sys.stderr)
         raise SystemExit("sealed payload is missing %d shared library(ies)" % len(problems))
     return write_payload(out_dir, abi, tree, sealed, libraries, payload,
-                         kept_links, unique, scripts, sources)
+                         kept_links, unique, scripts, sources, prefix)
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    parser.add_argument("--bootstrap", required=True, help="ABI-specific bootstrap zip")
+    parser.add_argument("--bootstrap",
+                        help="ABI-specific bootstrap zip; omit to build a pack payload that "
+                             "contains only the packages given in --deb-dir")
     parser.add_argument("--abi", required=True, choices=["arm64-v8a", "x86_64"])
     parser.add_argument("--out", required=True, help="output directory")
     parser.add_argument("--deb-dir", help="directory of .deb files (and packages.json)")
+    parser.add_argument("--asset-prefix", default="",
+                        help="prefix for the emitted asset names, e.g. 'pack-buildtools-'")
     parser.add_argument("--log", help="write a transcript here (the build reads it on failure)")
     arguments = parser.parse_args()
     if arguments.log:
@@ -749,7 +754,8 @@ def main():
         sys.stdout = Tee(sys.stdout, handle)
         sys.stderr = Tee(sys.stderr, handle)
     try:
-        build(arguments.bootstrap, arguments.abi, arguments.out, arguments.deb_dir)
+        build(arguments.bootstrap, arguments.abi, arguments.out, arguments.deb_dir,
+              arguments.asset_prefix)
     except BaseException as error:
         print("sealed-payload: %s" % error, file=sys.stderr)
         raise

@@ -352,3 +352,88 @@ unnecessary costs either the Play listing or the ability to `apt install`.
 The measured baseline in `ARCHITECTURE.md` §8 (`a01`–`a04`) stays the
 correctness gate for the shared 90 %; the new `ExecModelTest` gate is the
 publishability gate.
+
+## Closing the gaps
+
+Each gap from the table above, and the thing that now closes it. The distinction
+that matters: a gap is closed when **CI fails if it reopens**, not when a
+document says it is handled.
+
+### 1. Optional tools, without downloading code
+
+The store build may not fetch executables (Play "Device and Network Abuse"), and
+it cannot expect a user to pay for clang in every install. So optional tools are
+a **Play Feature Delivery module**: `pack-buildtools/` is a
+`com.android.dynamic-feature` with `<dist:on-demand/>`, shipping
+`assets/pack-buildtools-userland-<abi>.zip` and `dist:fusing include="true"`. The
+fusing flag is what lets an emulator gate see the pack at all: CI builds the AAB,
+asks bundletool for a universal APK and installs that, which is the same artefact
+shape Play delivers — `:app:assembleSealed` on its own never contains the pack.
+
+Two channels behind one port, chosen by one predicate:
+
+| Build | Channel | Class |
+|---|---|---|
+| Sealed (store) | Play module, payload extracted into the prefix | `PlayPackInstaller` |
+| Installable (F-Droid/direct) | `apt`, via the provisioning tiers | `AptPackInstaller` |
+
+`Packs.installer()` decides by asking whether the APK carries a sealed payload.
+A store build therefore **cannot** fall back to `apt`, and an installable build
+never asks for a module it does not have.
+
+Removal is exact and is unit-tested on the JVM
+(`sealed-runtime/.../PackPayloadTest.java`): the payload's own manifests name the
+files it wrote and the executables it linked, and removal deletes those and only
+those — a file whose size disagrees is left alone, an escaping path is never a
+candidate. The runtime underneath is untouched, which is what makes it safe to
+put a Remove button next to it.
+
+**Gate:** `SealedShellTest.packsComeFromTheStoreAndNeverFromApt` asserts (a) the
+sealed build answers on the store channel, (b) a fused pack installs, runs, and
+removes, or the refusal is honest and installs nothing, (c) `git` still works
+afterwards. CI runs it twice: on the plain APK (no pack present, so the refusal
+path) and on a bundletool universal APK built from the bundle (the fused path),
+where the tool actually runs and the removal actually happens on the device. `ci/play-exec-model.yml` also fails if the bundle has no
+`pack_buildtools` module, no payload, or a module that is not on-demand.
+
+### 2. Target API 36, from 2026-08-31
+
+New apps and updates must target API 36 from that date (extension to 2026-11-01).
+The sealed build does; the legacy `targetSdk 28` freeze that Termux relies on is
+confined to builds that are not publishable, because Android 10+ forbids
+`execve()` on app-data files and targeting 29+ would break a payload laid down in
+`files/`. A sealed build does not have that problem: its executables are in
+`nativeLibraryDir` and its data files are never executed.
+
+**Gate:** CI builds and runs the sealed variant at target 36 on API 36, and the
+target SDK is a `-PharnessTargetSdk` property so the same source can be measured
+at 28 and 34 for the evidence table.
+
+### 3. Release engineering
+
+`app/build.gradle` reads the signing key from `keystore.properties` or the
+environment and **fails closed**: with no key it stays debug-signed and says so
+when you build a bundle (`signing bundleRelease with the debug key - set
+keystore.properties before uploading this artifact`). Keys and passwords are
+git-ignored; no key material is in the repository.
+
+The upload artefact is an AAB, not an APK, because Play delivers split APKs and
+the pack module needs to arrive separately. `store/release-checklist.md` is the
+ordered set of steps, `store/listing.md` the listing text,
+`store/data-safety.md` the declaration answers (none collected, with the code
+that makes that true).
+
+### 4. Size
+
+Play caps a base module at 200 MB. The toolchain fits, and the heavy optional
+piece (clang and friends) is the pack. CI prints the base-module byte count on
+every run and the number is recorded with the run rather than in prose.
+
+### 5. What is still not closed (and cannot be from here)
+
+- The store listing's graphics (icon, feature graphic, screenshots) are a human
+  step; `store/listing.md` specifies them.
+- The privacy-policy URL needs hosting.
+- An upload key must be created and backed up by the release owner.
+- A real Play-installed build must be smoke-tested on a device before rollout —
+  the emulator gates prove the code path, not the Play Console's delivery.

@@ -138,7 +138,11 @@ jobs:
       # hash check that protects a pinned payload.
       - name: Test the sealed payload pipeline
         shell: bash
-        run: python3 scripts/tests/test-sealed-payload.py
+        run: |
+          set -e
+          python3 scripts/tests/test-sealed-payload.py
+          # The store tripwire is arithmetic, so it is tested with arithmetic.
+          python3 scripts/tests/test-check-bundle-size.py
 
       - name: Verify APK contents
         shell: bash

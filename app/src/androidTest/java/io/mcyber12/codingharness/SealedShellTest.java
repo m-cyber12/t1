@@ -20,6 +20,11 @@ import io.mcyber12.codingharness.core.HarnessBootstrap;
 import io.mcyber12.codingharness.core.HarnessConfig;
 import io.mcyber12.sealed.ExecAudit;
 import io.mcyber12.codingharness.core.exec.SealedPayloadInstaller;
+import io.mcyber12.codingharness.core.packs.Pack;
+import io.mcyber12.codingharness.core.packs.PackInstaller;
+import io.mcyber12.codingharness.core.packs.PackResult;
+import io.mcyber12.codingharness.core.packs.PackState;
+import io.mcyber12.codingharness.core.packs.Packs;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertEquals;
@@ -179,6 +184,70 @@ public class SealedShellTest {
                     database.indexOf("\n", at) + 1));
         }
         report("sealed-shell: dpkg records the shipped packages as installed");
+    }
+
+    /**
+     * The pack channel of a store build.
+     *
+     * <p>An optional pack may not arrive through {@code apt} here: Play's rules
+     * forbid downloading executable code, and this APK's own binaries already
+     * run out of the APK. So the sealed build must answer on the store channel —
+     * and when the device has no store, it must say so and leave the runtime
+     * alone, rather than quietly installing packages on the side.</p>
+     *
+     * <p>A universal APK that fuses the pack module exercises the other branch:
+     * the payload is local, so the pack installs and must then be removable.</p>
+     */
+    @Test
+    public void packsComeFromTheStoreAndNeverFromApt() throws Exception {
+        HarnessConfig config = HarnessConfig.builder(context).build();
+        // This test may run alone (the pack gate instruments just this method),
+        // so it installs the runtime it is about to add to.
+        SealedPayloadInstaller.Result base = SealedPayloadInstaller.install(context, config);
+        assumeTrue("not the sealed variant", base != null);
+        assertTrue("the core payload did not install: " + base.summary(), base.ok());
+
+        PackInstaller packs = Packs.installer(context, config);
+        assertEquals("a sealed build must use the store channel",
+            "play-feature-delivery", packs.channel());
+
+        PackState before = packs.state(Pack.BUILD_TOOLS);
+        report("sealed-shell: pack state before -> " + before.describe());
+        assertTrue("a sealed build must know where the pack would come from",
+            before.isInstalled() || before.isInstallable()
+                || before.status == PackState.Status.UNAVAILABLE);
+
+        PackResult result = packs.install(Pack.BUILD_TOOLS);
+        report("sealed-shell: pack install -> " + result.describe());
+
+        HarnessCommandRunner runner = new HarnessCommandRunner(config);
+        if (result.kind == PackResult.Kind.INSTALLED) {
+            // A fused module: the pack's own tools must run, from the APK.
+            File make = new File(config.prefix, "bin/make");
+            assertTrue("pack installed but make is missing: " + make, make.exists());
+            HarnessCommandRunner.CommandResult ran = runner.run(make.getAbsolutePath(), "--version");
+            report("sealed-shell: make -> exit " + ran.exitCode + " : "
+                + ran.output.replace("\n", " | ").trim());
+            assertTrue("the pack's tools do not run: " + ran.output, ran.isSuccess());
+
+            PackResult removed = packs.remove(Pack.BUILD_TOOLS);
+            report("sealed-shell: pack remove -> " + removed.describe());
+            assertEquals("the pack did not come back out", PackResult.Kind.REMOVED, removed.kind);
+            assertTrue("removal left the tool behind", !new File(config.prefix, "bin/make").exists());
+        } else {
+            // No store on this device and no fused module: an honest refusal.
+            assertTrue("unexpected pack outcome: " + result.describe(),
+                result.kind == PackResult.Kind.UNAVAILABLE
+                    || result.kind == PackResult.Kind.DELIVERY_FAILED);
+            assertTrue("the refusal must not have installed anything: "
+                + result.describe(), !new File(config.prefix, "bin/clang").exists());
+        }
+
+        // Whatever happened to the pack, the runtime underneath is intact.
+        File git = new File(config.prefix, "bin/git");
+        HarnessCommandRunner.CommandResult gitRan = runner.run(git.getAbsolutePath(), "--version");
+        report("sealed-shell: git after pack attempt -> exit " + gitRan.exitCode);
+        assertTrue("the pack attempt damaged the core runtime", gitRan.isSuccess());
     }
 
     /** Append to the report the CI pulls, and to logcat so a failure is visible. */
