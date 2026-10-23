@@ -1,0 +1,29 @@
+[20:01:25] phase=install-system-image
+build-tools
+cmake
+cmdline-tools
+extras
+licenses
+ndk
+packages-list.txt
+platform-tools
+platforms
+repositories.cfg
+[20:02:31] phase=create-avd
+ANDROID_AVD_HOME=/home/runner/.android/avd
+dataPartition: disk.dataPartition.size=16384M
+total 16
+drwxr-xr-x 3 runner runner 4096 Oct 23 20:02 .
+drwxr-xr-x 3 runner runner 4096 Oct 23 20:02 ..
+drwxr-xr-x 2 runner runner 4096 Oct 23 20:02 e2e.avd
+-rw-r--r-- 1 runner runner   80 Oct 23 20:02 e2e.ini
+[20:02:34] phase=launch-emulator
+KVM unavailable; using -no-accel (software emulation)
+[20:05:59] phase=network-check
+[20:07:45] phase=device-ready
+device ready: sdk=34 (attempt 1)
+[20:07:47] phase=connected-test
+task=:app:connectedDebugAndroidTest class=<all> props=none
+ANDROID_SERIAL=emulator-5554
+:app:connectedDebugAndroidTest exit=0
+adb: error: failed to stat remote object '/sdcard/Android/data/io.mcyber12.codingharness/files/setup-e2e-report.txt': No such file or directory
