@@ -237,7 +237,8 @@ public final class ExecAudit {
             || relative.contains("/lib/") || relative.endsWith(".so");
     }
 
-    static String readLink(File file) {
+    /** The literal target text of a symlink, or null. Public: diagnostics use it. */
+    public static String readLink(File file) {
         try {
             return Files.readSymbolicLink(file.toPath()).toString();
         } catch (IOException | UnsupportedOperationException e) {
