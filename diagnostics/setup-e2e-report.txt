@@ -1,0 +1,6 @@
+sealed-shell: second startup took 16 ms (no re-extract)
+sealed-shell: dpkg records the shipped packages as installed
+sealed-shell: payload abi=x86_64 targetSdk=36
+sealed-shell: sealed payload (x86_64): 13858 data files, 1173 data links, 535 executables from the APK, 13858 verified
+sealed-shell: bin/bash -> /data/app/~~TDS2jGKCxIN1oK3PH4_e1g==/io.mcyber12.codingharness-aWqDtTsdpAOox_IcoyBGKA==/lib/x86_64/libbash.so
+sealed-shell: bash -> exit 0 : SEALED-SHELL-OK | version=5.3.9(1)-release | prefix=/data/user/0/io.mcyber12.codingharness/files/coding-harness/rootfs/data/data/com.termux/files/usr | path=/data/user/0/io.mcyber12.codingharness/files/coding-harness/rootfs/data/data/com.termux/files/usr/bin:/data/user/0/io.mcyber12.codingharness/files/coding-harness/workspace/node_modules/.bin:/system/bin:/system/xbin | /data/user/0/io.mcyber12.codingharness/files/coding-harness/rootfs/data/data/com.termux/files/usr/bin/sed | exit-ok |
