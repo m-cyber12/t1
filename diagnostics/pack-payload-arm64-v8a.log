@@ -1,0 +1,7 @@
+unpacked make_4.4.1-1_aarch64.deb                           7 files
+unpacked pkg-config_0.29.2-3_aarch64.deb                    4 files
+unpacked glib_2.90.1_aarch64.deb                          395 files
+unpacked libandroid-support_29-1_aarch64.deb                3 files
+unpacked resolv-conf_1.3_aarch64.deb                        2 files
+dpkg status: 5 packages marked installed (0 replaced, 5 added)
+sealed payload arm64-v8a: 16 executables -> 16 unique binaries shipped as JNI libraries (0.8 MiB), 396 data files (3.9 MiB), 12 data links, 0 scripts in the payload
