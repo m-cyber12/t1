@@ -166,6 +166,7 @@ jobs:
           mkdir -p diagnostics-tests
           tail -c 40000 gradle-build.log > diagnostics-tests/gradle-tail.txt 2>/dev/null || true
           cp apk-native-check.txt diagnostics-tests/ 2>/dev/null || true
+          cp app/build/fetch-core-debs-*.log diagnostics-tests/ 2>/dev/null || true
           cp apk-contents.txt diagnostics-tests/ 2>/dev/null || true
           find . -path '*test-results*' -name '*.xml' -exec cp {} diagnostics-tests/ \; 2>/dev/null || true
           find . -path '*test-results*' -name '*.txt' -exec cp {} diagnostics-tests/ \; 2>/dev/null || true

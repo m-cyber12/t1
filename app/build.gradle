@@ -203,8 +203,20 @@ def fetchCoreDebs = tasks.register("fetchCoreDebs") {
                     "--packages"] + project.sealedCorePackages)
             }
             def result = fetch.result.get()
-            fetch.standardOutput.asText.get().readLines().each { logger.lifecycle(it) }
-            fetch.standardError.asText.get().readLines().each { logger.lifecycle(it) }
+            def transcript = []
+            fetch.standardOutput.asText.get().readLines().each {
+                logger.lifecycle(it); transcript << it
+            }
+            fetch.standardError.asText.get().readLines().each {
+                logger.lifecycle(it); transcript << it
+            }
+            // A failure here happens on a networked runner; the Gradle log tail
+            // that CI can reach is dominated by the stack trace, so keep the
+            // resolver's own words in a file the workflow publishes.
+            File record = new File(project.layout.buildDirectory.get().asFile,
+                "fetch-core-debs-${abi}.log")
+            record.parentFile.mkdirs()
+            record.text = transcript.join("\n") + "\nexit=${result.exitValue}\n"
             result.assertNormalExitValue()
         }
     }

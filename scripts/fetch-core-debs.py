@@ -27,6 +27,7 @@ Nothing is installed here; `build-sealed-payload.py` unpacks the result.
 """
 
 import argparse
+import gzip
 import hashlib
 import io
 import json
@@ -34,6 +35,7 @@ import lzma
 import os
 import re
 import sys
+import urllib.error
 import urllib.parse
 import urllib.request
 import zipfile
@@ -125,18 +127,42 @@ def split_dependencies(value):
     return groups
 
 
-def index_url(repo, suite, arch):
-    return "%s/dists/%s/main/binary-%s/Packages.xz" % (repo.rstrip("/"), suite, arch)
+def index_candidates(repo, suite, arch):
+    base = "%s/dists/%s/main/binary-%s/Packages" % (repo.rstrip("/"), suite, arch)
+    return [base + ".xz", base + ".gz", base]
 
 
 def load_index(repo, suite, arch):
-    url = index_url(repo, suite, arch)
-    log("index: %s" % url)
-    raw = fetch(url)
-    try:
-        text = lzma.decompress(raw).decode("utf-8", "replace")
-    except lzma.LZMAError:
-        text = raw.decode("utf-8", "replace")
+    text = None
+    tried = []
+    for url in index_candidates(repo, suite, arch):
+        log("index: %s" % url)
+        try:
+            raw = fetch(url)
+        except urllib.error.HTTPError as error:
+            tried.append("%s -> HTTP %s" % (url, error.code))
+            continue
+        except urllib.error.URLError as error:
+            tried.append("%s -> %s" % (url, error.reason))
+            continue
+        if url.endswith(".xz"):
+            try:
+                text = lzma.decompress(raw).decode("utf-8", "replace")
+            except lzma.LZMAError:
+                tried.append("%s -> not xz" % url)
+                continue
+        elif url.endswith(".gz"):
+            try:
+                text = gzip.decompress(raw).decode("utf-8", "replace")
+            except OSError:
+                tried.append("%s -> not gzip" % url)
+                continue
+        else:
+            text = raw.decode("utf-8", "replace")
+        break
+    if text is None:
+        raise SystemExit("could not read a package index from %s\n  %s"
+                         % (repo, "\n  ".join(tried)))
     packages = {}
     provided = {}
     for stanza in parse_stanzas(text):
