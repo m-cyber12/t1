@@ -55,6 +55,14 @@ OFFICIAL_PREFIX = "/data/data/com.termux/files/usr"
 OFFICIAL_DATA = "/data/data/com.termux"
 SYMLINK_SEPARATOR = "\u2190"  # Termux's own SYMLINKS.txt separator
 
+# The bootstrap carries the Termux packages' own test suites. Their binaries are
+# built against the sanitizer runtimes, which are not part of a usable payload,
+# and nothing in a harness ever runs them - so they are dropped by prefix rather
+# than by chasing libraries that exist only to serve them.
+EXCLUDED_PREFIXES = (
+    "libexec/installed-tests/",
+)
+
 # Directories whose ELF files are shared libraries, not executables: they are
 # dlopen()ed (mmap, always allowed), so they stay in the payload.
 LIBRARY_DIRS = ("lib/", "lib64/")
@@ -150,7 +158,7 @@ def read_bootstrap(bootstrap, tree):
             if info.is_dir():
                 continue
             name = normalize(info.filename)
-            if not name:
+            if not name or name.startswith(EXCLUDED_PREFIXES):
                 continue
             if name == "SYMLINKS.txt":
                 for raw in archive.read(info).decode("utf-8", "replace").splitlines():

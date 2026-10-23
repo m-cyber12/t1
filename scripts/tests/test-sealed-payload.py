@@ -254,6 +254,8 @@ def main():
         assert "lib/libpython3.12.so" not in execs
         # a binary that needs libperl.so gets the link its package omits
         assert links.get("lib/libperl.so") == "lib/libperl.so.5.40.0", links
+        # Termux's sanitizer test binaries are dropped, not chased for libraries
+        assert not any("installed-tests" in path for path in execs), execs
         # the audit of the produced payload
         assert report["libraries"] == report["uniqueBinaries"]
         assert report["scripts"] >= 1, report
