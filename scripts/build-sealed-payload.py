@@ -18,6 +18,8 @@ Output:
     assets/userland-<abi>.zip          data tree (prefix-relative)
     assets/sealed-exec-<abi>.txt       "<prefix path>\\t<library>"
     assets/sealed-symlinks-<abi>.txt   data links, prefix-relative both sides
+    assets/sealed-payload-id-<abi>.txt short identity, so the app can skip a
+                                       re-extract when nothing changed
     assets/sealed-payload-<abi>.json   counts, sizes, per-library hashes
     jniLibs/<abi>/lib<name>.so         the executables themselves
 
@@ -263,6 +265,106 @@ def read_deb(path, tree, name):
 
 
 # --------------------------------------------------------------------------- #
+# dpkg state
+# --------------------------------------------------------------------------- #
+
+# Fields that describe a .deb file rather than an installed package; dpkg keeps
+# them in the repository index, not in /var/lib/dpkg/status.
+DEB_ONLY_FIELDS = {
+    "filename", "size", "md5sum", "sha1", "sha256", "sha512", "tag",
+    "description-md5", "installed-size",
+}
+
+
+def deb_control(path):
+    """The `control` file of a .deb, as text (empty when it cannot be read)."""
+    for name, data in ar_members(path):
+        if not name.startswith("control.tar"):
+            continue
+        if name.endswith(".xz"):
+            data = lzma.decompress(data)
+        elif name.endswith(".gz"):
+            data = gzip.decompress(data)
+        with tarfile.open(fileobj=io.BytesIO(data), mode="r:") as tar:
+            for member in tar:
+                if normalize(member.name) in ("control", "./control"):
+                    handle = tar.extractfile(member)
+                    if handle is not None:
+                        return handle.read().decode("utf-8", "replace")
+    return ""
+
+
+def status_stanza(control_text):
+    """Turn a control paragraph into a status paragraph, or None."""
+    fields = []
+    name = None
+    for line in control_text.splitlines():
+        if not line.strip():
+            continue
+        if line[0] in " \t" and fields:      # continuation line
+            fields[-1][1] += "\n" + line
+            continue
+        key, _, value = line.partition(":")
+        key = key.strip()
+        if not key:
+            continue
+        fields.append([key, value.strip()])
+        if key.lower() == "package":
+            name = value.strip()
+    if not name:
+        return None
+    lines = ["Package: " + name, "Status: install ok installed"]
+    for key, value in fields:
+        if key.lower() in DEB_ONLY_FIELDS or key.lower() == "package":
+            continue
+        if key.lower() == "status":
+            continue
+        lines.append("%s: %s" % (key, value))
+    return name, "\n".join(lines) + "\n"
+
+
+def merge_status(existing, stanzas):
+    """Merge status paragraphs into the bootstrap's /var/lib/dpkg/status.
+
+    A sealed payload installs packages by unpacking them, so dpkg's own database
+    still describes the bootstrap it came from: `apt` would offer to install
+    packages whose files are already in the prefix, and would report versions
+    that are not the ones shipped. Every paragraph for a shipped package is
+    therefore replaced with the shipped control data and marked installed; a
+    package the payload did not ship keeps whatever the bootstrap said.
+
+    No `.list` files are written on purpose: a wrong path base in them would be
+    worse than their absence (removal would act on paths that may not exist),
+    and `Status` alone is what makes `apt` agree with reality.
+    """
+    blocks = []
+    index = {}
+    for block in existing.split("\n\n"):
+        if not block.strip():
+            continue
+        name = None
+        for line in block.splitlines():
+            if line.lower().startswith("package:"):
+                name = line.split(":", 1)[1].strip()
+                break
+        if name:
+            index[name] = len(blocks)
+        blocks.append(block.rstrip("\n"))
+    replaced = 0
+    added = 0
+    for name, stanza in stanzas:
+        if name in index:
+            blocks[index[name]] = stanza.rstrip("\n")
+            replaced += 1
+        else:
+            index[name] = len(blocks)
+            blocks.append(stanza.rstrip("\n"))
+            added += 1
+    return "\n\n".join(blocks) + "\n", replaced, added
+
+
+
+# --------------------------------------------------------------------------- #
 # split
 # --------------------------------------------------------------------------- #
 
@@ -494,6 +596,19 @@ def write_payload(out_dir, abi, tree, sealed, libraries, payload, kept_links,
         for path, target in sorted(kept_links.items()):
             handle.write("%s\t%s\n" % (path, target))
 
+    # A short, stable identity for this payload. The app compares it with what it
+    # installed last time, so an unchanged payload is never extracted twice (a
+    # first install of 13k files takes minutes on a phone) and a changed one is
+    # always replaced - including across an app upgrade.
+    identity = hashlib.sha256()
+    for name in ("sealed-manifest", "sealed-exec", "sealed-symlinks"):
+        with open(os.path.join(assets_dir, "%s-%s.txt" % (name, abi)), "rb") as handle:
+            identity.update(handle.read())
+    identity.update(str(os.path.getsize(userland)).encode("ascii"))
+    payload_id = identity.hexdigest()[:16]
+    with open(os.path.join(assets_dir, "sealed-payload-id-%s.txt" % abi), "w", encoding="utf-8") as handle:
+        handle.write(payload_id + "\n")
+
     problems = []
     with zipfile.ZipFile(userland) as archive:
         for info in archive.infolist():
@@ -562,6 +677,7 @@ def build(bootstrap, abi, out_dir, deb_dir=None):
     read_bootstrap(bootstrap, tree)
     sources = [{"kind": "bootstrap", "artifact": os.path.basename(bootstrap)}]
 
+    stanzas = []
     if deb_dir and os.path.isdir(deb_dir):
         order = []
         manifest = os.path.join(deb_dir, "packages.json")
@@ -572,9 +688,23 @@ def build(bootstrap, abi, out_dir, deb_dir=None):
         available = sorted(name for name in os.listdir(deb_dir) if name.endswith(".deb"))
         for name in [n for n in order if n in available] + \
                     [n for n in available if n not in order]:
-            files = read_deb(os.path.join(deb_dir, name), tree, name)
+            location = os.path.join(deb_dir, name)
+            files = read_deb(location, tree, name)
             sources.append({"kind": "deb", "artifact": name, "files": files})
             print("unpacked %-46s %5d files" % (name, files))
+            stanza = status_stanza(deb_control(location))
+            if stanza is not None:
+                stanzas.append(stanza)
+
+    if stanzas:
+        status_path = "var/lib/dpkg/status"
+        existing = tree.files.get(status_path)
+        text = existing.decode("utf-8", "replace") if existing else ""
+        merged, replaced, added = merge_status(text, stanzas)
+        tree.add_file(status_path, merged.encode("utf-8"),
+                      tree.modes.get(status_path, 0o644), "dpkg-state")
+        print("dpkg status: %d packages marked installed (%d replaced, %d added)"
+              % (len(stanzas), replaced, added))
 
     sealed, libraries, payload, kept_links, unique, scripts = split(tree)
     if not sealed:

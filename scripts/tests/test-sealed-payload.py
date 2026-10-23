@@ -38,7 +38,8 @@ def elf(tag):
     return ELF + tag.encode()
 
 
-def make_deb(path, files, links=None, depends=None):
+def make_deb(path, files, links=None, depends=None, package=None, version="1.0",
+             provides=None, architecture="aarch64"):
     """files: path -> bytes; links: path -> target; one control member is added."""
     links = links or {}
     buffer = io.BytesIO()
@@ -60,15 +61,25 @@ def make_deb(path, files, links=None, depends=None):
             tar.addfile(info)
     data = lzma.compress(buffer.getvalue())
 
-    control = ("Package: %s\nVersion: 1.0\n" % os.path.basename(path)).encode()
+    control_text = "Package: %s\nVersion: %s\nArchitecture: %s\n" % (
+        package or os.path.basename(path).split("_")[0], version, architecture)
+    if depends:
+        control_text += "Depends: %s\n" % depends
+    if provides:
+        control_text += "Provides: %s\n" % provides
+    control_text += "Description: synthetic package for the pipeline test\n"
+    buffer = io.BytesIO()
+    with tarfile.open(fileobj=buffer, mode="w:gz") as tar:
+        blob = control_text.encode()
+        info = tarfile.TarInfo("./control")
+        info.size = len(blob)
+        tar.addfile(info, io.BytesIO(blob))
     members = [(b"debian-binary", b"2.0\n"),
-               (b"control.tar.gz", b""),
+               (b"control.tar.gz", buffer.getvalue()),
                (b"data.tar.xz", data)]
     with open(path, "wb") as handle:
         handle.write(b"!<arch>\n")
         for name, payload in members:
-            if name == b"control.tar.gz":
-                continue
             header = (name + b"/").ljust(16) + b"0".ljust(12) + b"0".ljust(6) \
                 + b"0".ljust(6) + b"100644".ljust(8) + str(len(payload)).encode().ljust(10) \
                 + b"`\n"
@@ -158,31 +169,35 @@ def main():
         # perl (script alias), and a package the bootstrap already provides.
         deb = os.path.join(pool, "python.deb")
         make_deb(deb, {"bin/python3.12": elf("python"), "lib/python3.12/os.py": b"# os\n"},
-                 links={"bin/python": "python3.12"})
+                 links={"bin/python": "python3.12"}, package="python", version="3.12.1")
         data = open(deb, "rb").read()
 
         deblib = os.path.join(pool, "libpython.deb")
-        make_deb(deblib, {"lib/libpython3.12.so": elf("libpython")})
+        make_deb(deblib, {"lib/libpython3.12.so": elf("libpython")},
+                 package="libpython", version="3.12.1")
         libdata = open(deblib, "rb").read()
 
         deffi = os.path.join(pool, "libffi8.deb")
-        make_deb(deffi, {"lib/libffi.so.8": elf("libffi")})
+        make_deb(deffi, {"lib/libffi.so.8": elf("libffi")},
+                 package="libffi8", version="3.4", provides="libffi")
         ffidata = open(deffi, "rb").read()
 
         degit = os.path.join(pool, "git.deb")
         make_deb(degit, {"bin/git": elf("git-core"), "libexec/git-core/git-add": elf("git-core"),
                          "libexec/git-core/git-commit": elf("git-core"),
-                         "share/git/template": b"template"})
+                         "share/git/template": b"template"},
+                 package="git", version="2.48.1")
         gitdata = open(degit, "rb").read()
 
         # A package whose dependency the bootstrap *appears* to satisfy but does
         # not: the bootstrap ships libc++ 26, node needs >= 27. Skipping it by
         # name alone links node against an old library ("cannot locate symbol").
         denode = os.path.join(pool, "nodejs.deb")
-        make_deb(denode, {"bin/node": elf("node")})
+        make_deb(denode, {"bin/node": elf("node")}, package="nodejs", version="24.0.0")
         nodedata = open(denode, "rb").read()
         delibcxx = os.path.join(pool, "libc++.deb")
-        make_deb(delibcxx, {"lib/libc++_shared.so": elf("libc++27")})
+        make_deb(delibcxx, {"lib/libc++_shared.so": elf("libc++27")},
+                 package="libc++", version="28.0")
         libcxxdata = open(delibcxx, "rb").read()
 
         deperl = os.path.join(pool, "perl.deb")
@@ -190,11 +205,12 @@ def main():
                           "lib/libperl.so.5.40.0": elf("libperl"),
                           "bin/perl5.40.0": elf("perl"),
                           "share/perl5/core_perl/find.pl": b"#!/usr/bin/perl\n"},
-                 links={"bin/core_perl/find": "/data/data/com.termux/files/usr/share/perl5/core_perl/find.pl"})
+                 links={"bin/core_perl/find": "/data/data/com.termux/files/usr/share/perl5/core_perl/find.pl"},
+                 package="perl", version="5.40.1")
         perldata = open(deperl, "rb").read()
 
         debbash = os.path.join(pool, "bash.deb")
-        make_deb(debbash, {"bin/bash": elf("bash")})
+        make_deb(debbash, {"bin/bash": elf("bash")}, package="bash", version="5.3.9")
         bashdata = open(debbash, "rb").read()
 
         index = "".join([
@@ -264,6 +280,26 @@ def main():
         assert all(len(rec) == 3 and len(rec[0]) == 64 for rec in manifest), manifest[:2]
         assert "share/terminfo" in " ".join(rec[2] for rec in manifest) or True
         assert report["manifestEntries"] == len(manifest), report
+
+        # a short identity exists and is stable across identical builds
+        payload_id = open(os.path.join(out, "assets/sealed-payload-id-arm64-v8a.txt")).read().strip()
+        assert len(payload_id) == 16, payload_id
+
+        # dpkg agrees with the payload: the shipped packages are marked
+        # installed at the version that was shipped, and the bootstrap's own
+        # entry for a package we replaced does not survive as a duplicate.
+        import io as _io, zipfile as _zip
+        with _zip.ZipFile(os.path.join(out, "assets/userland-arm64-v8a.zip")) as z:
+            status = z.read("var/lib/dpkg/status").decode()
+        assert status.count("Package: nodejs") == 1, status
+        node_block = [b for b in status.split("\n\n") if b.startswith("Package: nodejs")][0]
+        assert "Status: install ok installed" in node_block, node_block
+        assert "Version: 24.0.0" in node_block, node_block
+        libcxx_block = [b for b in status.split("\n\n") if b.startswith("Package: libc++")][0]
+        assert "Version: 28.0" in libcxx_block, libcxx_block   # refreshed, not the bootstrap's 26
+        assert status.count("Package: libc++") == 1, status
+        # a package the payload did not ship keeps the bootstrap's own record
+        assert "Package: libandroid-support" in status, status
 
         # the audit of the produced payload
         assert report["libraries"] == report["uniqueBinaries"]

@@ -79,6 +79,8 @@ public final class SealedPayloadInstaller {
 
     /** Asset names are per ABI, because the bytes are per ABI. */
     public static String userlandAsset(String abi) { return "userland-" + abi + ".zip"; }
+    /** Short identity of the payload, written by the build script. */
+    public static String idAsset(String abi) { return "sealed-payload-id-" + abi + ".txt"; }
     public static String manifestAsset(String abi) { return "sealed-manifest-" + abi + ".txt"; }
     public static String execAsset(String abi) { return "sealed-exec-" + abi + ".txt"; }
     public static String linksAsset(String abi) { return "sealed-symlinks-" + abi + ".txt"; }
@@ -102,6 +104,23 @@ public final class SealedPayloadInstaller {
             if (isAvailable(context, candidate)) return candidate;
         }
         return null;
+    }
+
+    /**
+     * The payload's identity, or null when this APK has no payload (or an old
+     * one without an identity asset).
+     */
+    public static String payloadIdentity(Context context, String abi) {
+        try (InputStream input = context.getAssets().open(idAsset(abi))) {
+            java.io.ByteArrayOutputStream buffer = new java.io.ByteArrayOutputStream();
+            byte[] chunk = new byte[256];
+            int count;
+            while ((count = input.read(chunk)) != -1) buffer.write(chunk, 0, count);
+            String value = new String(buffer.toByteArray(), StandardCharsets.UTF_8).trim();
+            return value.isEmpty() ? null : value;
+        } catch (IOException absent) {
+            return null;
+        }
     }
 
     /**

@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.zip.ZipEntry;
 
+import io.mcyber12.codingharness.core.exec.SealedPayloadInstaller;
 import io.mcyber12.sealed.ExecAudit;
 import io.mcyber12.sealed.SealedLayout;
 import java.util.zip.ZipInputStream;
@@ -61,6 +62,10 @@ public final class HarnessBootstrap {
         // Also provision on the fast path: installations from before the
         // preload library existed must gain it without a reinstall.
         ensureHarnessExecLibrary(context, config);
+        // A sealed APK (the store-legal build) carries its userland as assets
+        // and needs no bootstrap download and no apt: install it and stop.
+        // Detection is by asset, so the apt build behaves exactly as before.
+        if (ensureSealedPayload(context, config)) return;
         if (isInstalled(config)) {
             // Heal the sealed layout too: an app upgrade may add executables,
             // and the prefix must never be left pointing at a stale binary.
@@ -179,6 +184,53 @@ public final class HarnessBootstrap {
         writeText(new File(harnessRoot(config), "exec-audit.txt"),
             result.summary() + "\n" + report.toText());
         return result;
+    }
+
+    /**
+     * Install the sealed payload when this APK carries one.
+     *
+     * @return true when a sealed payload was installed, so the caller skips the
+     *         bootstrap/apt path entirely.
+     */
+    public static boolean ensureSealedPayload(Context context, HarnessConfig config)
+            throws IOException {
+        if (context == null || config == null) return false;
+        String abi = SealedPayloadInstaller.pickAbi(context);
+        if (abi == null) return false;
+
+        // Extracting ~14k files takes minutes on a phone, so the payload is
+        // installed when its identity changes and healed in place otherwise.
+        // The identity is a build-time hash of the payload's own manifests, so
+        // an app upgrade that ships a different payload is never skipped.
+        String identity = SealedPayloadInstaller.payloadIdentity(context, abi);
+        File marker = new File(harnessRoot(config), MARKER);
+        if (identity != null && isSealedMarker(marker, abi, identity)) {
+            ensureSealedLayout(context, config);
+            return true;
+        }
+
+        SealedPayloadInstaller.Result result = SealedPayloadInstaller.install(context, config);
+        if (result == null) return false;
+        // The prefix is now whatever the APK shipped, so a stale bootstrap
+        // marker from an earlier apt install must not claim otherwise.
+        writeText(marker, "sealed:" + abi + ":" + (identity == null ? "unknown" : identity));
+        ExecAudit.Report report = ExecAudit.audit(config.prefix, config.nativeLibraryDirectory);
+        writeText(new File(harnessRoot(config), "exec-audit.txt"),
+            result.summary() + "\n" + report.toText());
+        return true;
+    }
+
+    /** True when the marker records this exact payload for this ABI. */
+    private static boolean isSealedMarker(File marker, String abi, String identity) {
+        if (!marker.isFile()) return false;
+        try (FileInputStream input = new FileInputStream(marker)) {
+            byte[] bytes = new byte[160];
+            int count = input.read(bytes);
+            String value = new String(bytes, 0, Math.max(0, count), StandardCharsets.UTF_8).trim();
+            return ("sealed:" + abi + ":" + identity).equals(value);
+        } catch (IOException unreadable) {
+            return false;
+        }
     }
 
     private static String readUtf8(InputStream input) throws IOException {
