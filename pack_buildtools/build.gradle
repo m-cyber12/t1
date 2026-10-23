@@ -156,7 +156,7 @@ def buildPackPayload = tasks.register("buildPackPayload") {
 // variants: a debug build is the apt shape, where the pack has no meaning and
 // its package fetch would be pure cost on every push.
 tasks.matching {
-    (it.name.startsWith("merge") && (it.name.endsWith("Assets") || it.name.contains("JniLibFolders")))
+    it.name.startsWith("mergeRelease") || it.name.startsWith("mergeSealed")
         || it.name in ["preReleaseBuild", "preSealedBuild"]
 }.configureEach {
     dependsOn(buildPackPayload)

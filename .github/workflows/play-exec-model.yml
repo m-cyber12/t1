@@ -184,14 +184,22 @@ jobs:
       # at 28 or 34 is an artefact nobody can upload, and the gate would be
       # measuring a shape that will never be shipped. Building it here also
       # exercises the guard in app/build.gradle that refuses a bad bundle.
-      - name: Build the store bundles at the target Play requires
+      - name: Build the release bundle at the target Play requires
+        shell: bash
+        run: |
+          set -o pipefail
+          ./gradlew --no-daemon --stacktrace \
+            -PharnessTargetSdk=36 -PharnessCompileSdk=36 \
+            :app:bundleRelease 2>&1 | tee gradle-bundles.log
+
+      - name: Build the sealed bundle for the universal-APK pack test
         shell: bash
         run: |
           set -o pipefail
           ./gradlew --no-daemon --stacktrace \
             -PharnessTargetSdk=36 -PharnessCompileSdk=36 \
             -PharnessTestBuildType=sealed \
-            :app:bundleRelease :app:bundleSealed 2>&1 | tee gradle-bundles.log
+            :app:bundleSealed 2>&1 | tee -a gradle-bundles.log
 
       # The store artifact, not just the APK: a pack that is not in the bundle
       # cannot be delivered, and a pack that is in it as an install-time module
@@ -258,6 +266,7 @@ jobs:
           cp sealed-payload.json diagnostics/ 2>/dev/null || true
           cp sealed-apk-16kb.txt diagnostics/ 2>/dev/null || true
           cp sealed-aab.txt diagnostics/ 2>/dev/null || true
+          tail -c 60000 gradle-bundles.log > diagnostics/gradle-bundles-tail.log 2>/dev/null || true
           cp e2e-logs/pack-universal.log diagnostics/ 2>/dev/null || true
           cp app/build/generated/harness-bootstrap/sealed-payload-*.log diagnostics/ 2>/dev/null || true
           cp app/build/fetch-core-debs-*.log diagnostics/ 2>/dev/null || true

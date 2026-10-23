@@ -75,9 +75,24 @@ def open_url(url, attempts=3):
     raise last
 
 
-def fetch(url):
-    with open_url(url) as response:
-        return response.read()
+def fetch(url, attempts=3):
+    """Read a URL completely, retrying a truncated body.
+
+    A mirror can drop a connection mid-body (IncompleteRead) after a perfectly
+    good response header; retrying only the open would hand the parser a short
+    index, so the read is inside the retry too.
+    """
+    last = None
+    for attempt in range(1, attempts + 1):
+        try:
+            with open_url(url) as response:
+                return response.read()
+        except Exception as error:                     # IncompleteRead, timeouts, resets
+            last = error
+            log("read attempt %d/%d failed for %s: %s" % (attempt, attempts, url, error))
+            if attempt < attempts:
+                time.sleep(2 * attempt)
+    raise last
 
 
 def parse_stanzas(text):
