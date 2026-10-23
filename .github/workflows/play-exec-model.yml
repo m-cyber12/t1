@@ -95,7 +95,7 @@ jobs:
           AAPT2="$(ls "$ANDROID_HOME"/build-tools/*/aapt2 | head -1)"
           APK="$(ls app/build/outputs/apk/sealed/*.apk | head -1)"
           echo "apk=$APK"
-          "$AAPT2" dump badging "$APK" | grep -E "package:|targetSdkVersion|native-code" || true
+          "$AAPT2" dump badging "$APK" | grep -E "package:|sdkVersion|targetSdkVersion|native-code" | tee sealed-apk-identity.txt || true
           "$AAPT2" dump xmltree --file AndroidManifest.xml "$APK" > manifest-tree.txt
           grep -A1 "extractNativeLibs" manifest-tree.txt || true
           if ! grep -q "extractNativeLibs" manifest-tree.txt; then
@@ -138,6 +138,7 @@ jobs:
           cp ./setup-e2e-report.txt diagnostics/setup-e2e-report.txt 2>/dev/null \
             || echo "no setup-e2e-report.txt pulled" > diagnostics/setup-e2e-report.txt
           cp manifest-tree.txt diagnostics/ 2>/dev/null || true
+          cp sealed-apk-identity.txt diagnostics/ 2>/dev/null || true
           for x in app/build/outputs/androidTest-results/connected/*.xml; do
             [ -f "$x" ] && cp "$x" diagnostics/
           done
@@ -152,10 +153,12 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: exec-model-results
+          name: sealed-targetSdk34-MEASUREMENT-ONLY-not-for-use
           path: |
             setup-e2e-report.txt
             manifest-tree.txt
+            sealed-apk-identity.txt
             gradle-sealed.log
+            app/build/outputs/apk/sealed/*.apk
             app/build/outputs/androidTest-results/
           if-no-files-found: warn

@@ -112,6 +112,26 @@ jobs:
           set -o pipefail
           ./gradlew --no-daemon --stacktrace test :app:assembleDebug 2>&1 | tee gradle-build.log
 
+      # State the packaging facts of the artifact a human installs, as data:
+      # the target SDK is the whole reason this build is not on Play, so it is
+      # printed and pinned here instead of being inferred from build.gradle.
+      - name: Record APK identity (target SDK, version)
+        shell: bash
+        run: |
+          set -e
+          APK=$(ls app/build/outputs/apk/debug/*.apk | head -1)
+          AAPT2=$(ls "$ANDROID_HOME"/build-tools/*/aapt2 | head -1)
+          "$AAPT2" dump badging "$APK" > apk-badging.txt
+          grep -E "^package:|sdkVersion|targetSdkVersion|native-code" apk-badging.txt | tee apk-identity.txt
+          TARGET=$(sed -n "s/.*targetSdkVersion:'\([0-9]*\)'.*/\1/p" apk-badging.txt | head -1)
+          CODE=$(sed -n "s/.*versionCode='\([0-9]*\)'.*/\1/p" apk-badging.txt | head -1)
+          echo "installable artifact: targetSdk=$TARGET versionCode=$CODE"
+          if [ "$TARGET" != "28" ]; then
+            echo "The shipping debug APK is expected to target API 28 (data-directory exec)." >&2
+            echo "A different target means the exec model must be sealed first - see docs/play-store-plan.md." >&2
+            exit 1
+          fi
+
       - name: Verify APK contents
         shell: bash
         run: |
@@ -173,6 +193,9 @@ jobs:
       - name: Upload debug APK
         uses: actions/upload-artifact@v4
         with:
-          name: coding-harness-debug
-          path: app/build/outputs/apk/debug/*.apk
+          name: coding-harness-debug-targetSdk28
+          path: |
+            app/build/outputs/apk/debug/*.apk
+            apk-identity.txt
+            apk-badging.txt
           if-no-files-found: error

@@ -4,6 +4,29 @@ Status: **design implemented, execution model measured on device; payload
 packaging not built yet.** Read this together with `ARCHITECTURE.md` §10 (the
 constraint analysis) and `docs/size-management.md` (what the toolchain costs).
 
+## Status on 2026-10-23 (read this first)
+
+| Artifact | `targetSdk` | Is it a working app? | Publishable? |
+|---|---|---|---|
+| `coding-harness-debug-targetSdk28` (what a human installs) | **28** | **yes** — full setup, tools, packs | **no** (the upload is rejected: Play wants 36) |
+| `sealed-targetSdk34-MEASUREMENT-ONLY-not-for-use` | 34 | **no** — it carries the probe and the bootstrap assets, not a sealed userland, so at 34 its shell could not execute anything | **no** (below 36, and the payload does not exist yet) |
+
+So the APK that installs and behaves exactly like the previous versions is
+still `targetSdk 28`, and **nothing is publishable yet**. What exists is the
+*mechanism* (sealed layout, audit, exec gate), proven at 34, plus the plan
+below. Three things remain, and they are the whole gap:
+
+1. **Build the sealed payload** — the APK has to contain bash/git/python/node/…
+   as `lib*.so`. Until that exists, a 34+ build simply cannot run its shell.
+   This is the large piece (`scripts/build-sealed-payload.sh`, §5).
+2. **Raise the target to 36** — Play has required API 36 for new apps and
+   updates since 2026-08-31 (extension request possible until 2026-11-01).
+   34 is only the measurement target, because the CI emulator image is API 34;
+   it is *not* a submission target. Needs `compileSdk 36` and API 36 coverage.
+3. **Keep runtime installs out of the Play build** — `apt-get` fetching `.deb`s
+   is the Device & Network Abuse problem; packs become Play Feature Delivery
+   modules. Plus the 16 KB alignment flags before 2027-02-01.
+
 Short version:
 
 * The current build (`targetSdk 28`) is **not publishable** — Play rejects the

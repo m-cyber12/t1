@@ -134,7 +134,15 @@ def downloadBootstrap = tasks.register("downloadHarnessBootstrap") {
     }
 }
 
+// Every variant needs the bootstrap assets, not just debug/release: the
+// `sealed` variant is its own build type (preSealedBuild), and without this it
+// would package an APK with no userland in it at all. Wiring the merge task is
+// variant-agnostic, so a build type added later cannot silently miss the
+// assets.
 tasks.matching { it.name in ["preDebugBuild", "preReleaseBuild"] }.configureEach {
+    dependsOn(downloadBootstrap)
+}
+tasks.matching { it.name.startsWith("merge") && it.name.endsWith("Assets") }.configureEach {
     dependsOn(downloadBootstrap)
 }
 
