@@ -247,9 +247,51 @@ if [ -n "$E2E_TEST_CLASS" ]; then
   TEST_ARGS="-Pandroid.testInstrumentationRunnerArguments.class=$E2E_TEST_CLASS"
 fi
 echo "task=$E2E_TEST_TASK class=${E2E_TEST_CLASS:-<all>} props=${E2E_GRADLE_PROPS:-none}" >> e2e-logs/phases.log
-# shellcheck disable=SC2086  # word splitting is intended for the property list
-./gradlew --no-daemon --stacktrace "$E2E_TEST_TASK" $TEST_ARGS $E2E_GRADLE_PROPS > e2e-logs/connected-test.log 2>&1
+
+# Pin the device for Gradle. With one emulator this looks redundant, but an
+# emulator that drops off adb between the readiness check and Gradle's own
+# device discovery makes AGP report "No compatible devices connected" - which
+# says nothing about the build and wastes a 20-minute software-emulated boot.
+SERIAL="$("$ADB" devices | awk 'NR > 1 && $2 == "device" { print $1; exit }')"
+if [ -n "$SERIAL" ]; then
+  export ANDROID_SERIAL="$SERIAL"
+  echo "ANDROID_SERIAL=$ANDROID_SERIAL" >> e2e-logs/phases.log
+fi
+
+run_connected_test() {
+  # shellcheck disable=SC2086  # word splitting is intended for the property list
+  ./gradlew --no-daemon --stacktrace "$E2E_TEST_TASK" $TEST_ARGS $E2E_GRADLE_PROPS \
+    >> e2e-logs/connected-test.log 2>&1
+}
+
+wait_for_device_again() {
+  "$ADB" wait-for-device
+  for i in $(seq 1 60); do
+    booted="$("$ADB" shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')"
+    packages_ok=""
+    [ "$booted" = "1" ] && "$ADB" shell pm list packages >/dev/null 2>&1 && packages_ok=1
+    [ -n "$packages_ok" ] && { echo "device back after $i check(s)" >> e2e-logs/phases.log; return 0; }
+    sleep 5
+  done
+  return 1
+}
+
+: > e2e-logs/connected-test.log
+run_connected_test
 RC=$?
+if [ $RC -ne 0 ] && grep -q "No compatible devices connected" e2e-logs/connected-test.log; then
+  # Infrastructure, not the build: the emulator was gone when Gradle looked.
+  # Wait for it to come back and run the same task once more, so a flaky
+  # disconnect does not report a green build as a failed one.
+  echo "no device visible to Gradle; waiting for it and retrying once" >> e2e-logs/phases.log
+  : > e2e-logs/connected-test-retry.log
+  if wait_for_device_again; then
+    run_connected_test
+    RC=$?
+    cp e2e-logs/connected-test.log e2e-logs/connected-test-retry.log 2>/dev/null || true
+    echo "retry exit=$RC" >> e2e-logs/phases.log
+  fi
+fi
 echo "$E2E_TEST_TASK exit=$RC" | tee -a e2e-logs/phases.log
 "$ADB" shell cat /sdcard/Android/data/io.mcyber12.codingharness/files/setup-e2e-report.txt > e2e-logs/device-report.log 2>&1 || true
 "$ADB" pull /sdcard/Android/data/io.mcyber12.codingharness/files/setup-e2e-report.txt ./setup-e2e-report.txt >> e2e-logs/phases.log 2>&1 || true
