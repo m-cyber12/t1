@@ -18,6 +18,10 @@ def bootstrapAssets = [
 ]
 
 def bootstrapOutput = layout.buildDirectory.dir("generated/harness-bootstrap/assets")
+// A project property rather than a script local: the `sealed` source set is
+// configured inside an AGP closure whose delegate resolves properties first,
+// so a plain local would not be visible there.
+ext.sealedPayloadDir = layout.buildDirectory.dir("generated/sealed-payload")
 
 android {
     namespace "io.mcyber12.codingharness"
@@ -89,8 +93,8 @@ android {
     // source set.
     sourceSets {
         sealed {
-            assets.srcDir(new File(sealedPayloadOutput.get().asFile, "assets"))
-            jniLibs.srcDir(new File(sealedPayloadOutput.get().asFile, "jniLibs"))
+            assets.srcDir(new File(project.sealedPayloadDir.get().asFile, "assets"))
+            jniLibs.srcDir(new File(project.sealedPayloadDir.get().asFile, "jniLibs"))
         }
     }
 
@@ -154,14 +158,12 @@ def downloadBootstrap = tasks.register("downloadHarnessBootstrap") {
 // the payload's own verification live in scripts/build-sealed-payload.py so the
 // same logic runs on a CI runner and on a workstation.
 // ---------------------------------------------------------------------------
-def sealedPayloadOutput = layout.buildDirectory.dir("generated/sealed-payload")
-
 def buildSealedPayload = tasks.register("buildSealedPayload") {
     description = "Splits the Termux bootstrap into a sealed payload for the sealed variant"
     dependsOn(downloadBootstrap)
     inputs.dir(bootstrapOutput)
     inputs.file(rootProject.file("scripts/build-sealed-payload.py"))
-    outputs.dir(sealedPayloadOutput)
+    outputs.dir(project.sealedPayloadDir)
     doLast {
         File script = rootProject.file("scripts/build-sealed-payload.py")
         if (!script.isFile()) throw new GradleException("missing ${script}")
@@ -174,7 +176,7 @@ def buildSealedPayload = tasks.register("buildSealedPayload") {
                 commandLine "python3", script.absolutePath,
                     "--bootstrap", zip.absolutePath,
                     "--abi", abi,
-                    "--out", sealedPayloadOutput.get().asFile.absolutePath
+                    "--out", project.sealedPayloadDir.get().asFile.absolutePath
             }
             def result = split.result.get()
             split.standardOutput.asText.get().readLines().each { logger.lifecycle(it) }
