@@ -199,7 +199,8 @@ def fetchCoreDebs = tasks.register("fetchCoreDebs") {
                     "--arch", arch,
                     "--out", output.absolutePath,
                     "--bootstrap", zip.absolutePath,
-                    "--repo", project.sealedRepo] + project.sealedCorePackages)
+                    "--repo", project.sealedRepo,
+                    "--packages"] + project.sealedCorePackages)
             }
             def result = fetch.result.get()
             fetch.standardOutput.asText.get().readLines().each { logger.lifecycle(it) }
