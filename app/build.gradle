@@ -102,21 +102,12 @@ android {
         }
     }
 
+    // Declared here, filled in below. AGP's DSL objects refuse a property they
+    // do not own, so a closure inside this block cannot read a script variable
+    // (`if (canSignRelease)` fails as an unknown SigningConfig property); the
+    // values are applied after the block instead.
     signingConfigs {
-        release {
-            if (canSignRelease) {
-                storeFile rootProject.file(releaseStoreFile)
-                storePassword releaseStorePassword
-                keyAlias releaseKeyAlias
-                keyPassword releaseKeyPassword
-                // v1 is still needed by API 24-27 era tooling on some devices;
-                // v2/v3 are what Play verifies, and v4 enables fast installs.
-                enableV1Signing true
-                enableV2Signing true
-                enableV3Signing true
-                enableV4Signing true
-            }
-        }
+        release { }
     }
 
     buildTypes {
@@ -125,9 +116,8 @@ android {
             proguardFiles getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
             // The uploaded artefact: it carries the payload and extracts its
             // libraries. Built with -PharnessTargetSdk=36 it is the store shape.
-            if (canSignRelease) {
-                signingConfig signingConfigs.release
-            }
+            // Its signing config is attached below, and only when a real key
+            // exists.
         }
         // `sealed`: the store-shaped build (docs/play-store-plan.md).
         //
@@ -173,6 +163,24 @@ android {
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
     }
+}
+
+// Attach the release key, if there is one. Without one the release build stays
+// unsigned and a bundle build says so: an artefact signed with a throwaway key
+// is worse than a build that refuses to pretend.
+if (canSignRelease) {
+    def releaseSigning = android.signingConfigs.getByName("release")
+    releaseSigning.storeFile = rootProject.file(releaseStoreFile)
+    releaseSigning.storePassword = releaseStorePassword
+    releaseSigning.keyAlias = releaseKeyAlias
+    releaseSigning.keyPassword = releaseKeyPassword
+    // v1 is still needed by API 24-27 era tooling on some devices; v2/v3 are
+    // what Play verifies, and v4 enables fast installs.
+    releaseSigning.enableV1Signing = true
+    releaseSigning.enableV2Signing = true
+    releaseSigning.enableV3Signing = true
+    releaseSigning.enableV4Signing = true
+    android.buildTypes.getByName("release").signingConfig = releaseSigning
 }
 
 /** Logged once, so an AAB never leaves without saying which key signed it. */
