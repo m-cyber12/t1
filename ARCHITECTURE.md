@@ -358,7 +358,7 @@ submission is attempted:
 
 | Item | State | Action |
 |---|---|---|
-| 16 KB page size | NDK 27.2 is used and `Android.mk` sets no alignment flags, so `.so`s are 4 KB-aligned. Play requires 16 KB support for apps targeting API 35+ (hard block on non-compliant updates from 1 Feb 2027). | Add `-Wl,-z,max-page-size=16384 -Wl,-z,common-page-size=16384` to `LOCAL_LDFLAGS` (both modules) or move to NDK r28+. |
+| 16 KB page size | **Done.** NDK 27.2 is pinned (it does not align by itself), so both ndk-build modules and the exec probe pass `-Wl,-z,max-page-size=16384 -Wl,-z,common-page-size=16384`. Play requires 16 KB support for apps targeting API 35+ (hard block on non-compliant updates from 1 Feb 2027). | — |
 | 64-bit | OK — `arm64-v8a` and `x86_64` are built | — |
 | App Bundle size | Two bootstrap zips plus assets; base module stays well under Play's 200 MB limit | Verify on the release AAB |
 | Signing | CI signs with the debug keystore | Release keystore + Play App Signing |
@@ -386,15 +386,35 @@ executables and keep everything else as data:
 
 `ExecAudit` answers "is this install publishable?" with a number — binary
 executables in the prefix that are not backed by the APK — and the sealed build
-asserts it is zero. `scripts/build-sealed-payload.py` performs the split on a
-bootstrap (`324` executables into `199` JNI libraries, `3169` data files,
-`956` data symlinks), `SealedPayloadInstaller` applies it on device, and the
-`SealedShellTest` gate boots `bash 5.3.9` and `sed` from the APK at
-`targetSdk 34` with the audit at zero. This changes nothing for the current
-`.deb`-based build, which remains the only one that can install new native code
-on demand — and the sealed build is not yet a product: its userland is the
-bootstrap, not the `core` tier, and its target is 34, not the 36 a submission
-needs.
+asserts it is zero. `scripts/build-sealed-payload.py` performs the split on the
+bootstrap *plus* the core package set (`535` executables into `252` JNI
+libraries, `13858` data files, `1173` data symlinks); `SealedPayloadInstaller`
+applies it on device, and the `SealedShellTest` gate runs `bash 5.3.9`, `sed`,
+`git 2.56.0`, `python`, `node v26.12.1`, `perl v5.44.0`, `ruby 4.0.7` and
+`ripgrep 15.2.0` from the APK at `targetSdk 34` with the audit at zero.
+
+Three problems in that split are structural rather than incidental, and each is
+now handled where the payload is built, not where it fails:
+
+1. **A pinned bootstrap library can be older than a core package requires.**
+   `node` died with `cannot locate symbol _ZNSt6__ndk113__hash_memoryEPKvm`
+   because the bootstrap's `libc++ 29` predates the `libc++ 30` that `nodejs`
+   links against, and the resolver skipped anything the bootstrap already had
+   *by name*. Dependencies are now resolved by version; a package both sides
+   ship is taken from the repository when the versions differ.
+2. **Packages rely on postinsts for their sonames.** `perl` ships
+   `libperl.so.5.44.0` and lets `postinst` create `libperl.so`; nothing runs
+   postinsts in a payload. The builder reads each sealed binary's `DT_NEEDED`
+   entries and creates the links, failing the build with the executable and the
+   library named when one cannot be satisfied.
+3. **Interpreters cannot always find their own prefix.** CPython derives
+   `sys.prefix` from `/proc/self/exe`, which points into `nativeLibraryDir`;
+   `HarnessEnvironment` sets `PYTHONHOME` for the sealed layout.
+
+This changes nothing for the current `.deb`-based build, which remains the only
+one that can install new native code on demand — and the sealed build still
+lacks a first-run provisioning UI, and is measured at 34 while a submission
+needs 36 (the gate now also builds and measures 36-on-36).
 
 ### 10.6 Realistic distribution options
 

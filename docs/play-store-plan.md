@@ -1,58 +1,75 @@
 # Publishing the harness on Google Play
 
-Status: **the sealed userland exists and runs — a real `bash` from the APK at
-`targetSdk 34` — but the toolchain inside it is still the bootstrap, not the
-`core` tier, and the target is not yet 36.** Read this together with
-`ARCHITECTURE.md` §10 (the constraint analysis) and `docs/size-management.md`
-(what the toolchain costs).
+Status: **the sealed core tier exists and runs from the APK.** At
+`targetSdk 34` on an API 34 device, `bash`, `sed`, `git`, `python`, `node`,
+`perl`, `ruby` and `rg` all execute out of `nativeLibraryDir`, with zero binary
+executables outside the APK. Remaining work is the submission target (36), the
+in-app provisioning UI, and Play Feature Delivery for packs. Read this together
+with `ARCHITECTURE.md` §10 (the constraint analysis) and
+`docs/size-management.md` (what the toolchain costs).
 
 ## Status on 2026-10-23 (read this first)
 
 | Artifact | `targetSdk` | Is it a working app? | Publishable? |
 |---|---|---|---|
 | `coding-harness-debug-targetSdk28` (what a human installs) | **28** | **yes** — full setup, tools, packs | **no** (the upload is rejected: Play wants 36) |
-| `sealed-targetSdk34-shell-from-APK-preview` | 34 | **partly** — the shell and the bootstrap tools run from the APK; no git/python/node yet, and no provisioning UI | **no** — target is 34, not 36; toolchain incomplete |
+| `sealed-targetSdk34-from-APK` | 34 | **yes for the core tier** — shell, git, python, node, perl, ruby, ripgrep run from the APK; no provisioning UI yet | **no** — target is 34, not 36 |
+| `sealed-targetSdk36-from-APK` | 36 | the same measurement, at the API level Play requires, on an API 36 device | the intended submission shape |
 
-**The shell milestone is done** (run `39900922926`, `Tests 2/2`, 0 skipped,
-0 failed, on the aosp_atd API 34 emulator at `-PharnessTargetSdk=34`):
+**The core-tier milestone is done** (run `39924922410`, `Tests 2/2`, 0 skipped,
+0 failed, aosp_atd API 34 emulator at `-PharnessTargetSdk=34`):
 
 ```
-sealed payload (x86_64): 3169 data files, 956 data links, 324 executables from the APK
-bin/bash -> /data/app/…/lib/x86_64/libbash.so
-bash -> exit 0 : SEALED-SHELL-OK | version=5.3.9(1)-release | prefix=…/usr | exit-ok
-sed  -> exit 0 : A1 | A2
-exec audit: 338 executable entries, 324 shipped in the APK,
-            0 binary executables outside it, 14 scripts outside it (run through the preload)
-verdict: publishable at any targetSdk (no binaries outside the APK)
+sealed payload (x86_64): 13858 data files, 1173 data links, 535 executables from the APK
+bash   -> exit 0 : SEALED-SHELL-OK | version=5.3.9(1)-release | prefix=…/usr
+sed    -> exit 0 : A1 | A2
+bin/git    -> exit 0 : git version 2.56.0
+bin/python -> exit 0 : py-ssl OpenSSL 3.6.5 29 Sep 2026
+bin/node   -> exit 0 : v26.12.1
+bin/perl   -> exit 0 : v5.44.0
+bin/ruby   -> exit 0 : ruby 4.0.7 (2026-09-15) +PRISM [x86_64-linux-android]
+bin/rg     -> exit 0 : ripgrep 15.2.0 features:+pcre2
+exec audit: 560 executable entries, 535 shipped in the APK,
+            0 binary executables outside it, 25 scripts outside it (run through the preload)
 ```
 
-That is a real `bash 5.3.9` and a real `sed`, in the normal Termux prefix, on a
-device where the data-directory exec exemption does not exist. The 324/338
-ratio is the whole design in one line: everything executable came out of the
-APK; the 14 leftovers are package scripts, which are interpreted through the
-preload rather than exec'd.
+That is the whole `core` tier — the packages the harness promises on first run —
+running from the APK on a device where the data-directory exec exemption does
+not exist. The 535/560 ratio is the design in one line: everything executable
+came out of the APK; the 25 leftovers are package scripts, interpreted through
+the preload rather than `exec`'d. 252 unique ELF objects per ABI back those 535
+executable names.
+
+Four failures had to be fixed to get here, and each one is now covered by the
+pipeline test (`scripts/tests/test-sealed-payload.py`), which builds a synthetic
+repository and payload with no network:
+
+| Symptom on device | Cause | Fix |
+|---|---|---|
+| `python`: "Could not find platform independent libraries" | CPython cannot derive `sys.prefix` when `/proc/self/exe` points into `nativeLibraryDir` | set `PYTHONHOME` to the prefix (`HarnessEnvironment`) |
+| `node`: `cannot locate symbol _ZNSt6__ndk113__hash_memoryEPKvm` | the bootstrap's pinned `libc++` is older than the one `nodejs` links against; the resolver skipped it *by name* | resolve by version: a package both sides ship is taken from the repository when the versions differ |
+| `perl`: `library "libperl.so" not found` | the package ships `libperl.so.5.44.0` and leaves the soname to its postinst; a payload runs no postinsts | the builder reads each binary's `DT_NEEDED` and creates the missing soname link |
+| build: `libclang_rt.asan` missing | the bootstrap carries the Termux packages' own sanitizer test binaries | those test trees are excluded from the payload by prefix |
 
 Remaining gap to a submission, in order:
 
-1. **Grow the payload past the bootstrap** — git, python, node, perl, ruby,
-   ripgrep still come from `apt`, so the sealed build has a shell but not the
-   `core` tier. The split is already generic (`scripts/build-sealed-payload.py`
-   takes a bootstrap today, a package set next), and the measurement above says
-   the shape holds at this scale.
+1. **Ship the provisioning UI** — the payload installs and runs, but the sealed
+   build has no first-run screen yet; in the shipping build that job is done by
+   `apt`. Without it there is nothing to tap from a fresh install.
 2. **Raise the target to 36** — Play has required API 36 for new apps and
-   updates since 2026-08-31 (extension request possible until 2026-11-01).
-   34 is only the measurement target, because the CI emulator image is API 34;
-   it is *not* a submission target. Needs `compileSdk 36` and API 36 coverage.
+   updates since 2026-08-31 (extension request possible until 2026-11-01). The
+   gate now runs a matrix that builds `targetSdk 36` against `compileSdk 36` and
+   measures it on an API 36 device, alongside 34-on-34.
 3. **Keep runtime installs out of the Play build** — `apt-get` fetching `.deb`s
    is the Device & Network Abuse problem; packs become Play Feature Delivery
-   modules. Plus the 16 KB alignment flags before 2027-02-01, a release
-   keystore, and the store listing.
+   modules. Plus a release keystore and the store listing. (16 KB page alignment
+   is done: `-Wl,-z,max-page-size=16384` on every native object, ahead of the
+   2027-02-01 block.)
 
-Sizes from the same run: **199 JNI libraries = 16.2 MiB** of executables and
-**21.7 MiB** of data for the x86_64 bootstrap, and the test APK (both ABIs, plus
-the two apt bootstrap zips it no longer needs) is 122 MB — the payload is not
-what makes it large. Extraction of 3169 files takes ~6 minutes on the software
-emulator; it is a one-time first-run cost.
+Sizes from the same run: **252 JNI libraries per ABI** carry the 535 executable
+names, and the payload is 13858 data files + 1173 links; the run took ~4 minutes
+to install on the software emulator, a one-time first-run cost. Extraction is
+covered in `docs/size-management.md`.
 
 Short version:
 
@@ -61,7 +78,8 @@ Short version:
   installed under its own data directory, which Android 10+ forbids for apps
   targeting API 29+.
 * Raising `targetSdk` is not a build flag, it is a **packaging change**: the
-  bytes that run must come out of the APK.
+  bytes that run must come out of the APK. That change is now done for the
+  shell and the whole core tier.
 * The reference harness (`m-cyber12/OpenCode-app`, `arena/01a0b9d5-opencode-app`)
   already proves the model works on a real arm64 phone at `targetSdk 34`. This
   document takes its recipe, applies it to a Termux-shaped userland, and says
