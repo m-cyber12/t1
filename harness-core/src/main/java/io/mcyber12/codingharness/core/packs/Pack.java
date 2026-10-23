@@ -14,7 +14,7 @@ import java.util.List;
  *
  * <ul>
  *   <li>{@link #moduleName} — the Play Feature Delivery module that carries it
- *       (see {@code pack-buildtools/});</li>
+ *       (see {@code pack_buildtools/});</li>
  *   <li>{@link #tierId} — the package tier the apt-based build would install
  *       instead ({@link io.mcyber12.codingharness.core.provision.PackageTier}),
  *       so the installable build keeps working unchanged;</li>

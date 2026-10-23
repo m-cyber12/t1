@@ -363,9 +363,9 @@ document says it is handled.
 
 The store build may not fetch executables (Play "Device and Network Abuse"), and
 it cannot expect a user to pay for clang in every install. So optional tools are
-a **Play Feature Delivery module**: `pack-buildtools/` is a
+a **Play Feature Delivery module**: `pack_buildtools/` is a
 `com.android.dynamic-feature` with `<dist:on-demand/>`, shipping
-`assets/pack-buildtools-userland-<abi>.zip` and `dist:fusing include="true"`. The
+`assets/pack_buildtools-userland-<abi>.zip` and `dist:fusing include="true"`. The
 fusing flag is what lets an emulator gate see the pack at all: CI builds the AAB,
 asks bundletool for a universal APK and installs that, which is the same artefact
 shape Play delivers — `:app:assembleSealed` on its own never contains the pack.

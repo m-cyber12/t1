@@ -109,7 +109,7 @@ android {
     // The base module has to name its feature modules, or the bundle is built
     // without them and the pack simply does not exist for Play to deliver. This
     // list is also what makes the pack APK a build output of this project.
-    dynamicFeatures = [":pack-buildtools"]
+    dynamicFeatures = [":pack_buildtools"]
 
     sourceSets {
         main {

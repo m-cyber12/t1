@@ -35,7 +35,7 @@ on:
     paths:
       - "app/**"
       - "harness-core/**"
-      - "pack-buildtools/**"
+      - "pack_buildtools/**"
       - "sealed-runtime/**"
       - "terminal-emulator/**"
       - "scripts/**"
@@ -123,6 +123,8 @@ jobs:
           # child's output, so these files are the only account of why.
           cp app/build/generated/harness-bootstrap/*.log diagnostics/ 2>/dev/null || true
           cp app/build/fetch-core-debs-*.log diagnostics/ 2>/dev/null || true
+          cp pack_buildtools/build/generated/pack-debs/*.log diagnostics/ 2>/dev/null || true
+          cp pack_buildtools/build/generated/sealed-pack/*.log diagnostics/ 2>/dev/null || true
           git add diagnostics/ || true
           git -c user.email=ci@invalid -c user.name=ci commit -qm "sealed build failure ${GITHUB_RUN_ID} [ci]" || true
           git push origin "HEAD:refs/heads/diagnostics/sealed-${GITHUB_RUN_ID}-sdk${E2E_TARGET_SDK}" --force || true
@@ -198,9 +200,9 @@ jobs:
           # 2. It is delivered on demand, not fused into every install. The
           #    bundle stores this manifest as protobuf, so the merged XML from
           #    the build is what can be read; the source manifest says the same.
-          grep -q "on-demand" pack-buildtools/src/main/AndroidManifest.xml \
+          grep -q "on-demand" pack_buildtools/src/main/AndroidManifest.xml \
             || { echo "the pack is not on-demand in its manifest" >&2; exit 1; }
-          MERGED="$(grep -rl "dist:on-demand" pack-buildtools/build/intermediates \
+          MERGED="$(grep -rl "dist:on-demand" pack_buildtools/build/intermediates \
             --include=AndroidManifest.xml 2>/dev/null | head -1 || true)"
           if [ -n "$MERGED" ]; then
             echo "merged feature manifest: $MERGED" >> sealed-aab.txt
@@ -259,6 +261,8 @@ jobs:
           cp e2e-logs/pack-universal.log diagnostics/ 2>/dev/null || true
           cp app/build/generated/harness-bootstrap/sealed-payload-*.log diagnostics/ 2>/dev/null || true
           cp app/build/fetch-core-debs-*.log diagnostics/ 2>/dev/null || true
+          cp pack_buildtools/build/generated/pack-debs/*.log diagnostics/ 2>/dev/null || true
+          cp pack_buildtools/build/generated/sealed-pack/*.log diagnostics/ 2>/dev/null || true
           for x in app/build/outputs/androidTest-results/connected/*.xml; do
             [ -f "$x" ] && cp "$x" diagnostics/
           done

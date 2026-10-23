@@ -36,7 +36,7 @@ harness-core/        All provisioning logic (no UI, JVM-testable)
   core/packs/        Optional packs: one port, two channels (Play / apt)
   core/exec/         Sealed-payload adapter for the Android asset manager
 sealed-runtime/      Android-free kernel: install, verify, uninstall, audit
-pack-buildtools/     Play Feature Delivery module (on-demand build tools)
+pack_buildtools/     Play Feature Delivery module (on-demand build tools)
 terminal-emulator/   Termux terminal emulator + JNI helper + preload lib
 terminal-view/       Termux terminal view/renderer
 scripts/             Payload builder, gate checks, emulator E2E driver
@@ -431,7 +431,7 @@ submission needs except a key and a click:
 | Executables out of the APK | `sealed-runtime`, `SealedLayout` | `ExecModelTest` on API 34 and 36 |
 | targetSdk 36 | `-PharnessTargetSdk=36`, refused below 36 for any bundle | CI builds the bundle at 36 |
 | No downloaded executable code | core tier shipped in the APK, packs via Play Feature Delivery | `SealedShellTest.packsComeFromTheStoreAndNeverFromApt` |
-| Base module under 200 MB | clang lives in `pack-buildtools/` | `scripts/check-bundle-size.py` in CI |
+| Base module under 200 MB | clang lives in `pack_buildtools/` | `scripts/check-bundle-size.py` in CI |
 | Release signing | `keystore.properties` / env, fails closed | `bundleRelease` logs which key signed it |
 
 What is left is not code: an upload key, listing graphics, a hosted privacy

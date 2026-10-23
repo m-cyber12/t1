@@ -17,4 +17,4 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = "coding-harness"
-include ":sealed-runtime", ":terminal-emulator", ":terminal-view", ":harness-core", ":app", ":pack-buildtools"
+include ":sealed-runtime", ":terminal-emulator", ":terminal-view", ":harness-core", ":app", ":pack_buildtools"

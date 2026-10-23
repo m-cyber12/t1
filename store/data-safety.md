@@ -35,7 +35,7 @@ Two things, both user-visible and neither involving a person's data:
    pack. This is the app's own toolchain, not user data.
 2. **Nothing else.** The Play build does not fetch code at runtime at all: its
    toolchain ships in the APK and its optional pack is a Play Feature Delivery
-   module (`pack-buildtools/`).
+   module (`pack_buildtools/`).
 
 ## Permissions
 

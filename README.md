@@ -43,7 +43,7 @@ existing Bun/runtime directory.
 app/                 actual standalone Coding Harness APK
 harness-core/        reusable bootstrap, package, process, paths and tool APIs
 sealed-runtime/      Android-free install/verify/uninstall kernel (port surface)
-pack-buildtools/     Play Feature Delivery module: optional build tools
+pack_buildtools/     Play Feature Delivery module: optional build tools
 terminal-view/       Termux terminal UI source
 terminal-emulator/   Termux terminal emulator + PTY JNI source
 ci/                  CI workflow template; copied manually into GitHub Actions

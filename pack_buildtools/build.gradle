@@ -30,6 +30,11 @@ def packPackages = fullPack
     : ["make", "pkg-config"]
 def packArch = [["aarch64", "arm64-v8a"], ["x86_64", "x86_64"]]
 def packDebDir = layout.buildDirectory.dir("generated/pack-debs")
+// The pack is applied on top of the base payload, so anything the Termux
+// bootstrap already ships (libc++, zlib, libandroid-support, …) must not be
+// shipped twice. The resolver is told about the bootstrap for the same reason
+// the base payload tells it: it is the authority on what is already present.
+def bootstrapDir = new File(rootProject.projectDir, "app/build/generated/harness-bootstrap")
 def packRepo = (findProperty("harnessSealedRepo") ?: "https://packages-cf.termux.dev/apt/termux-main").toString()
 
 android {
@@ -68,8 +73,23 @@ android {
     }
 }
 
+// Run a build-time child and, if it fails, print the transcript it wrote.
+// Gradle throws the moment a captured child exits non-zero and drops
+// everything it said; the child keeps its own account, and this reads it back.
+def runResolver = { fetch, File record, String what ->
+    try {
+        def result = fetch.result.get()
+        fetch.standardOutput.asText.get().readLines().each { logger.lifecycle(it) }
+        result.assertNormalExitValue()
+    } catch (Throwable failure) {
+        if (record.isFile()) logger.error("--- ${record.name} (" + what + ") ---\n" + record.text)
+        throw failure
+    }
+}
+
 def fetchPackDebs = tasks.register("fetchPackDebs") {
     description = "Fetches the build-tools packages for the on-demand pack"
+    dependsOn(":app:downloadHarnessBootstrap")
     inputs.property("packages", packPackages.join(" "))
     inputs.property("repo", packRepo)
     inputs.file(rootProject.file("scripts/fetch-core-debs.py"))
@@ -80,17 +100,17 @@ def fetchPackDebs = tasks.register("fetchPackDebs") {
             File output = new File(packDebDir.get().asFile, abi)
             output.mkdirs()
             File record = new File(packDebDir.get().asFile, "fetch-pack-debs-${abi}.log")
+            File bootstrap = new File(bootstrapDir, "bootstrap-${arch}.zip")
             def fetch = providers.exec {
                 commandLine(["python3", script.absolutePath,
                     "--arch", arch,
                     "--out", output.absolutePath,
                     "--repo", packRepo,
+                    "--bootstrap", bootstrap.absolutePath,
                     "--log", record.absolutePath,
                     "--packages"] + packPackages)
             }
-            def result = fetch.result.get()
-            fetch.standardOutput.asText.get().readLines().each { logger.lifecycle(it) }
-            result.assertNormalExitValue()
+            runResolver(fetch, record, "fetch ${packPackages} for ${abi}")
         }
     }
 }
@@ -118,9 +138,7 @@ def buildPackPayload = tasks.register("buildPackPayload") {
                     "--asset-prefix", packAssetPrefix,
                     "--log", log.absolutePath])
             }
-            def result = split.result.get()
-            split.standardOutput.asText.get().readLines().each { logger.lifecycle(it) }
-            result.assertNormalExitValue()
+            runResolver(split, log, "split the ${abi} payload")
         }
         new File(packOutput.get().asFile, "pack-id.txt").text = packId + "\n"
     }
