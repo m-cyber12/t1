@@ -23,8 +23,9 @@ EXPECTED = {
 
 
 def collect(results_dir):
+    """Walk the results tree: AGP nests per-variant directories under it."""
     found = {}
-    for path in glob.glob(os.path.join(results_dir, "*.xml")):
+    for path in sorted(glob.glob(os.path.join(results_dir, "**", "*.xml"), recursive=True)):
         try:
             root = ET.parse(path).getroot()
         except ET.ParseError:
@@ -44,8 +45,14 @@ def collect(results_dir):
 
 
 def main():
-    results_dir = sys.argv[1] if len(sys.argv) > 1 else "app/build/outputs/androidTest-results/connected"
+    results_dir = (sys.argv[1] if len(sys.argv) > 1
+                   else "app/build/outputs/androidTest-results/connected")
     found = collect(results_dir)
+    if not found:
+        for root, _, files in os.walk(results_dir):
+            for name in sorted(files):
+                if name.endswith(".xml"):
+                    print("unparsed or unexpected result file:", os.path.join(root, name))
     print("results:", found or "none")
     problems = []
     for expected, minimum in EXPECTED.items():

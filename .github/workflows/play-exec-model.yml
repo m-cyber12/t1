@@ -184,7 +184,9 @@ jobs:
         run: |
           set -uo pipefail
           grep -E "Tests [0-9]+/[0-9]+ completed" e2e-logs/connected-test.log | tail -3 || true
-          python3 scripts/assert-gate-results.py app/build/outputs/androidTest-results/connected
+          # The results tree is variant-nested; the script walks it and prints
+          # what it saw, so a wrong path is diagnosed here and not in a rerun.
+          python3 scripts/assert-gate-results.py app/build/outputs/androidTest-results
 
       - name: Publish diagnostics
         if: always()
