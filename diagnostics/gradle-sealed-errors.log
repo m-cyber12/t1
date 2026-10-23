@@ -1,0 +1,16 @@
+> Task :pack-buildtools:fetchPackDebs FAILED
+> Task :terminal-emulator:buildNdkBuildDebug[arm64-v8a]
+> Task :app:fetchCoreDebs
+fetched 48 packages (355024 KiB installed) for aarch64
+fetched 48 packages (355552 KiB installed) for x86_64
+
+--
+* What went wrong:
+Execution failed for task ':pack-buildtools:fetchPackDebs'.
+> Process 'command 'python3'' finished with non-zero exit value 1
+
+* Try:
+> Run with --info or --debug option to get more log output.
+--
+BUILD FAILED in 1m 54s
+67 actionable tasks: 59 executed, 8 from cache
