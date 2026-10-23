@@ -1,0 +1,1 @@
+sealed-shell: payload abi=x86_64 targetSdk=34
