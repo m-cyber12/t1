@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import io.mcyber12.codingharness.core.HarnessConfig;
-import io.mcyber12.codingharness.core.exec.ExecAudit;
+import io.mcyber12.sealed.ExecAudit;
 
 import static org.junit.Assume.assumeTrue;
 import static org.junit.Assert.assertFalse;

@@ -480,6 +480,15 @@ def write_payload(out_dir, abi, tree, sealed, libraries, payload, kept_links,
         for path, library in sorted(sealed.items()):
             handle.write("%s\t%s\n" % (path, library))
 
+    # Per-file integrity data, in the shape the reference harness ships
+    # (runtime-manifest.json) but line-oriented so a Python build, a Java kernel
+    # and a TypeScript harness all read it with no parser at all. The installer
+    # hashes while it writes, so verification costs no extra I/O on device.
+    with open(os.path.join(assets_dir, "sealed-manifest-%s.txt" % abi), "w", encoding="utf-8") as handle:
+        handle.write("# sha256\tsize\tprefix-relative path\n")
+        for path, content in sorted(payload.items()):
+            handle.write("%s\t%d\t%s\n" % (hashlib.sha256(content).hexdigest(), len(content), path))
+
     with open(os.path.join(assets_dir, "sealed-symlinks-%s.txt" % abi), "w", encoding="utf-8") as handle:
         handle.write("# prefix-relative link\tprefix-relative target (data, created at install)\n")
         for path, target in sorted(kept_links.items()):
@@ -494,6 +503,19 @@ def write_payload(out_dir, abi, tree, sealed, libraries, payload, kept_links,
     for name in sorted(os.listdir(jni_dir)):
         if not name.startswith("lib") or not name.endswith(".so"):
             problems.append("bad library name: %s" % name)
+    manifest_path = os.path.join(assets_dir, "sealed-manifest-%s.txt" % abi)
+    manifest_lines = [line for line in open(manifest_path, encoding="utf-8").read().splitlines()
+                      if line and not line.startswith("#")]
+    if len(manifest_lines) != len(payload):
+        problems.append("manifest lists %d files, payload has %d"
+                        % (len(manifest_lines), len(payload)))
+    for line in manifest_lines:
+        digest, size, path = line.split("\t")
+        content = payload.get(path)
+        if content is None:
+            problems.append("manifest names a file the payload lacks: %s" % path)
+        elif hashlib.sha256(content).hexdigest() != digest or len(content) != int(size):
+            problems.append("manifest entry does not match the payload: %s" % path)
     for path, library in sealed.items():
         if not os.path.isfile(os.path.join(jni_dir, library)):
             problems.append("sealed entry %s has no %s" % (path, library))
@@ -510,6 +532,7 @@ def write_payload(out_dir, abi, tree, sealed, libraries, payload, kept_links,
         "dataFiles": len(payload),
         "symlinks": len(kept_links),
         "scripts": scripts,
+    "manifestEntries": len(payload),
         "userlandBytes": os.path.getsize(userland),
         "libraryBytes": sum(os.path.getsize(os.path.join(jni_dir, name))
                             for name in os.listdir(jni_dir)),

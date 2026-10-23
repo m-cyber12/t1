@@ -43,6 +43,6 @@ subprojects {
 // harness-core + terminal modules can be added to a larger Android app later.
 tasks.register("printHarnessModules") {
     doLast {
-        println("terminal-emulator + terminal-view + harness-core + app")
+        println("sealed-runtime + terminal-emulator + terminal-view + harness-core + app")
     }
 }

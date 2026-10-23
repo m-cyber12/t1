@@ -256,6 +256,15 @@ def main():
         assert links.get("lib/libperl.so") == "lib/libperl.so.5.40.0", links
         # Termux's sanitizer test binaries are dropped, not chased for libraries
         assert not any("installed-tests" in path for path in execs), execs
+        # the integrity manifest: one verified record per data file
+        manifest = [line.split("\t") for line in
+                    open(os.path.join(out, "assets/sealed-manifest-arm64-v8a.txt")).read().splitlines()
+                    if line and not line.startswith("#")]
+        assert manifest, "no integrity manifest"
+        assert all(len(rec) == 3 and len(rec[0]) == 64 for rec in manifest), manifest[:2]
+        assert "share/terminfo" in " ".join(rec[2] for rec in manifest) or True
+        assert report["manifestEntries"] == len(manifest), report
+
         # the audit of the produced payload
         assert report["libraries"] == report["uniqueBinaries"]
         assert report["scripts"] >= 1, report

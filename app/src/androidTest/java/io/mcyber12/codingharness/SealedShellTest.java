@@ -17,7 +17,7 @@ import java.util.Locale;
 
 import io.mcyber12.codingharness.core.HarnessCommandRunner;
 import io.mcyber12.codingharness.core.HarnessConfig;
-import io.mcyber12.codingharness.core.exec.ExecAudit;
+import io.mcyber12.sealed.ExecAudit;
 import io.mcyber12.codingharness.core.exec.SealedPayloadInstaller;
 
 import static org.junit.Assert.assertNotNull;

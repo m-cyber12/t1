@@ -1,4 +1,4 @@
-package io.mcyber12.codingharness.core.exec;
+package io.mcyber12.sealed;
 
 import java.io.File;
 import java.io.IOException;

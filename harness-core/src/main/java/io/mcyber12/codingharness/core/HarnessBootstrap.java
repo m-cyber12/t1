@@ -17,8 +17,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.zip.ZipEntry;
 
-import io.mcyber12.codingharness.core.exec.ExecAudit;
-import io.mcyber12.codingharness.core.exec.SealedLayout;
+import io.mcyber12.sealed.ExecAudit;
+import io.mcyber12.sealed.SealedLayout;
 import java.util.zip.ZipInputStream;
 
 /**

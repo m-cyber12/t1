@@ -1,0 +1,22 @@
+plugins {
+    id "java-library"
+}
+
+// Pure Java on purpose: this module is the part of the sealed runtime the main
+// harness consumes (see docs/sealed-runtime-port.md). It must compile and test
+// without an Android SDK, which is what makes it portable and cheap to verify.
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+}
+
+dependencies {
+    testImplementation "junit:junit:4.13.2"
+}
+
+test {
+    testLogging {
+        events "failed"
+        exceptionFormat "full"
+    }
+}

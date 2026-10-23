@@ -1,4 +1,4 @@
-package io.mcyber12.codingharness.core.exec;
+package io.mcyber12.sealed;
 
 /**
  * What a file in the prefix actually is, from the point of view of the
