@@ -1,0 +1,8 @@
+* What went wrong:
+A problem occurred evaluating project ':app'.
+> Could not get unknown property 'canSignRelease' for project ':app' of type org.gradle.api.Project.
+
+* Try:
+> Run with --info or --debug option to get more log output.
+--
+BUILD FAILED in 32s
