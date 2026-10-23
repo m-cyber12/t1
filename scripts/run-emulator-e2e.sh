@@ -68,7 +68,19 @@ echo "SDK=$SDK"; ls "$SDK" >> e2e-logs/phases.log 2>&1
 SYSTEM_IMAGE="${E2E_SYSTEM_IMAGE:-system-images;android-34;aosp_atd;x86_64}"
 yes | "$SDKMANAGER" --licenses > e2e-logs/licenses.log 2>&1 || true
 "$SDKMANAGER" "emulator" "$SYSTEM_IMAGE" > e2e-logs/sysimg.log 2>&1
-if [ $? -ne 0 ]; then phase "system-image-failed"; tail -50 e2e-logs/sysimg.log; exit 1; fi
+if [ $? -ne 0 ]; then
+  # Not every API level publishes an aosp_atd image; google_atd is the sibling
+  # flavour. Record the substitution so the result cannot be misread.
+  FALLBACK="${SYSTEM_IMAGE/;aosp_atd;/;google_atd;}"
+  if [ "$FALLBACK" != "$SYSTEM_IMAGE" ]; then
+    echo "falling back to $FALLBACK" >> e2e-logs/sysimg.log
+    "$SDKMANAGER" "emulator" "$FALLBACK" >> e2e-logs/sysimg.log 2>&1 \
+      && SYSTEM_IMAGE="$FALLBACK" && echo "E2E_SYSTEM_IMAGE=$SYSTEM_IMAGE" >> e2e-logs/phases.log
+  fi
+fi
+if [ ! -d "$SDK/system-images" ] || ! "$SDKMANAGER" --list_installed 2>/dev/null | grep -q "${SYSTEM_IMAGE#system-images;}"; then
+  phase "system-image-failed"; tail -50 e2e-logs/sysimg.log; exit 1
+fi
 
 phase "create-avd"
 # avdmanager and emulator must agree on the AVD home; newer cmdline-tools

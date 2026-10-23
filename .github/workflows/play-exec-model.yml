@@ -30,24 +30,6 @@ name: Exec model (sealed)
 
 on:
   workflow_dispatch:
-    inputs:
-      target_sdk:
-        description: "targetSdk to build and measure (34 = the shell milestone, 36 = what Play requires)"
-        type: choice
-        options: ["34", "36"]
-        default: "34"
-      compile_sdk:
-        description: "compileSdk (must be >= target_sdk)"
-        type: choice
-        options: ["35", "36"]
-        default: "35"
-      system_image:
-        description: "emulator system image to measure on"
-        type: choice
-        options:
-          - "system-images;android-34;aosp_atd;x86_64"
-          - "system-images;android-36;aosp_atd;x86_64"
-        default: "system-images;android-34;aosp_atd;x86_64"
   push:
     branches: ["arena/**"]
     paths:
@@ -63,18 +45,34 @@ permissions:
 
 jobs:
   exec-model:
-    name: Sealed build / exec model
+    name: Sealed / targetSdk ${{ matrix.target_sdk }} on API ${{ matrix.api }}
+    # Two measurements, because the claim is two-part: the sealed runtime must
+    # work at the API level Play requires (36), and it must still work on the
+    # level the mechanism was designed against (34). The exec policy belongs to
+    # the device, so each target is measured on a device of that API level.
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target_sdk: 34
+            compile_sdk: 35
+            api: 34
+            image: "system-images;android-34;aosp_atd;x86_64"
+          - target_sdk: 36
+            compile_sdk: 36
+            api: 36
+            image: "system-images;android-36;aosp_atd;x86_64"
     runs-on: ubuntu-latest
     timeout-minutes: 180
 
     env:
-      E2E_TARGET_SDK: ${{ inputs.target_sdk || '34' }}
-      E2E_COMPILE_SDK: ${{ inputs.compile_sdk || '35' }}
-      E2E_SYSTEM_IMAGE: ${{ inputs.system_image || 'system-images;android-34;aosp_atd;x86_64' }}
+      E2E_TARGET_SDK: ${{ matrix.target_sdk }}
+      E2E_COMPILE_SDK: ${{ matrix.compile_sdk }}
+      E2E_SYSTEM_IMAGE: ${{ matrix.image }}
       E2E_TEST_TASK: ":app:connectedSealedAndroidTest"
       E2E_TEST_CLASS: "io.mcyber12.codingharness.SealedShellTest,io.mcyber12.codingharness.ExecModelTest"
       E2E_LEAN: "1"
-      E2E_GRADLE_PROPS: "-PharnessTargetSdk=${{ inputs.target_sdk || '34' }} -PharnessCompileSdk=${{ inputs.compile_sdk || '35' }} -PharnessTestBuildType=sealed"
+      E2E_GRADLE_PROPS: "-PharnessTargetSdk=${{ matrix.target_sdk }} -PharnessCompileSdk=${{ matrix.compile_sdk }} -PharnessTestBuildType=sealed"
 
     steps:
       - name: Check out source
@@ -212,7 +210,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: sealed-${{ env.E2E_TARGET_SDK }}-from-APK
+          name: sealed-targetSdk${{ matrix.target_sdk }}-api${{ matrix.api }}-from-APK
           path: |
             setup-e2e-report.txt
             manifest-tree.txt
