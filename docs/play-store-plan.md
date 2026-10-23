@@ -14,12 +14,16 @@ with `ARCHITECTURE.md` §10 (the constraint analysis) and
 |---|---|---|---|
 | `coding-harness-debug-targetSdk28` (what a human installs) | **28** | **yes** — full setup, tools, packs | **no** (the upload is rejected: Play wants 36) |
 | `sealed-targetSdk34-from-APK` | 34 | **yes for the core tier** — shell, git, python, node, perl, ruby, ripgrep run from the APK; no provisioning UI yet | **no** — target is 34, not 36 |
-| `sealed-targetSdk36-from-APK` | 36 | the same measurement, at the API level Play requires, on an API 36 device | the intended submission shape |
+| `sealed-targetSdk36-from-APK` | **36** | **yes for the core tier** — the same eight tools, measured on an API 36 device | **yes for the runtime**; still needs the provisioning UI and Feature Delivery for packs |
 
-**The core-tier milestone is done** (run `39924922410`, `Tests 2/2`, 0 skipped,
-0 failed, aosp_atd API 34 emulator at `-PharnessTargetSdk=34`):
+**The core-tier milestone is done at both API levels** — run `39931163636`, a
+two-entry matrix, `Tests 2/2` on each leg (0 skipped, 0 failed), aosp_atd
+emulators, `targetSdk 36` built against `compileSdk 36` on API 36 and
+`targetSdk 34` against `compileSdk 35` on API 34. The API 36 leg, i.e. the level
+Play requires:
 
 ```
+payload abi=x86_64 targetSdk=36
 sealed payload (x86_64): 13858 data files, 1173 data links, 535 executables from the APK
 bash   -> exit 0 : SEALED-SHELL-OK | version=5.3.9(1)-release | prefix=…/usr
 sed    -> exit 0 : A1 | A2
@@ -33,7 +37,8 @@ exec audit: 560 executable entries, 535 shipped in the APK,
             0 binary executables outside it, 25 scripts outside it (run through the preload)
 ```
 
-That is the whole `core` tier — the packages the harness promises on first run —
+The API 34 leg reports the identical tool versions, byte for byte. That is the
+whole `core` tier — the packages the harness promises on first run —
 running from the APK on a device where the data-directory exec exemption does
 not exist. The 535/560 ratio is the design in one line: everything executable
 came out of the APK; the 25 leftovers are package scripts, interpreted through
@@ -56,10 +61,12 @@ Remaining gap to a submission, in order:
 1. **Ship the provisioning UI** — the payload installs and runs, but the sealed
    build has no first-run screen yet; in the shipping build that job is done by
    `apt`. Without it there is nothing to tap from a fresh install.
-2. **Raise the target to 36** — Play has required API 36 for new apps and
-   updates since 2026-08-31 (extension request possible until 2026-11-01). The
-   gate now runs a matrix that builds `targetSdk 36` against `compileSdk 36` and
-   measures it on an API 36 device, alongside 34-on-34.
+2. **Target 36** — done as a measurement: the gate builds `targetSdk 36`
+   against `compileSdk 36` and runs the whole core tier on an API 36 device
+   (Play has required 36 for new apps and updates since 2026-08-31, with an
+   extension possible until 2026-11-01). The shipping build still defaults to 28
+   because its only install path is `apt`; the switch happens together with
+   point 1.
 3. **Keep runtime installs out of the Play build** — `apt-get` fetching `.deb`s
    is the Device & Network Abuse problem; packs become Play Feature Delivery
    modules. Plus a release keystore and the store listing. (16 KB page alignment
