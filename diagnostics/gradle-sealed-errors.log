@@ -1,0 +1,16 @@
+> Task :app:fetchCoreDebs FAILED
+> Task :terminal-view:compileDebugLibraryResources
+> Task :terminal-emulator:parseDebugLocalResources
+> Task :harness-core:parseDebugLocalResources
+
+[Incubating] Problems report is available at: file:///home/runner/work/t1/t1/build/reports/problems/problems-report.html
+--
+* What went wrong:
+Execution failed for task ':app:fetchCoreDebs'.
+> Process 'command 'python3'' finished with non-zero exit value 1
+
+* Try:
+> Run with --info or --debug option to get more log output.
+--
+BUILD FAILED in 33s
+29 actionable tasks: 24 executed, 5 from cache
