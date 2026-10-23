@@ -78,6 +78,38 @@ def make_deb(path, files, links=None, depends=None):
                 handle.write(b"\n")
 
 
+def elf_with_needed(needed):
+    """A minimal 64-bit LE ELF whose dynamic section lists one DT_NEEDED."""
+    strtab = b"\x00" + needed.encode() + b"\x00"          # offset 0 is the empty name
+    strtab_offset = 64 + 2 * 56                              # after header + 2 phdrs
+    dyn_offset = strtab_offset + len(strtab)
+    dynamic = b""
+    dynamic += (1).to_bytes(8, "little") + (1).to_bytes(8, "little")   # DT_NEEDED -> "libx"
+    dynamic += (5).to_bytes(8, "little") + strtab_offset.to_bytes(8, "little")
+    dynamic += (0).to_bytes(8, "little") + (0).to_bytes(8, "little")
+    total = dyn_offset + len(dynamic)
+
+    ident = b"\x7fELF\x02\x01\x01" + b"\x00" * 9
+    header = ident + (2).to_bytes(2, "little") + (183).to_bytes(2, "little")  # ET_DYN, x86_64
+    header += (1).to_bytes(4, "little") + (0).to_bytes(8, "little")            # version, entry
+    header += (64).to_bytes(8, "little") + (0).to_bytes(8, "little")           # phoff, shoff
+    header += (0).to_bytes(4, "little")                                        # flags
+    header += (64).to_bytes(2, "little") + (56).to_bytes(2, "little") + (2).to_bytes(2, "little")
+    header += (0).to_bytes(2, "little") + (0).to_bytes(2, "little") + (0).to_bytes(2, "little")
+    header = header.ljust(64, b"\x00")
+
+    def phdr(kind, offset, size, flags):
+        return (kind.to_bytes(4, "little") + flags.to_bytes(4, "little")
+                + offset.to_bytes(8, "little") + offset.to_bytes(8, "little")
+                + (0).to_bytes(8, "little") + size.to_bytes(8, "little")
+                + size.to_bytes(8, "little") + (0x1000).to_bytes(8, "little"))
+
+    body = header + phdr(1, 0, total, 5) + phdr(2, dyn_offset, len(dynamic), 6)
+    blob = body + strtab + dynamic
+    assert len(blob) == total, (len(blob), total)
+    return blob
+
+
 def stanza(name, version, filename, data, depends=None, provides=None):
     text = "Package: %s\nVersion: %s\nArchitecture: aarch64\nFilename: %s\n" \
            "SHA256: %s\nInstalled-Size: %d\n" % (
@@ -154,7 +186,8 @@ def main():
         libcxxdata = open(delibcxx, "rb").read()
 
         deperl = os.path.join(pool, "perl.deb")
-        make_deb(deperl, {"bin/perl": elf("perl"),
+        make_deb(deperl, {"bin/perl": elf_with_needed("libperl.so"),
+                          "lib/libperl.so.5.40.0": elf("libperl"),
                           "bin/perl5.40.0": elf("perl"),
                           "share/perl5/core_perl/find.pl": b"#!/usr/bin/perl\n"},
                  links={"bin/core_perl/find": "/data/data/com.termux/files/usr/share/perl5/core_perl/find.pl"})
@@ -208,8 +241,9 @@ def main():
 
         # hard links collapse to one library
         assert execs["bin/git"] == execs["libexec/git-core/git-add"] == execs["libexec/git-core/git-commit"], execs
-        # perl's two names collapse too
-        assert execs["bin/perl"] == execs["bin/perl5.40.0"], execs
+        # perl's launcher is its own ELF (it links against libperl); the
+        # versioned binary is separate content and gets its own library
+        assert execs["bin/perl"] != execs["bin/perl5.40.0"], execs
         # the alias link resolves into the sealed set (it is an executable
         # name, so it must point at a library, not sit in the payload)
         assert execs["bin/python"] == execs["bin/python3.12"], execs
@@ -218,9 +252,17 @@ def main():
         assert links.get("bin/core_perl/find") == "share/perl5/core_perl/find.pl", links
         # libraries are never executables
         assert "lib/libpython3.12.so" not in execs
+        # a binary that needs libperl.so gets the link its package omits
+        assert links.get("lib/libperl.so") == "lib/libperl.so.5.40.0", links
         # the audit of the produced payload
         assert report["libraries"] == report["uniqueBinaries"]
         assert report["scripts"] >= 1, report
+        parser = subprocess.run([sys.executable, "-c",
+            "import importlib.util;s=importlib.util.spec_from_file_location('b',%r);"
+            "m=importlib.util.module_from_spec(s);s.loader.exec_module(m);"
+            "print(m.elf_needed(open('/bin/true','rb').read()))" % os.path.join(SCRIPTS, "build-sealed-payload.py")],
+            capture_output=True, text=True)
+        assert parser.returncode == 0 and "libc" in parser.stdout, parser.stderr
         assert report["executables"] >= 6, report
         assert not any("executable ELF" in line for line in report.get("problems", []))
 

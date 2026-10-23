@@ -324,6 +324,126 @@ def split(tree):
 
 
 # --------------------------------------------------------------------------- #
+# ELF dependency check
+# --------------------------------------------------------------------------- #
+
+# Libraries the platform always provides. Anything else a sealed executable
+# links against has to be in the payload (or the APK), or the binary dies at
+# startup with "cannot locate symbol" / "library not found" on the device.
+SYSTEM_LIBRARIES = {
+    "libc.so", "libm.so", "libdl.so", "liblog.so", "libz.so", "libandroid.so",
+    "libstdc++.so", "libc++_shared.so", "libc.so.6", "ld-android.so",
+}
+
+PT_LOAD = 1
+PT_DYNAMIC = 2
+DT_NULL = 0
+DT_NEEDED = 1
+DT_STRTAB = 5
+DT_STRSZ = 10
+
+
+def elf_needed(content):
+    """DT_NEEDED names of a 64-bit little-endian ELF, or [] if unparsable."""
+    try:
+        if content[:6] != b"\x7fELF\x02\x01":
+            return []
+        phoff = int.from_bytes(content[0x20:0x28], "little")
+        phentsize = int.from_bytes(content[0x36:0x38], "little")
+        phnum = int.from_bytes(content[0x38:0x3a], "little")
+        if not 0 < phentsize <= 128 or not 0 < phnum <= 256:
+            return []
+        loads = []
+        dynamic = None
+        for index in range(phnum):
+            base = phoff + index * phentsize
+            kind = int.from_bytes(content[base:base + 4], "little")
+            offset = int.from_bytes(content[base + 8:base + 16], "little")
+            vaddr = int.from_bytes(content[base + 16:base + 24], "little")
+            filesz = int.from_bytes(content[base + 32:base + 40], "little")
+            if kind == PT_LOAD:
+                loads.append((vaddr, offset, filesz))
+            elif kind == PT_DYNAMIC:
+                dynamic = (offset, filesz)
+        if dynamic is None:
+            return []
+        entries = []
+        offset, size = dynamic
+        for at in range(offset, min(offset + size, len(content)) - 16, 16):
+            tag = int.from_bytes(content[at:at + 8], "little", signed=True)
+            value = int.from_bytes(content[at + 8:at + 16], "little")
+            if tag == DT_NULL:
+                break
+            entries.append((tag, value))
+        strtab = next((value for tag, value in entries if tag == DT_STRTAB), None)
+        if strtab is None:
+            return []
+        strtab = strtab
+        # The dynamic string table is addressed by virtual address; map it back
+        # to a file offset through the PT_LOAD segment that contains it.
+        file_offset = None
+        for vaddr, seg_offset, seg_size in loads:
+            if vaddr <= strtab < vaddr + seg_size:
+                file_offset = seg_offset + (strtab - vaddr)
+                break
+        if file_offset is None:
+            return []
+        needed = []
+        for tag, value in entries:
+            if tag != DT_NEEDED:
+                continue
+            end = content.find(b"\x00", file_offset + value)
+            if end < 0:
+                continue
+            needed.append(content[file_offset + value:end].decode("utf-8", "replace"))
+        return needed
+    except Exception:
+        return []
+
+
+def ensure_dependencies(sealed, libraries, payload, kept_links):
+    """Make sure every sealed binary's libraries exist; link or fail loudly.
+
+    Android resolves DT_NEEDED by file name. A package may ship the same library
+    under a versioned name only (perl ships libperl.so.5.40.0 while the binary
+    needs libperl.so), which works under dpkg because the postinst creates the
+    link - and fails in a payload, where nothing runs postinsts. Rather than
+    guess which packages do that, this reads the binaries.
+    """
+    by_basename = {}
+    for path in payload:
+        by_basename.setdefault(os.path.basename(path), []).append(path)
+    added = []
+    problems = []
+    for path, library in sorted(sealed.items()):
+        content = libraries.get(library)
+        if content is None:
+            continue
+        for needed in elf_needed(content):
+            candidates = by_basename.get(needed, [])
+            if candidates:
+                existing = new_link = "lib/" + needed
+                if new_link not in payload and new_link not in kept_links:
+                    kept_links[new_link] = candidates[0]
+                    added.append((new_link, candidates[0]))
+                continue
+            if needed in SYSTEM_LIBRARIES or needed.startswith("ld-android"):
+                continue
+            # Not shipped under that name: a versioned sibling will do.
+            stem = needed.split(".so")[0] + ".so"
+            siblings = [path for name in by_basename
+                        if name.startswith(stem) for path in by_basename[name]]
+            if siblings:
+                link = "lib/" + needed
+                if link not in payload and link not in kept_links:
+                    kept_links[link] = sorted(siblings)[0]
+                    added.append((link, sorted(siblings)[0]))
+                continue
+            problems.append("%s needs %s (not in the payload)" % (path, needed))
+    return added, problems
+
+
+# --------------------------------------------------------------------------- #
 # output
 # --------------------------------------------------------------------------- #
 
@@ -428,6 +548,14 @@ def build(bootstrap, abi, out_dir, deb_dir=None):
     sealed, libraries, payload, kept_links, unique, scripts = split(tree)
     if not sealed:
         raise SystemExit("refusing to build a sealed payload with no executables")
+
+    added, problems = ensure_dependencies(sealed, libraries, payload, kept_links)
+    for link, target in added:
+        print("dependency link %-34s -> %s" % (link, target))
+    if problems:
+        for problem in problems:
+            print("sealed-payload: %s" % problem, file=sys.stderr)
+        raise SystemExit("sealed payload is missing %d shared library(ies)" % len(problems))
     return write_payload(out_dir, abi, tree, sealed, libraries, payload,
                          kept_links, unique, scripts, sources)
 
