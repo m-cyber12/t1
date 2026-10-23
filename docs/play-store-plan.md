@@ -14,9 +14,9 @@ with `ARCHITECTURE.md` §10 (the constraint analysis) and
 |---|---|---|---|
 | `coding-harness-debug-targetSdk28` (what a human installs) | **28** | **yes** — full setup, tools, packs | **no** (the upload is rejected: Play wants 36) |
 | `sealed-targetSdk34-from-APK` | 34 | **yes for the core tier** — shell, git, python, node, perl, ruby, ripgrep run from the APK; no provisioning UI yet | **no** — target is 34, not 36 |
-| `sealed-targetSdk36-from-APK` | **36** | **yes for the core tier** — the same eight tools, measured on an API 36 device | **yes for the runtime**; still needs the provisioning UI and Feature Delivery for packs |
+| `sealed-targetSdk36-from-APK` | **36** | **yes** — the core tier runs from the APK, installs itself on startup (13 ms on the second launch), and its dpkg database agrees | **yes for the runtime**; still needs Feature Delivery for packs |
 
-**The core-tier milestone is done at both API levels** — run `39931163636`, a
+**The core-tier milestone is done at both API levels** — run `39982825794`, a
 two-entry matrix, `Tests 2/2` on each leg (0 skipped, 0 failed), aosp_atd
 emulators, `targetSdk 36` built against `compileSdk 36` on API 36 and
 `targetSdk 34` against `compileSdk 35` on API 34. The API 36 leg, i.e. the level
@@ -24,7 +24,8 @@ Play requires:
 
 ```
 payload abi=x86_64 targetSdk=36
-sealed payload (x86_64): 13858 data files, 1173 data links, 535 executables from the APK
+sealed payload (x86_64): 13858 data files, 1173 data links, 535 executables from the APK,
+                         13858 verified against the manifest
 bash   -> exit 0 : SEALED-SHELL-OK | version=5.3.9(1)-release | prefix=…/usr
 sed    -> exit 0 : A1 | A2
 bin/git    -> exit 0 : git version 2.56.0
