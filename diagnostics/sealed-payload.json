@@ -1,0 +1,1022 @@
+{
+  "abi": "arm64-v8a",
+  "dataFiles": 13856,
+  "executables": 534,
+  "libraries": 252,
+  "librariesSha256": {
+    "libaddpart.so": "17fd9107465cf23853e739c30a4cdcfaf6849a2de3c35f210d3ed2bafc1f2945",
+    "libapt.so": "0ba14745650e8cc87f43b15dfd1d42f9f3162c8621e871c49919f345aedf7b3a",
+    "libapt_cache.so": "e7be2d5c35f399b73d94e91f7f616a2cfd19c45b20146385dfc60384dba54214",
+    "libapt_config.so": "7d06a3dcfac923c9b0008bf25dc35c49c4698e8163c0ca12cb179237c0225ab9",
+    "libapt_get.so": "fc6ca2543c9995ac885ab96a0db29e3151c7eb8f2984c2a9321eacfc44b872f8",
+    "libapt_mark.so": "a023034a7de140f663e9c9cc8e06966e3d133aa8a1fc9cd758213c5459994dec",
+    "libarp.so": "d1309545ffdc2c63388780f441beba8cc30317a7781085f91cee074fb427f532",
+    "libattr.so": "41e6950d30ad61adf1c47ff3ac3f316ffc99ffed0159217786d2fc5258ec0d54",
+    "libbash.so": "567b06da60239e326420c31a9fd19e0ee3ef5267f45b6a7c860df711e43e4037",
+    "libbits.so": "30d695e47f228a97a4e0669b771b5259e645b3a8eb39de30749797bcc21d4b66",
+    "libblkpr.so": "91fde5163b01dd0c928bd5091a4329fce1f36a6ea67a83f3a3404a808756d5b7",
+    "libblockdev.so": "73237b19c36b5e6bb35ad8e5fa96e7a6a90bbda96f8e76bd2ff9793e2e038743",
+    "libbzip2.so": "362d9be94fd9c4d451aa69a6bf847f7589b7fa21258b13e7396a48ecdd0d1e1f",
+    "libbzip2recover.so": "46c93eff43a37bcbfe2d8c0d24f5d2be44f26cbd66e3bb1c7ed8652c85cf6342",
+    "libcal.so": "6e2fbf89718ab01871b2cc9a44fbd70be3d91d551d6c508d3dc710934d7490e9",
+    "libcaptest.so": "cbaad476b300586b5a7d7255e56665632a0de53f1f3aee47251fa5777e7cd594",
+    "libchacl.so": "b2eb877a076a5c6edf1d07f7500892ac2ea49a5aad752236bf074669b33ef179",
+    "libchcpu.so": "40ea60294c9d47dbe5d8a75e699661028326a04a7780e6df1dd557776250a124",
+    "libchoom.so": "1b8d4af7cb7343d2879fb719ccf02314cc2df1389d564f74712b2f858a39ab45",
+    "libchrt.so": "ea23230c8fe5066bf4880e51678e26766df4757b5fd38c366d07bf5e3c26f93c",
+    "libclear.so": "e8636003d8bf2ac26456f99cc28652001eaf4fc3d7fdf02d28dfea686b4ea211",
+    "libcmd.so": "05c26b09dabdf1b33db7d1b8a768f47f7d2879a0dc419527d43817453334518c",
+    "libcmp.so": "a6688a1cb76892c6910bce46704419e06d7c1f5d73392a19c491e8d92b5f3fc5",
+    "libcol.so": "616be9694faf647f560c78c252c40b10a4252e2bb9029a6430d5c56b9c790c72",
+    "libcolcrt.so": "480de800ebfe41eb85f216c5e5607cbc18997af732f80f7b7d36617cacdc6582",
+    "libcolrm.so": "f6cc577d5891dd5e9f6a75e31d403952e79ab98c6ae353699b546757cca27670",
+    "libcolumn.so": "5ac72ce8ae09f386008d8c98e87f137e6a844502babe85f993e01ebaaa954266",
+    "libcommand_not_found.so": "161300ed9a6900f5e713cc607608f48a6da7113563c4f068f76a4140b164200d",
+    "libcoresched.so": "932c608b21c4b69791294e2cdcc323a39a91fd6708a6b4f3c3ec75f7165af97a",
+    "libcoreutils.so": "71fe649b87ce9f2ac8f377d3a7bf3e094ec0c9990db99f5c2342cae8a1571839",
+    "libctrlaltdel.so": "2c41efbc02f126f1d45aadd0868f4e090484dadfe4e7bf2fd679c125f696a090",
+    "libcurl.so": "b07b66fe1096b2324e1eafae21df20e88c230660c0d36bb39ac9aff43a2f17fe",
+    "libdash.so": "1900215a59ff7c1efc98fd9fd3f923121339cea7fbbd59e5a52e43b143611d0a",
+    "libdelpart.so": "f490ac672624ddb4658c78da4226b4c22c73fec8c113d58ceb129aa9d0a60a75",
+    "libdialog.so": "9f13734fb53bc97b525b9ca21ffbd5bbacc0ddf64e9a9d989e0daceb4b37d63d",
+    "libdiff.so": "3662e11fa3cc859e88bf2304a27ebd55778b7967ac1034cd23100372b2a1aa83",
+    "libdiff3.so": "153afa57dc69ade551da2d75196fbe3dc23156067a8c045b6ec7e4877691fc2a",
+    "libdmesg.so": "d3cac5d9f7fcbfcd975b3c4ffcbc77091f67b6922f71f5c311c8a0bb51c83f7e",
+    "libdnsdomainname.so": "cb60955defe4940a87f1c0201bf93c84eeb67ca3146d16c8375c9889f1581074",
+    "libdos2unix.so": "aa80054126b12309b0a35a7ae3e3a0af365b72f6f2d11d2c25d6e40dca07e5fd",
+    "libdpkg.so": "041418801b606b1f621de0fee9d1a110111649e25a5314dcc539eb3fde3170e7",
+    "libdpkg_deb.so": "7e646e50385aa45c6aec23d9030bf006b8f79ab21a6faf3790e92dd48692590a",
+    "libdpkg_divert.so": "41f8af6861dda4078a66884122345c78b9889893d74c808ba98c0e3201c9ea63",
+    "libdpkg_query.so": "8876f1ca15cb230965032c5d923296d1d3f6b2f36bc138bbcc43edb573eb367f",
+    "libdpkg_split.so": "71cf3c241f8aa45a7910323a932ccdc8129edb5a36b1cff408e185f43800648f",
+    "libdpkg_trigger.so": "1b77165871fd7974fb4d750e720888e0caad89b5d744de44ef793f00c47fd543",
+    "libdrill.so": "704cc60b605db20f9f3a54864be48ec1cda281cd794fe98c19378b73e9b791dc",
+    "libdumpsexp.so": "8d06b91e111e46c9b527312f51a7a24997e1e3faf5ae2f61a415deb09ac27a80",
+    "libed.so": "d044a6987239bde9ef6b7f009d6a914fd10ab3d986cef7188d7d9a50fdfa6801",
+    "libenosys.so": "4ea11ebe18c093556c2291bfbf8b415de34c27bd3a803ecaa99f41ae1315f7a5",
+    "libexch.so": "c8cce7fba1a35c3378bd87a1867ef44695e299c313cd6962d29f6603a81a39be",
+    "libfadvise.so": "a11ca15ed61b9298d768aafca0cabe8e038cbf1a22abe6df5dcd41415855215d",
+    "libfallocate.so": "80091bd48ceb86ee673f22127d617f4779046a8c467470034d9f191df16e8fb8",
+    "libfile.so": "1c76f64af690c72a4052c38e487f073f1a9c3f0d5782e2b72afd03c3d60042d4",
+    "libfilecap.so": "34a294896948d5dd0cae235417b1ffd80bb202d18f4f25a4265041c72f15c656",
+    "libfincore.so": "d9901597fc47aa458f639a0a6304a1c08f6ff4880be64d64a5f4b91eba9f30ae",
+    "libfind.so": "be0e00f00c3dc6b8b087644ef05bc698dbab16d2483e9cd40c917231c5a19084",
+    "libflock.so": "cd29fade842603ce3d4cd304ff07de22f4c649b06ad5894a761b47a127eee3de",
+    "libfrcode.so": "65e6f841e5977097925106eea8bf0cfea3701bd2ccbba11d4d5fffb439d3e3b1",
+    "libfree.so": "553ea5c6b514948a6e4a1ead0df6ec5655d787a63b3986732a65f5f91d126695",
+    "libfsck_cramfs.so": "3aedc3f08ccc662f41c598b40ec3867a019b01b7e5cd95b183e1930398995d92",
+    "libfsck_minix.so": "5105617a1aefb3d103c32cdf8b39f218a2c80b07d50ed2786173737835c1d5c0",
+    "libfsfreeze.so": "343d57f48cdd4f270dc43c6072dfa0cdd558d9332ca60f8b9f1c700e56e0f976",
+    "libftp.so": "6be51e6c055c56267c68a2d386514a57684e029cf7fb8c1b9115de80306baac6",
+    "libfunzip.so": "7421c581b7123e81a1b247af2e785a2106235c665adc6ac676850b5fd54d0326",
+    "libfuser.so": "649330435568266490cd7233a1f2e884c7602c6bc72876021e651ffd3e28c8a8",
+    "libgawk.so": "7e27619d21495a44745072b20aacbb85bf3940b12d645c2cf0a7ba07808d7c5f",
+    "libgdbm_dump.so": "4f5659236fb4975b2c991937cf61a1fb16941bfc86850ef91767015ceaf35eba",
+    "libgdbm_load.so": "b4511594bd3814172654f1a32e8df2a05b91e15cb2507571f7ef0fa530f94ce0",
+    "libgdbmtool.so": "1aca84a50ea088c829af7960292f84ddf387d6ddbe5210ee5a645df41b8f2154",
+    "libgetfacl.so": "2e1f02a8bc357de599e987ff6aadb0ed3d20af28db999693c5305f50371e08b8",
+    "libgetfattr.so": "7267d74a70e3a093a33fabc18238d1c265320f668da49d76942719d57be15f79",
+    "libgetopt.so": "a17e70e178ea4c5dc94e2f2fdabb500d3a39597aec2e673aa325761e49d2d3c7",
+    "libgit.so": "49d9593fb2d61edba13ca188b2194c08eb658b1f78bba64f47ec3d68efd9e2e6",
+    "libgit_daemon.so": "1382db19e9a46446d314bc1f15b80a460932e310435f18a2062cfe2b164fe7c7",
+    "libgit_http_backend.so": "dd8f04d14dab53df3d3560f48cb83aa76f9695092b17096053f897069cfd77c7",
+    "libgit_http_fetch.so": "91c417a9d93f838843f0160fd68af2fdf8d21fb7d27330550e5cd5eee56467e5",
+    "libgit_http_push.so": "4437cfe7ea8ec6762e8ff36f23508aab740746ba0e8c5aee2e0361aed63c6303",
+    "libgit_imap_send.so": "857e2f268fda5cb0234fd29730177d99baafdcd6a2c43551c0366665b4495625",
+    "libgit_remote_http.so": "841c2c3a23a808e3ffa3d1af99cad55a973d1e26b206345fd063eb3d9f5a30d6",
+    "libgit_sh_i18n__envsubst.so": "ac1e8a5fd3d2a0f6e506ec9ac2539172590a19e15696336c6fdbaa246a088cc8",
+    "libgit_shell.so": "02d2a38bc08fc8131ee6f1c8905deee60e801be9e323dfd8f00f1c12f67cb253",
+    "libgpg_error.so": "65655eec46dded59f902ce40c03fd8115ea773074aea1613322d90d2abcfc848",
+    "libgpgv.so": "78574a895888acde4ca7fe4bdffce5fcb240f2b7e4fb291b7b17b3b411c04359",
+    "libgrcat.so": "4d9115dcf609f7686270234ded942518021911ef6cd54d52183ff423dd1251c8",
+    "libgrep.so": "eb3ed881281a64e9dfb9d5604cbefc9e07c470602ac9e874fa83217f2c8a2a84",
+    "libgss_client.so": "fa03abac4fb1039a22e9a8545e67ff31b1b3405cec8ac2b709a8c10eaf7bd775",
+    "libgss_server.so": "2ad78e7a58eb68839fcb1374524c5fe4aafbb3402e88b92fc7f694e6fc33039f",
+    "libgzip.so": "cafe40c9bd36108dae1cae496a45db73e48240a3c729a6b2e787b699427ab3ae",
+    "libhardlink.so": "6d11663a88e8b8cf28dadc3d91d5782dd81550555183d4910840d6d71125f4db",
+    "libhexdump.so": "bbcdf34747a8fbae29b8d92d8bc94a73f38daccc7ffdfb567a3e7c17616193e5",
+    "libhmac256.so": "74532626d65878668420e12c0c59e74ff48c16d66783c604e02d84c4fde8aacb",
+    "libhostname.so": "644be776d2352441a2be3a56ec62a10af4bc0b9081a67bd5e2b41aeaa9a96d5d",
+    "libhwclock.so": "f56c9ebcc94824c3321ce741e474de00cf6e927caafa8af7a4148762c025ceb0",
+    "libidn2.so": "b9a67c5f62e2e48b5efed392bf584a0461f4cfd80b33d5cf5ca207ad58161184",
+    "libifconfig.so": "286990643090f924c34f6d1563fcf53c5163601e84b2dbf418b7b4de031311ea",
+    "libinetd.so": "4b568d9bd07e21123a1eb953317814b0290e8977af07a3a750f73eaa638d1320",
+    "libionice.so": "91e7cf64ecefcfe2efe49685c1f3c73e6161735305ec3a3c7627faa8bd1a7931",
+    "libipmaddr.so": "8cb714b53d74a4089792690830056765938dc795d805ae3f75d6a98352849552",
+    "libiptunnel.so": "c1e1409b9df1d1daee5bef46650475ecb0b4a26bc77254a0253a98fedccb57ec",
+    "libirqtop.so": "54c278fc1ccf9fc43906b2df3ad9fcc8b6a07a9d5c13e91f78d0584c6c4d659a",
+    "libischroot.so": "8e2ee82f9d1ecad89f7d5a257ebc04d0081a173c18ae87710d9a848ab0a2f4c7",
+    "libisosize.so": "3b2bd3c18803097dcce9d0b3522b4cfaa4325a5e476a0ed7599c2d598e370568",
+    "libjq.so": "ec98213e5f3e8721a0370046f83cd67355b5ee804ec156aaea70f2095f9c1bef",
+    "libkadmin.so": "028a3be644eeef3da17f27c255d0a5d3a6a8d21bed6f577dec48d941fad6d029",
+    "libkadmin_local.so": "a8711562ba807eb3106cbfa79986104d2219a5200c7f47c4d68a04190926f730",
+    "libkadmind.so": "f39b7755d2a3f167116c7a3fe552f8fe4425b52dbae5a2a31cd0b86f0c105a71",
+    "libkdb5_util.so": "5f78d6fb827666ab5415a76a8d9add65ac337c707c4d6923ac66dcdb1298bd7d",
+    "libkdestroy.so": "fb591b2a5dbc5801522428310b739a1941ee851c693d1af2d55eaac5c3bd1a94",
+    "libkillall.so": "000d950abaddd7067a860930294e50a4eba0c903190ef9ecfa6270d0a88ba8a4",
+    "libkinit.so": "beb65e770cd6ad16ba58fe6c33d6068ddea16770147b3099eec6074b40dcc66f",
+    "libklist.so": "e6c5368f2c5231a467a57586353dd8b15c4258f73f6a8cb541ada5e0b54c745a",
+    "libkpasswd.so": "1cb2773d3e0663c61f081bb528eda8d50e2c7d6f9e8b735ee9a63fea3add7693",
+    "libkprop.so": "82d07678e3abc76fc525990d033c03d31efadf16dd78c3957e704341f54fc25c",
+    "libkpropd.so": "fb4776262abf04071d858e574f05c57baf90e260c76ff1df8362c2c81ce4a36d",
+    "libkproplog.so": "976d9397bea0ef157aab0f498544e342029d8a372150fe9ac3d20a0d5e783104",
+    "libkrb5kdc.so": "a9c863905e4f4edc1534738d316fc8ec9b09a040d90f5ad87ba8a5785d3cf303",
+    "libksu.so": "273453f5a84f122afe4ef25fed49e144993e3491f3b6b66dbbb033c7d83e7042",
+    "libkswitch.so": "39c26f2a9209370bb370ebacf6a71faa6a2950f89706a1470dfcf6a549be8e83",
+    "libktutil.so": "4bbb643f98c23da0c291afc52062e1200b0fa57894f14a4e99ddb9533a0c00d5",
+    "libkvno.so": "2fd3d3c87bf401f47c6811d08f1f4c77632f1548bb92f87e522f5680982dc702",
+    "libldattach.so": "45e89a978cac784990c6e9b23754132a3c746ff7cc7adbb51e063d72d9f569ac",
+    "libless.so": "e370e87603cf98d5ea837290b86056fe0226ddb30ad217dcb814154a2a65913e",
+    "liblessecho.so": "f12236eb1c0edb5f3f34a2d0e7626136526e8370befccae7e0eee9a9c12dbbc7",
+    "liblessecho_eee39fae.so": "eee39faec69bcf61ca572045f1e84c454b9dbfe26add9c9ec342d2a5ed197e2c",
+    "liblesskey.so": "3849d9a918bc4c294dcbf559e9f960e3f0aa1c96aa2799d70b6dcb63f059ceab",
+    "liblibstdbuf_so.so": "90c7765e808644ae3ccee23263e619fbdb864065b7f25a07d603b8f214d40e3d",
+    "liblogger.so": "450e0ffb7e9b9fa11c61377b86a7b0e4f145e06761ec4d93528b5eea9bf9e27f",
+    "liblook.so": "24a460b65f7c42d98a0cf7594c5aacb539c85d8ef41c1500a4dbb1e6d0d149db",
+    "liblosetup.so": "05039e074d58bc7513edb13ea07177fceee9edea1ab2410c6bcf663025dd67cf",
+    "liblsclocks.so": "63afd23746ec59aac9624b6c8dc839ec43e638f6e759bf9a9df78bace78e844b",
+    "liblscpu.so": "66054ce8572ac4d42d5801ed6da311c15ed0f7064a2e74b83a9c654c3c6ba933",
+    "liblsfd.so": "c7721e281819e30fdb27d712a90835481fcea0645c5c120efdf481a25617a355",
+    "liblsipc.so": "e273bf633cc359823ba1025ed8c768bd8fd2da4457f45216c5559e9cb412dc2f",
+    "liblsirq.so": "0abe82f3f94f4d8a848cefb429daf80fc07c077912cb324547eaff5cca2a2cb1",
+    "liblsof.so": "961a384d963ad4160de7a639b06fea1cb601ba474fe4cf41c70b2db872ddee71",
+    "liblzmadec.so": "4191ea06d7c01277cdcf5c3521cf40e78157fd35a9adfe32095b1b81cb0eba7b",
+    "liblzmainfo.so": "2a8b0db9fc01a29ecb30904a160619162574bd07478a75253bb675819759b0a5",
+    "libmcookie.so": "1825e94c2c3a6bd8eb78ee449b89d7cd9e26b07694b356c2ffb63dec737df360",
+    "libmii_tool.so": "a165d06a39ce8f4c248e128e7d5ad01495f6c3921aa936a7c6b875107fb6c03a",
+    "libmkfs.so": "d3c36b130edeb23407b7fc157cbfc684f1cb701c4b7e6b24c799cdbf942d2e17",
+    "libmkfs_bfs.so": "7046e8591a14f95f48299c4a870a87f81d3fed4d5d5c6777b105f6232f87f2ed",
+    "libmkfs_cramfs.so": "998e7c138d870a241b4400779bfc25324ed8f363a47880e142de9654b1354ca5",
+    "libmkfs_minix.so": "edb23a0004f53f802210ea7119db695f1ca5f973013f0aad205cfbbfde6ca74c",
+    "libmore.so": "57dc50ea2ab87018c084db3a9ce8c71fc7cd5cb69b67cb40876760ac5cc029ca",
+    "libmpicalc.so": "66d4f51fae2a32afb9ea619af831599954e832c915a20ef5c83b4acc2e2c043c",
+    "libnamei.so": "1ea70364825c5e5645b22e825b5da51ca9fd5b079f339a437e6bd2874237fc54",
+    "libnameif.so": "07b19bf899e959b9dea2a8b156b722092e834ad9fbfbbeaad17fe33ae0329cad",
+    "libnano.so": "7a7a2a20691b298755d9bbd9ac9b398c66b25a8fd2ab4ed4ea655a4c0c7bd2bb",
+    "libnetcap.so": "85a79158b63287e29b6afe9fa2b7756ae2d15f584448d771bfc08d192560e023",
+    "libnetstat.so": "061664f31c08fe2a95c195969a1d5af3de5d82c8b82b62ff411644a1c9fd08f3",
+    "libnode.so": "e773cbefd2eac2343e97d8eb5cd8a0ee1aa3dc9ffe3ec740b3f1767103c86de7",
+    "libnsenter.so": "5239b49a9baead81a4cc205e1115f730f0bcedd4795e0a83531886b00672f532",
+    "libpasswd.so": "f220488d03e18c50422db47fb949542bcb047112627ee08179864af2f773efd0",
+    "libpatch.so": "f317abbd42f5f71ae81e3b8cbda563aa847c5f10985048459f7aa141c9460f06",
+    "libpeekfd.so": "8e4b9d67ba66d5a029f6d79aa125c98533abf707751106aaa6335043f167670a",
+    "libperl.so": "0039d91a5c3188fbdf479e725aabc4b5d0c7b699108274fc95c0220fc29061f6",
+    "libpgrep.so": "a00d6f5fd7ba67073cd31acd741b9d217bae5a5f1720cb8259e148acbc76e3be",
+    "libpidof.so": "acfc4a1bfe30e750eb05afb3dabf10d3894073cdae8345a1b5db40c0edb7cf31",
+    "libpipesz.so": "6c1121cc57b935dc9452d9937c1062879d784f2ad95be7e1a0b35f7448c571c5",
+    "libplipconfig.so": "fa2e9efc21dd0e37bdefc40017f1467e27c032f7eaa9adebc70ab7c413825ddd",
+    "libpmap.so": "1978c6600967d2a782485a6ac1a986faf0301f96e3aae72e2224538fd42dfa46",
+    "libprlimit.so": "cf1891484c7d18174fb852384eea4e6ed614a739db5bcbbf81e5a814333e672c",
+    "libprtstat.so": "ee792db3bea08b111a9e0a8264dbf8ce30bcd8a3ba04d8e8798d64ee9d03eb88",
+    "libps.so": "4fbb9c08d7cf42cdae25ae1845680ba1b84251bb3ed02c24f58cf22cd4197031",
+    "libpscap.so": "abad629af2048e85ab0fa70b177ff7eb64d03a02f27d17aba998ad23baf4bede",
+    "libpslog.so": "5595bfa2bb767214fb04e58e3b09b0bab0aee33f7f89e951fdea7b00a2d967fd",
+    "libpstree.so": "99f881141ecbdd378f166e7b9cdb199f8f860d1cc1114a4a8e7b92ab9580516b",
+    "libpwdx.so": "7dff1732d978588d84b52993f0766f70a8a5dbc0000471cbb638ec616ec10434",
+    "libpwlogin.so": "287f6162d1a0aa49283973ec217be345485b72a2bc656fb6caf73fb1dff6afd3",
+    "libpython3_14.so": "3bb14754d30d7ba58b2ab90d7b39799371cf308c493efd80c0f20a105698e055",
+    "librarp.so": "1dc7a8ab6984aed66863876be5a89ad21dffe561622baebc0f6d2e652b1ceaa0",
+    "libreadprofile.so": "dc0b6b1281e7e2ca9354e0c1e4c70355e65e5c4e042f48cc5988e1f5b9125a87",
+    "librename.so": "dac51251e9d1f42073232bd1d2fc9167fc92b95aa17a9d76f3d7bd3d35d80c6a",
+    "librenice.so": "b1d1973e9ba8d391aa7b3d4c84d69983e678b01f08fe7aecda07826c78f98edd",
+    "libresizepart.so": "c0a4e9906bff0f2021cfe3a27e8512096d83eabdbadec600ca5189851d804e05",
+    "librev.so": "94e3f2447848f959e1ab583b17cb4a373274dc0f0632980366b4e71dd048cd8a",
+    "librg.so": "5adfd20e4c350aecd718bbef048a57a3fbabe0402c9c39a25eb40a28f1b19543",
+    "librmt.so": "7ad0e32a8cdac318e714c5912dd6aa84a3b03d7b5e71d15327e87f858f774618",
+    "libroute.so": "4d54d5c085252bb532218b4f8f5730efa94f217edd0380f23683070798dae7e1",
+    "librtcwake.so": "81403cca4657d64321eb24eb4f97a03038268516cb23d6911db75abace3bc774",
+    "libruby.so": "790223b930cd6da69df392abcf6bac169ef05e2ba5f4263831e39c3ff8015a2f",
+    "librun_parts.so": "e64904cb36b5b1e441e58f43e3b61c8124a936a1d26be0f23463f3da48fbc46d",
+    "libscalar.so": "d93d6ba36a6210ad8220fd5653f82624632db9bfbd0d035a75ce90f0cbbea836",
+    "libsclient.so": "a393acac60c64eba044aab3cd85ea98d34707959ea90dec5b41f0ea332b9dd0a",
+    "libscp.so": "678e1602883b91d0be14ad3fbe943542cfb90795590f7bc6f793bfc62abfbdc9",
+    "libscript.so": "ce6bee9585922a61c98aabca1346dd60c9b57bbd7c08bc9df56049c0603b9354",
+    "libscriptlive.so": "1249b26e0cad1287af5582c89c028a38bd6214fbc4a05cef68b9a0fbe3c611c0",
+    "libscriptreplay.so": "77ee3453141db556376bca9be94b699a7b02b9a4358b421ca1a5b7e52967f514",
+    "libsdiff.so": "9bd1de0349989c672e542aae4b321d2824984a07e73eaeb4d7a981ec1ab76931",
+    "libsed.so": "e4838e90a668013dcacc64b824fac63374ab8006abc5f46d5929333b3f7d79ac",
+    "libsetarch.so": "ef24ce088a3432c5570251a180d432d667404a8c724dc820424b85cb2ab15b76",
+    "libsetfacl.so": "e818a1f0172c4537b0922c00df92761ae30cdee5b98eaee9d4228d5ff4006875",
+    "libsetfattr.so": "b36ce2b7d671094687649bd51eb454e0099e00a4691c646e3d2a818b6d0c02ba",
+    "libsetpgid.so": "6b6c929a06448008d807b983c0bfa501fbfa6b2bd751631edb10173a0903e7e9",
+    "libsetpriv.so": "a65469639648ecd54a71b9db1cd27cd3de7412e25c1bee5a10dde413f3bdc45f",
+    "libsetsid.so": "4301f5419d72265d5774e597c9cabfce2f2ae70ddfef580335d8faf5853d48a5",
+    "libsetterm.so": "6ed7ab07e83f29bf27b96932ae5702f83cc17f55045734c0df07d66ccf00f015",
+    "libsftp.so": "1b98d5a7a33b1b424fcf375412e8438fffc108726b34888c2ec8b02c5cb2be7f",
+    "libsftp_server.so": "86e7c5471cf43376a024b06c5d8b319ff9819bb0b6445038141e42d2f1299fe9",
+    "libsim_client.so": "7f386eb37c5af1985f9c1a4064597b04bfa6324b7df2c3f02890f6101a63a889",
+    "libsim_server.so": "5fde00b26d6f23759b91e2521d5d253e00b0064590b7b83f1b8d2b799f7e9ba1",
+    "libslattach.so": "4fe8fd834d06a620d214fc1e0614dce2d004a5b4bf456ce719f2bfa02c76feaa",
+    "libsserver.so": "028135ad5b19232b0ee598a0850d150f96470e1e8e3d3035df02bcf0ec267900",
+    "libssh.so": "1a38d4ee47f7b03a8636ffb39888e3d8ce792b71f734e2aa4a40b1958b53db3f",
+    "libssh_add.so": "c83eeab12d64904a2f28811b5c72d7f5a9b08c22fb69d6d123cd4686f2fd1a30",
+    "libssh_agent.so": "c8303c0a41709fd03f983a84b86502ecc6bf0012f89f50dd75a1f9d3a97bba53",
+    "libssh_keygen.so": "1915a0f940893de87390b7a21498d268f42a720a12db2cafb84541b2fdcc388d",
+    "libssh_keyscan.so": "c4cafd05067088409b48fbae085758bfb425b793d00dbcd4c65e5401fa35fc3e",
+    "libssh_keysign.so": "807a3bfc89cc60b137a339c284a73595ea9c9cac9858881c648436a4a6b77dc8",
+    "libssh_pkcs11_helper.so": "4e643727f2f8231382de7dc5d30a26aff5cf4965f6695dab68dcb80b60ff5052",
+    "libssh_sk_helper.so": "44d9fb5fd616abb9723c86e71b70cbcdfd9ad8111b836ff23a4e590aa10f46ee",
+    "libsshd.so": "9f9a1d3ffe99c09f749df82ea6eedb18d720a8cb822ae3141ea9c2aa75c4fa4f",
+    "libsshd_auth.so": "8f080b4d7092d3250c9d748a66038a344f1ff09e31fc6d8cbebd7c433c639c92",
+    "libsshd_session.so": "a511f26e04d6d17a81575bbe563f7d573beee162f7af68adfd93d0de0ac03788",
+    "libstart_stop_daemon.so": "3004f6d721b2adef784d1111c1b8e1b6c494f44b46a4dd84523c4670c098fc70",
+    "libsysctl.so": "cef1268a02f4b6776df95eed5eb8e5770dbd68eb3d20bb644bc7f1af8033dc55",
+    "libsyslogd.so": "c242a228964350753457560ca82fd81100beaa477859533f672389225d72a851",
+    "libtar.so": "074c9db6cfff30a844a8c86ff09e2132a9b592a0df805713971661747a0276eb",
+    "libtaskset.so": "b6fcc43aeb8838b3ded813a33b151dd039088fd62d201109381dd92db5d0c964",
+    "libtelnet.so": "1d363fdfcb7a688ea875d297439f6faabdaeded92120d703d13df2db01dca027",
+    "libtelnetd.so": "fa95b48f8bb501c8ce54a56bd26ad030784fbba5ce857bd8741ca5416bb8f622",
+    "libtempfile.so": "d47c7cddef2067b4a070c6128b5f52ea36b7152af00ece1d9501f8654d92c8cb",
+    "libtermux_am_socket.so": "739167ca2f1f42bf7569b11377c51bf16523f4ec6901a7a327c6c02cc86e7feb",
+    "libtftp.so": "6588ebd455a27c9277b5c11d97c670c560f9c0f539672d470ec9759b66db9298",
+    "libtftpd.so": "b5c8f85c1fb629ede34777863669428e69f0b1eb50310a2f40ab65f39ca97664",
+    "libtload.so": "bbfaa1aec381f61dcdb07ebb680c24acd709200dc0ea12ebf7c18cd1c9acdd2e",
+    "libtree.so": "07447dc028eb28d9f09471d28123daff9a9d46723261207df59b7973a4f6a3c0",
+    "libtset.so": "f1bd8b0f24ebeeb457f660a661bad65ae6813972a9b17223bbdd001d800849bb",
+    "libuclampset.so": "2ee29c1a97bcf3196da6c59e9d7c1951f4b997244a8659e6e2e0c38f20992cf0",
+    "libul.so": "730ea4f26cf96da3938ee289fa293477521b37e7ba063f367acd8e8e0356187f",
+    "libunix2dos.so": "c0c7ea0e4a8e9b9bfe43769bd70eed227eac5cefe6bf5b42337caf212e94aaf2",
+    "libunshare.so": "a4c91cdfeb8bf5daea0adab386e27d482cd6843534c16f34ee5ab5871b6367b3",
+    "libunzip.so": "7e441f7702416b6c5a5a536724ce6268fbd1891dae737be535dea485ff2e99e0",
+    "libunzipsfx.so": "ad0c13afeda8239a3a84923a9882b539b44ee01bdc0c5148a549de6e1f864a8d",
+    "libupdate_alternatives.so": "eb9cd5605e81a3b6485893fc5bbb502716835c1aa15d3cc660d95dce887c2f7b",
+    "libuptime.so": "5bb616a0f2b97869d800e8c0de9c672ae8c76063ed724d6435063e14718b6fdb",
+    "libuuclient.so": "c4887e010866554fa498cd156279b86c15c5b586abbfaceb6975f910074b1525",
+    "libuuserver.so": "d5296cbbde57143fce9bf63d827d0bde4a7a0efd1b0df09175b39f06d1a656a9",
+    "libvmstat.so": "49cb6bf29f7188cfa96a415506981808d8595bac51001ebdacc7c34f5a7e50b1",
+    "libwaitpid.so": "8ab54c91ae536ca6e23ff352af421d940874c83bf4e3606016e9dd311ba0daef",
+    "libwatch.so": "c19e8fe99f8a3b0e87b317e2eb3ac05caa141bb20c9c74e7e95bcdc529827628",
+    "libwdctl.so": "722aad36e85f7c7711cf5384eada4fa61e6b227844d924a9edef8d819a641ab6",
+    "libwhereis.so": "2f79195b70a82647ce39aa3a989ca45e1678a4d1b4b53d3c0d4ffa399c6ad43f",
+    "libwhich.so": "69120788b0b94eabd16b547b788425e939e764f99a5a1c5291ba0c0e855ce603",
+    "libxargs.so": "cfcd70452fb9cee8565a33830a1c36688cad1e87d9b41bea6bea9df4688761a8",
+    "libxxhsum.so": "c7c8ef71c00c6e5c011ebd7c743815aa3b94efd1963c0f912ad20fd9c1ef8d82",
+    "libxz.so": "4c3cad74457da15a4c9212508ce10ce2a0d46bace4989a68f32a20c91b59bbf6",
+    "libxzdec.so": "d47c2e09638affcef6aa1a675116b6a2e3eb3ddc532efeddedba902946c636cf",
+    "libyat2m.so": "22791998002eaf262101fe12342b2c5509e2a6da82310d7ee33342e3821462bf",
+    "libzramctl.so": "526435ca10795ce1df96e0c405df28585af336eec0dc5aa7871275dccfe7f28e",
+    "libzstd.so": "2764819fb697bd7d931242b35a0a73141d54bc1ad43c819002ade960337df9f8"
+  },
+  "libraryBytes": 99423880,
+  "manifestEntries": 13856,
+  "scripts": 24,
+  "sources": [
+    {
+      "artifact": "bootstrap-aarch64.zip",
+      "kind": "bootstrap"
+    },
+    {
+      "artifact": "git_2.56.0_aarch64.deb",
+      "files": 294,
+      "kind": "deb"
+    },
+    {
+      "artifact": "ripgrep_15.2.0_aarch64.deb",
+      "files": 7,
+      "kind": "deb"
+    },
+    {
+      "artifact": "python_3.14.8_aarch64.deb",
+      "files": 959,
+      "kind": "deb"
+    },
+    {
+      "artifact": "python-pip_26.2.2-2_all.deb",
+      "files": 510,
+      "kind": "deb"
+    },
+    {
+      "artifact": "nodejs_26.12.1_aarch64.deb",
+      "files": 127,
+      "kind": "deb"
+    },
+    {
+      "artifact": "npm_11.21.1_all.deb",
+      "files": 1938,
+      "kind": "deb"
+    },
+    {
+      "artifact": "perl_5.44.0_aarch64.deb",
+      "files": 2863,
+      "kind": "deb"
+    },
+    {
+      "artifact": "ruby_4.0.7_aarch64.deb",
+      "files": 2864,
+      "kind": "deb"
+    },
+    {
+      "artifact": "jq_1.8.2_aarch64.deb",
+      "files": 11,
+      "kind": "deb"
+    },
+    {
+      "artifact": "tree_2.3.2_aarch64.deb",
+      "files": 2,
+      "kind": "deb"
+    },
+    {
+      "artifact": "which_2.25_aarch64.deb",
+      "files": 3,
+      "kind": "deb"
+    },
+    {
+      "artifact": "file_5.48-3_aarch64.deb",
+      "files": 2,
+      "kind": "deb"
+    },
+    {
+      "artifact": "openssh_10.6p1-2_aarch64.deb",
+      "files": 39,
+      "kind": "deb"
+    },
+    {
+      "artifact": "libcurl_8.23.0_aarch64.deb",
+      "files": 546,
+      "kind": "deb"
+    },
+    {
+      "artifact": "libexpat_2.9.0_aarch64.deb",
+      "files": 12,
+      "kind": "deb"
+    },
+    {
+      "artifact": "libiconv_1.19_aarch64.deb",
+      "files": 17,
+      "kind": "deb"
+    },
+    {
+      "artifact": "less_710_aarch64.deb",
+      "files": 8,
+      "kind": "deb"
+    },
+    {
+      "artifact": "openssl_1:3.6.5_aarch64.deb",
+      "files": 153,
+      "kind": "deb"
+    },
+    {
+      "artifact": "pcre2_10.49_aarch64.deb",
+      "files": 227,
+      "kind": "deb"
+    },
+    {
+      "artifact": "zlib_1.3.2_aarch64.deb",
+      "files": 6,
+      "kind": "deb"
+    },
+    {
+      "artifact": "gdbm_1.26-1_aarch64.deb",
+      "files": 13,
+      "kind": "deb"
+    },
+    {
+      "artifact": "libcrypt_0.2-6_aarch64.deb",
+      "files": 3,
+      "kind": "deb"
+    },
+    {
+      "artifact": "libffi_3.8.0_aarch64.deb",
+      "files": 10,
+      "kind": "deb"
+    },
+    {
+      "artifact": "liblzma_5.8.4_aarch64.deb",
+      "files": 39,
+      "kind": "deb"
+    },
+    {
+      "artifact": "libsqlite_3.54.1_aarch64.deb",
+      "files": 6,
+      "kind": "deb"
+    },
+    {
+      "artifact": "ncurses_6.6.20260307+really6.5.20250830_aarch64.deb",
+      "files": 183,
+      "kind": "deb"
+    },
+    {
+      "artifact": "ncurses-ui-libs_6.6.20260307+really6.5.20250830_aarch64.deb",
+      "files": 6,
+      "kind": "deb"
+    },
+    {
+      "artifact": "readline_8.3.6_aarch64.deb",
+      "files": 43,
+      "kind": "deb"
+    },
+    {
+      "artifact": "ca-certificates_1:2026.10.20-1_all.deb",
+      "files": 1,
+      "kind": "deb"
+    },
+    {
+      "artifact": "libc++_30_aarch64.deb",
+      "files": 1,
+      "kind": "deb"
+    },
+    {
+      "artifact": "c-ares_1.34.9_aarch64.deb",
+      "files": 166,
+      "kind": "deb"
+    },
+    {
+      "artifact": "libicu_78.3_aarch64.deb",
+      "files": 221,
+      "kind": "deb"
+    },
+    {
+      "artifact": "libandroid-utimes_0.4_aarch64.deb",
+      "files": 2,
+      "kind": "deb"
+    },
+    {
+      "artifact": "libandroid-execinfo_0.1-3_aarch64.deb",
+      "files": 3,
+      "kind": "deb"
+    },
+    {
+      "artifact": "libyaml_0.2.5-5_aarch64.deb",
+      "files": 4,
+      "kind": "deb"
+    },
+    {
+      "artifact": "oniguruma_6.9.10-1_aarch64.deb",
+      "files": 6,
+      "kind": "deb"
+    },
+    {
+      "artifact": "libmagic_5.48-3_aarch64.deb",
+      "files": 7,
+      "kind": "deb"
+    },
+    {
+      "artifact": "krb5_1.22.2_aarch64.deb",
+      "files": 139,
+      "kind": "deb"
+    },
+    {
+      "artifact": "ldns_1.9.2_aarch64.deb",
+      "files": 511,
+      "kind": "deb"
+    },
+    {
+      "artifact": "libedit_20260512-3.1-0_aarch64.deb",
+      "files": 7,
+      "kind": "deb"
+    },
+    {
+      "artifact": "openssh-sftp-server_10.6p1-2_aarch64.deb",
+      "files": 3,
+      "kind": "deb"
+    },
+    {
+      "artifact": "termux-auth_1.5.0-1_aarch64.deb",
+      "files": 4,
+      "kind": "deb"
+    },
+    {
+      "artifact": "libnghttp2_1.70.0_aarch64.deb",
+      "files": 6,
+      "kind": "deb"
+    },
+    {
+      "artifact": "libnghttp3_1.18.0_aarch64.deb",
+      "files": 6,
+      "kind": "deb"
+    },
+    {
+      "artifact": "libngtcp2_1.25.0_aarch64.deb",
+      "files": 14,
+      "kind": "deb"
+    },
+    {
+      "artifact": "libssh2_1.11.1-2_aarch64.deb",
+      "files": 192,
+      "kind": "deb"
+    },
+    {
+      "artifact": "libresolv-wrapper_1.1.8_aarch64.deb",
+      "files": 6,
+      "kind": "deb"
+    },
+    {
+      "artifact": "libdb_18.1.40-6_aarch64.deb",
+      "files": 5,
+      "kind": "deb"
+    }
+  ],
+  "symlinks": 1173,
+  "uniqueBinaries": 252,
+  "userlandBytes": 97550153
+}{
+  "abi": "x86_64",
+  "dataFiles": 13858,
+  "executables": 535,
+  "libraries": 251,
+  "librariesSha256": {
+    "libaddpart.so": "a3b9ce6ef198a562f21e91bdc1706f932f9acc7152816deb0ec458ae30c5afc7",
+    "libapt.so": "ac4b88da791e41b657b57354b562a1eb668f41a15876ac6d2f65ef41c2ac87ed",
+    "libapt_cache.so": "347866f3f7476072065390edc00d3d5477bb5a698f461df466326953efa1b46d",
+    "libapt_config.so": "f466cd1815938495abef2f86a9473dc0cbe767f18e9c4ddfa78174a9fc0d4720",
+    "libapt_get.so": "fc7b2d139a60bbddaca3803cc6e05e8654505ab7fe8ec3faa85630a21d462aa3",
+    "libapt_mark.so": "7512bd64806ccfad0a0f68541e0d2414924767151c6a930291507cb130200853",
+    "libarp.so": "af574267b59ddb4b11a89101254879b7751653c282720efde3263af8c6f75ae3",
+    "libattr.so": "3102f0cda1defc0d20b9ddd1458c916347ad0e135c3c6d70640cd95608574be7",
+    "libbash.so": "5d3bc1f4282b66b1e9c1fc737e830e9c1296f3252ca672aa363f8bc5d0ed2144",
+    "libbits.so": "9a801d26bc0dcfb14dcbdb6cbacc5c3e876e5c73e5848f0e8261c1975c3076c1",
+    "libblkpr.so": "c5a57c4acb02b6522071395a358952692c5102265e0f4a3cd0211d02505600a9",
+    "libblockdev.so": "9b30dfb4e743fd74c267cf8c68d6256965ba2fbc03efebb27855f491e3055b89",
+    "libbzip2.so": "1387bbedc16916cb35b66d8cdf0dd768a02f874754ccd65d094d375ecd328fe4",
+    "libbzip2recover.so": "beed3b5413e124e7364b44d6b73d0fa95bf88af4a5b54d70c1b8d14043cd2fd2",
+    "libcal.so": "1529bca0c37101c1e099a87130826d3b5d6fa08f3d24ea68756db5865745abb5",
+    "libcaptest.so": "01610b4543fdba7077b741b11f881fbf6f328186641e4a6e6c2da0d383c6c353",
+    "libchacl.so": "651ba3d7213b79d994dd4f527ee7caf4f0bf8426b2d35aa4b33fce755b1b6f33",
+    "libchcpu.so": "36b3b3d44c3684a4bec071eef315dbba7ea603a193d087e3372a03be247699a4",
+    "libchoom.so": "b9c08ec0c10703615aecc53b3782148ac8aa62428fa63340fdc1f41c7040809b",
+    "libchrt.so": "08227b3fc22c7b839e5b14ea590b519e6dc995bff7b4f0b1b1c3034ec6b6b32e",
+    "libclear.so": "3212b258dfa1736aa3b033b2259ed8cccb3c43fa7d30979aadc4310b65dca581",
+    "libcmd.so": "bc398c1a232109813d9554311de11449be2d6e2fee4a1ca18aaef3473e20e664",
+    "libcmp.so": "368584e9b6c622c0a388a3f75cbe524bcba63452ac1932b1b4e16efcc317afd4",
+    "libcol.so": "b7b23b1acc1e06b3b0083b0a40f66c578bb1c438fd8a6e7eaf25e3d8afd79d5e",
+    "libcolcrt.so": "87f54f9e78ec1bf6ec76143fa178a2bebfc9c6f4af0423e6df0a792e67b955d4",
+    "libcolrm.so": "654df1d6d915307270127e2361bc4c0a0c9ed460f57170f78da21b8b8bd07db6",
+    "libcolumn.so": "6be117b26213fe34f51eefe9ca2546e1c0e341aa51d173a3eb8eb26d523420ff",
+    "libcommand_not_found.so": "2442158d53ba472606ed9fac4d73fd5fb303a808f7364172ca1f7ce2266f8bbd",
+    "libcoresched.so": "41401716eeef05177b054d0a2e869ec69e94a5dc26f45d3beb41f989bd17ed08",
+    "libcoreutils.so": "c9e08368d246f9a4b378315b763f4b7dc65300a7d3d2d39dc4246032c23d656a",
+    "libctrlaltdel.so": "a3bf33f101d9e7d82f01bcebf53a6f5947cca03e79fbafbe92d277d73f640b43",
+    "libcurl.so": "8c015bf405267cda0286789eedfc1af655f881bcbffa54a2b3ae9b2e2b087fa8",
+    "libdash.so": "6e2d66f538eb5e22b62560b316841ebd5b754e08005ad58ff1dafd1eb72886c0",
+    "libdelpart.so": "cdd725f405355ea1e6af6fa504a053def1823a8963f78354c0b57e71fc482ddb",
+    "libdialog.so": "54a3b1f2c4e09d6aeec9c201eb804dd5177469ecb646d8014ad1f4a70b55a1bf",
+    "libdiff.so": "7e5bac272f759298fcda9ab645172ec21030f339416515f4e0912f99bfba748f",
+    "libdiff3.so": "4d3464c67cff3fd8cba56ea7d738c5bdb1b377a08a4e132fab2a439d1670bcaa",
+    "libdmesg.so": "a4edbea999155c17640d3886fdf54d337934f2186e1ac828609fff7ee04c351e",
+    "libdnsdomainname.so": "5173a839817b55c11ef59a50332d1c2e1c0f02074ca6ae553e2a5a145fa7aa97",
+    "libdos2unix.so": "efc3ce95631c377e02ee3f234868cabf4849183ba5475e080d3505776d73097d",
+    "libdpkg.so": "ee2ab7224e3ee958f28d8e6b9587074915fc57b92ad1a0ee687ad429aacf7ae7",
+    "libdpkg_deb.so": "0a0d1ca4c8f845bd8814933fdc4b0f4d6af9092341cdf339225e035b1fbe148b",
+    "libdpkg_divert.so": "ad4dfe09c2b4313d600d2d872ab3e6fa5df4450dc0ab0104204cd2ce8dc842a6",
+    "libdpkg_query.so": "73b5ef85ca7597086868913b72361452689fc780c2f4d1e0f0dea5b170787dfb",
+    "libdpkg_split.so": "77e03088230785914b919a1bc9993cf2d40b22c8e62044c59e703e915d0c8b69",
+    "libdpkg_trigger.so": "6d216589f1109c1d891e15fac1d92d12d600209f7e611709ea9f75fc495d1196",
+    "libdrill.so": "2a572a52bbde7d4a0c84913e3bea8e4ee2a8784d0155810b3d03cf76087aa137",
+    "libdumpsexp.so": "16cbd3c2de670d19c83f3314cbbe75a4186b27cc3da3fddc842104caf1877ce6",
+    "libed.so": "d8bb38700bcc0b7620ddbed7a4b20c352e9304785b066194721fc3395b2b7e2f",
+    "libenosys.so": "1ba87a14da6a066217039392ba132dfdf09801d2296e7c2c0222187a2cad1082",
+    "libexch.so": "a69a4685f51ec0229a6f628f9873021513215e366624f704d8649e012fbc96b8",
+    "libfadvise.so": "9546f408281c16074589c58e967f042393ed3fbc65e99cc1ebe61af2a63de42a",
+    "libfallocate.so": "1efa8eb1069938783b18d5d4677ffb7003db5ecac300d6e4ec0a1fdeb04c514c",
+    "libfile.so": "cbb4a54216a8888234b23259684a8076148d8b25e31d927a61bef52b52c2cc6a",
+    "libfilecap.so": "971768b3722130d4eb6f0648a79d787eb434835fc2f432ff9d81fbefd7c24683",
+    "libfincore.so": "a6a7e2ccbdb799ddd16670215649697d443ecc4ff6daf33eb9b694fe06d427c8",
+    "libfind.so": "a6997f280c43337653719d97275b801d0d0f53409ad8270d8d8986f796aa0c1f",
+    "libflock.so": "543bded8fd80675a2ad208dc796a559eb63a43a7a537b24c94b9a06ba6f2c385",
+    "libfrcode.so": "46b6b52e2fb437962fe2c76f46660d7044d67873cc158870e0971abd3a84220b",
+    "libfree.so": "f2e629322d31ae25aaa9fa55a0038431933fbfcdcbb7478b8de5f0ea5faf7489",
+    "libfsck_cramfs.so": "a62966785b0f8afb1cc4d514c2edd34f3c19cbaa97b37b050932f7d44f4c6b03",
+    "libfsck_minix.so": "add2f42d69b1f75ba006c914bc9ac31eec82298e4394f95f7ee388c63e85d67e",
+    "libfsfreeze.so": "604c2914b268dfc75c810c2d5c290388ea26ae70ac496c003d23a0c7e5eedb11",
+    "libftp.so": "9914a36fd32ce78b18dfb3412e0e5444437d9d58afe785aa1bfbc78ff7b3a4b8",
+    "libfunzip.so": "695de6bd2600056d7b066f4fec27417bac40c6054c9114e7346ac6b0fc6dbba6",
+    "libfuser.so": "ca0fc459498e3b4a6fa0433498a11b77d231b3ce9fee338392c6ef329f43d490",
+    "libgawk.so": "90a69366efb21e13bb51a1e321a1976712c72c9d4d672bc9d36d40e5dc3e18b2",
+    "libgdbm_dump.so": "64b537f0b480728b9b20ec8cf967620508b5e1debd325131a515d9b533a33896",
+    "libgdbm_load.so": "fa1939d26fa18e5c01cc0c13c801b17af5dc5f4bda20841282ffa910761da131",
+    "libgdbmtool.so": "bf043d318673c9ff18bca4e31a8ef0f51a2e1a081aa32ab876e8a192a8cb2b28",
+    "libgetfacl.so": "6d68a2e91dd9cabeaaf889c993fd4808632dcb04e31205df84a04d9bc1a2f25b",
+    "libgetfattr.so": "6c8716238bf79650d02da3a225dcdd63d9a2a60b99f67e4feda7a8082c06ddd1",
+    "libgetopt.so": "1a98154c3723bb6da6acde030e1a7ae97ae51070e342281aaae9600b4ecd3434",
+    "libgit.so": "d7aabf0f74fce4f185c265091acd24d335d2d48ccbe7e1009f90e101e6b85a95",
+    "libgit_daemon.so": "e1528df09b3f286e13746da3744c7da1e105dbd82fb3891f592d1a7a816782ca",
+    "libgit_http_backend.so": "90e7228fa581116fefd564df68d6e36eaf3d5c079cbcd522a71c8bcb51ca529c",
+    "libgit_http_fetch.so": "a7080f4e31f87f14be20e110833092e061ed13ec08835fb0c9b5b221c65eb1ee",
+    "libgit_http_push.so": "d3d3ace96e15c2db0d4f7eb001fbb055b7b19e9560903d5f17ac3185e48a2014",
+    "libgit_imap_send.so": "c686fb790ad3d147d24978e2995327776345a1cf1a1be00f4f36bc763171bba4",
+    "libgit_remote_http.so": "904162e7cb6a655388b4406333baf8553fe6cda693b84dc16f715b549a329823",
+    "libgit_sh_i18n__envsubst.so": "64997cda9636d2325eba99df22d21cdabec4f77d659e6f2f5a665bff6712af0d",
+    "libgit_shell.so": "2e4b092c1492874015976edd3d5d193fc33ad6a8813ae82047296abd4d618341",
+    "libgpg_error.so": "4c1c538a54b989db9089f9c97ff56c1ef7ac86d4e9f4b29b9a5ca65ad809a0c4",
+    "libgpgv.so": "1ad83bce53f1cb6df71bd556ec675235f7181c8a6721700f6b8fd15cbc01fe12",
+    "libgrcat.so": "6633e8337161e1687378f32eb00afed583bdb5c0bfd1b7bb411db1d86403a2e4",
+    "libgrep.so": "87c2b24d18aadafbdd3072a457f7aa177c48004c31782b174564d06399048a09",
+    "libgss_client.so": "1efc95264e20b8a1d241b3738de88607e74f0e905678f7241b5a64a5df905fc2",
+    "libgss_server.so": "fff2f7bfea76712c2c299135aa12f05beb4581f16b3b6e62c20640def1770e0a",
+    "libgzip.so": "28c524241bc49cbdbf4b9008e21154084f3d28002e0e3795b2b47559c5d64f10",
+    "libhardlink.so": "b216eaa6426e6377a15c199549010638ccbf71cfd3401fbe50b1b000e58d0fef",
+    "libhexdump.so": "efbd8836b3e39c0cba61d8985efa97eea97a8717a77c0f4c8ee7beb6b8063dbf",
+    "libhmac256.so": "32ee61bd06143220f81d520139ef093bf7a9255f29bc90e5d8011660f37b124b",
+    "libhostname.so": "f86eeb7fbd5587db25c05435126e4e46bf5e66ce74894150cc556feff92ca453",
+    "libhwclock.so": "13aac98c9789ca25f5ce582f016aaf72be15dae55f7a0f4ea4d30a55a25714f0",
+    "libidn2.so": "5e9dfa7b15f1e8ff7ade2387744ca470f2e0a059c4c78850d37cc565a06e1bbd",
+    "libifconfig.so": "a7bbd573ee0c0269be8bd6d7e59b96016057c0519854f077c47a6520026c11ef",
+    "libinetd.so": "a3f0f02323085b4938d31ae61d1ef6da8e0f37351f409b5312086ad945d5b178",
+    "libionice.so": "bd4f546a8f06e09c1a84b22f74457afc978db13076c471f11152074112091cb3",
+    "libipmaddr.so": "916eab302371959b368a2a5fcd9e83ee90a0869122d61ef245652ee35acca44f",
+    "libiptunnel.so": "d5ad4957a231455914129e25e9c7bb52b11bcf6467d9ecbc6ee34bb964d10411",
+    "libirqtop.so": "97054c6449f2ef2335ce020b3f9ebeb025a6c64fc4da2527053b88157116476a",
+    "libischroot.so": "d4678bc3ee298c2198fa6457765c816234fbffb8db45e08c48ad02106d2cc524",
+    "libisosize.so": "d57d50b5b830698a2e9e8a9e4739499077f5da604c9091f7aa242b9d3229a1ee",
+    "libjq.so": "70ea3e5d022bca13ea3c8d80d4e0899e26c1c2cfb9a8e488949626f72dea3c9a",
+    "libkadmin.so": "c6ac046a68b067cc663f120b37271f8384f817d15398b188512c6b17d33c6abb",
+    "libkadmin_local.so": "d0262b0aa63ec9c8e6ad3c62f963d5990b441153db951b1b20f9321caf8d4aa5",
+    "libkadmind.so": "24d681f3533940738622906a47883371abc6c5b2e28daf137c4d801049662044",
+    "libkdb5_util.so": "b2f4eb51e6c6e50675683d3da7fc71be6e2b13e6e56a9c63200fa2e717696899",
+    "libkdestroy.so": "59486254fada23e4101a27f6ca62678dd1f84d5b89fd36466a2a23b938925f76",
+    "libkillall.so": "a26e4c32ec6f0379443d234a759edc8c5298e375149649069d95424ecdfd0e99",
+    "libkinit.so": "ccef7ac35b46ee2745997b0ed0b137147cde1a9214e3a064d7c22dea4d8db47b",
+    "libklist.so": "f4adc232b295d1800df701131fd8eb57aa6fd20810c14dc39d20a6f87725db07",
+    "libkpasswd.so": "a9d9596081f93252b0502b094abf4be9ac7e588ba45a8bbf07e6f36e802d79c4",
+    "libkprop.so": "5a7a9cecfeb1beb22dcf0438142a42ad294dc67478a9cd0d522ce6f36c6a98f9",
+    "libkpropd.so": "a2e9e0130dedc6bbf37f97fbbb973d8b9ea1ed38fb241d74e8d7aeb9bb72e58d",
+    "libkproplog.so": "75b35f66acd0cd3af5bed15ea59c704f15fe8a213086785fe2f9ff9878d66705",
+    "libkrb5kdc.so": "c3d879d82962a53529df6c1e2549a51c1305317e63add9225586e75580902f62",
+    "libksu.so": "be4a4427c46cd080c2c5e6deb468cec951ee2ccbdf8d1d14d81754c6dcfa6c56",
+    "libkswitch.so": "fed3afd5a3678841709081c474998bf8b5ebd64e24095930b6beed176c490d58",
+    "libktutil.so": "15466d446ef43ca817c73ade8c104e3e087fad26f86df5e757b008017d4e20ed",
+    "libkvno.so": "45e1464bb0f853792d3c3668020fedda845f89915b84aca1a62553abba26d8a0",
+    "libldattach.so": "2e33ba93a534ab3ef543e5d77f7b6254352cf0f7cca4fce802bb6bff9f8e1188",
+    "libless.so": "6bf50d1eaf85bf410018bb0f118081f63d1a34dab575bb5a45603a316e1ff98a",
+    "liblessecho.so": "de621f030f91ec9d8b38b960b83a9afb501f6cdcbbdaa207b772d09839f8fd18",
+    "liblessecho_b6536be1.so": "b6536be145bfdc56fbed986dac773d967959d6e708a04f2eb7e0e209474493a7",
+    "liblesskey.so": "0e4c442e14cf28ae45a9541aef7c43145e5d70dea69081dcebaa6a2b57faf559",
+    "liblibstdbuf_so.so": "755869a2574f9dc2e7fab563a66ee5def08f365131e1abdad257c0aaed01eb8c",
+    "liblogger.so": "ea72f1a64c3cae50a96a89293250d310c1e830ab77fb1b7554d39ca57f9439c7",
+    "liblook.so": "f4812e4ff88e17e3ed2b813dff47a07538daf71bf28351fda06285960b05c602",
+    "liblosetup.so": "f84773ebb942c488951eb1edd3ce0afc63d840481031e9e5d3e9f9057c5c98f5",
+    "liblsclocks.so": "75fba5d6cb93c2997ddc9277b6aa96bb1e7257912d71cdc7ac0f3e3b85d1d1e8",
+    "liblscpu.so": "7d3f583ba941e10fbc6fb3324360af6802f6061d70dbaabde1a04e416beca36f",
+    "liblsfd.so": "e656fc4ef2d95b89183ee543affa2f4a67eda8dd35999481697d779e4a276e64",
+    "liblsipc.so": "768e1a7380352b21fd5015ccdeccfbb2082244f338c3ef0d0202f56fe95e0538",
+    "liblsirq.so": "b3eccf99075edd17cbb99ed00b5198511fe746bc02ee6e1cf15021b102b22a63",
+    "liblsof.so": "edd8c807b5c06578669d4cf0202c01241b17d2a6ac789372d8aeafcf174c3f6d",
+    "liblzmadec.so": "b7b785c2644fffbde75380f9bf78480ae175cdb2ef306e6636c29937f77027f4",
+    "liblzmainfo.so": "bb191c66551e9da50007200e8fe10926fca0e7f09c5ec1f2979e1ab6d3faec2b",
+    "libmcookie.so": "5e5adb2989414f57ff0be974a86446d385a9b44b145196ee730c6e3155dbb5fb",
+    "libmii_tool.so": "2057ce0857161fb17e834f122c86f51f8768b85178bd9928a05b0976cd8181f0",
+    "libmkfs.so": "a9b2235d5eeed94c6c782e4d48a26e2f8fa4a9e09d944e2662a8fc62ed657485",
+    "libmkfs_bfs.so": "b84ef09971f69a19a377f011f2681daecfcd57b6991365230bd2ebba8d114944",
+    "libmkfs_cramfs.so": "8355d1e3d6d363c1e2b7bf5b7096f2187a1e8006cdc15593cb8a80031b307273",
+    "libmkfs_minix.so": "05c3f12b7ce37b0fec55de4e81d4df2eccc5ee27f4fa716a9562eb51f887d27c",
+    "libmore.so": "868adc0b7fddf71e7cf076175ce8ac1016127136fd93c9d37f41ad0efd946a03",
+    "libmpicalc.so": "745a2aa75bb6bb229f1e751d06c3a5bce5f5d500e919c8e46f9a440cd5c9673c",
+    "libnamei.so": "5cd807efffbae7ebfe7491ca5e14fbe2c60ddf78cde43664ceb0551c4d8e524c",
+    "libnameif.so": "0f38b895864d2bc11e85defde03cd88c1418e7d1f3f428600d8ae124fc2bc3d7",
+    "libnano.so": "3569580f0a9355f8e8bba6d4202a9a557c3d7e8ed2f0076020cb43a121d5faa6",
+    "libnetcap.so": "d9ebad657dcd774dd28667e80cbd659ab5f6ce88ea3031e69d8f16fcfa2709cf",
+    "libnetstat.so": "a662b8bb9661116c95a11af419f5277b1c69cefeae087b5fd5c18f8db1be8c9f",
+    "libnode.so": "0568638cc6b49726b29545687413793144a56eaf086a05fb3195eab6653cea80",
+    "libnsenter.so": "fc85aa1aefdf81911da4c952f3c21a60c205bf00ae9fb4e239552f25c64cf516",
+    "libpasswd.so": "20b72be7531e9bb246b3f71d54df5a189c513ccace126401d9731b71279fc04c",
+    "libpatch.so": "02e79c29935dd7b1ea8461d8cd61b8e32d8d07f5f065f8eaf4ba948e131f954d",
+    "libperl.so": "852e769ac94fb87bf569194867325801ec0ad67cdca22dfd7dcca30f6816a60f",
+    "libpgrep.so": "5315f61c80d8febf1c3b05212ef6f0022475c6970a4536b626c2bc4a18c102b9",
+    "libpidof.so": "8c4d7bf91faf30176da0b9020f18e0056a3ba98505d752eeb8fd0050484028c4",
+    "libpipesz.so": "85090f4ac7bbb45088c654777011606ad55440bb0bd2e94540ffa97ec545b890",
+    "libplipconfig.so": "0442f1123efbcac6351f9cd5032141093ab8655437931478dfbfa5ba15ec8b8b",
+    "libpmap.so": "9283075253804afcbea9affd24994652767f454d451936d62bbb6963554370ad",
+    "libprlimit.so": "aa47c2cffee42d2bc6ce214da70de5c728dda46efc39856f7e1c76403f771291",
+    "libprtstat.so": "b0bb702945f23df5203f67930e1b3dfde555e2311da8aae39df053cc572068ac",
+    "libps.so": "e607fa26bb4df126510f561414fbc21ab29a7c229043fda40730781c81558fa8",
+    "libpscap.so": "782a3888bdf56b273d5c24cbc17caf5f0deeffe6e19633932764b2b92579b586",
+    "libpslog.so": "f5ccc7866563f72f51b153b877767febfedb31780077d15befabd58f08ad210d",
+    "libpstree.so": "f47534bb1cc7466ed5e0016f8c9dfb52e6456682e3cafccdb8722e77f263f6c9",
+    "libpwdx.so": "e1532a0bf32f5262438a2a3a2a8d6805d66978c7c98982c807e85b9bbbce429f",
+    "libpwlogin.so": "9d6331675aaaec401f4efe3fdd7ddce3ea84e9882a2a3c1c5156f03455f51629",
+    "libpython3_14.so": "18e5f2fd7958ce1f549d3842bf2649a382f7735b2663df65013f7ea3f92c0f35",
+    "librarp.so": "9d47498d17ed866089032b28192858d77c8561b36bdb7613d48f7418fe0563c1",
+    "libreadprofile.so": "5e2ead3f789d9b13649fdad742f8f17d12baccd784f8393554d7e87ea09a21e4",
+    "librename.so": "97eb4fd8175b64739798c508cfa8e46a67fc5f611688a1c36484082773696700",
+    "librenice.so": "00a00be98c5c06607dbd64975c59f34767f69c3f3e06d30cbcecd873776cebd1",
+    "libresizepart.so": "d242bbdd398551178c1e9bf440d0af5beb9a80507d36c2f206f07e82feaebeee",
+    "librev.so": "dc4dc9c004d57712fe504148e14043d1b82bd40d264d75b413e7b5f3fb6b2ea1",
+    "librg.so": "a1ec5effa7c6f6d324104f72dd2b274cee304580f0f98074ed1bf5ad4f6ab871",
+    "librmt.so": "7145f50e1c5621e64e943cf6618b777ca59cb5cc41e6f3a40f3099034e8940bd",
+    "libroute.so": "22156d3d2fe9b2204bab492ade05fc9c6efe7cadbba93eac978a606e952daf3e",
+    "librtcwake.so": "e2bba08c4ebc36a6d5506ea9c1c2c412f9b56e8dfe425480ac368b6c4cecdfe3",
+    "libruby.so": "39b51f13c35d8c8b9881204f40ea0739c109884c62470cf3138e6a5d90eca0e9",
+    "librun_parts.so": "c15196f766cb0330da58bc457015cdd71f6708b6529fddf5d54f66030ecdc9e3",
+    "libscalar.so": "ffb0c46d929eb78e031f9c177a2eca48e516c6c5b379a83d3f09e41502ea6ba4",
+    "libsclient.so": "72e53558b21b566f7c664b9b9725e369c2c8cba3ac68bc2549e2d570bdb51365",
+    "libscp.so": "751c3ae36404cbff53e471f8f618e404e531dd7349dbab1c548efdefb10010cd",
+    "libscript.so": "58d26e2b51c91baf3657f3879c34542d34fe0f03269b602ca01ec915f4d3c3d9",
+    "libscriptlive.so": "042f3544edf8f86f4c356a89f478047303c55d13e124bb916d0b953a93adf06d",
+    "libscriptreplay.so": "0e3d21e2b7e08e5c2f8dc070771b429fcda1d641d2518bcd6f52fd0a50b9b241",
+    "libsdiff.so": "27ba6071bcb1eaa396e8d827e0370974c5014a744856e478903bcf538b546488",
+    "libsed.so": "6117154f9990dd48697571234e53c309e104f5c4c580403a4319e79001564014",
+    "libsetarch.so": "1149d334875f1e968f2f3fd4dcecd5cd9a96c400a09dbf8fdfd0067d7d4681ec",
+    "libsetfacl.so": "dd4447ffa2102826447e9fb7b4c981fbd24e57365c160ed53e57e8d96eed5e7f",
+    "libsetfattr.so": "8ccf61081b0624b973a9eb81514c8c44ae87b9bdc90800be8640d44407786291",
+    "libsetpgid.so": "7d56f657f4b734db31cba15d89b3449e6dcffdf001edfb1d4b96fc1b4377e1f5",
+    "libsetpriv.so": "c7f0ad48123823f72b33f2b54bd7657d531ba59e3747f10265ea60f5f88e49f1",
+    "libsetsid.so": "62b857353a1794aa55781783eebf479e46b0f6c0f7668bacd2079b72d912ab3f",
+    "libsetterm.so": "d7bd567d15f3d70ffd53d31a99825c112fbfa80003921af69e6263366f5dd843",
+    "libsftp.so": "f0db67a68d3bbe131f9487c5b1e663013e639210b15cece2c56f0d9b9e99debb",
+    "libsftp_server.so": "f9fe244f097ef4479638fbacb708796faff8fb085740a9fd1b9532ce18f33ee2",
+    "libsim_client.so": "ef4837a77b02dddb7f402f4d82d5d212f5c7c7fad6ecf32d7363ab41c2dd4713",
+    "libsim_server.so": "c3250776d52a71bc6fd8b3ac430195e10f8cd2695eb25d562032d4a73a884563",
+    "libslattach.so": "a651f3cd734673c96009c5d3bbeef7f534876732c9adcd39b0ff8fc20d90b495",
+    "libsserver.so": "8ed1980a589db66ddb36a9074c488608c74833905f2d57d42a74ae2bc4bab394",
+    "libssh.so": "e69b2fc28de02a9fea1bc5b0d2687a9509957ef1f545b12ec5f5dbd98f22a687",
+    "libssh_add.so": "53acbb3fd18a20e228966e3860b58e0daabe4f65820b575db915c97287d43781",
+    "libssh_agent.so": "07f05ad74e5633102220afeb0c6d23b36768ff08faadb96cb3ce91ef38025443",
+    "libssh_keygen.so": "e1b55a935009d355b0adc2127b4aa2704964952c26915bf4a4d618b49e0ba574",
+    "libssh_keyscan.so": "7a896a9caaca8c250e1378399ec14a06c6cbc5074607fb7b309517efe963943c",
+    "libssh_keysign.so": "734fc7356b4711bf38b5cdb07d6e75b90cacbe78ea980169b487373b07c0a08e",
+    "libssh_pkcs11_helper.so": "328e647ed13ec2cbdf5f03fc746cec915f20265d06a8b25376b151aff4c4b6ea",
+    "libssh_sk_helper.so": "7f5b4afd6ae7b71ef182519c863f0cc6e8000b23debb833e22222519b1624557",
+    "libsshd.so": "e39890afe454995cb54db2885164a58147e264b212d26c797974aa68bd008234",
+    "libsshd_auth.so": "6f2384c3e9f72adc4002201a59c0ab26b9f3482fc94c1fd157945768c2d82eb6",
+    "libsshd_session.so": "f8cb62fbceba8760a8f9d2aa77abf9f952ee5c2642582139677afd56f9b465d8",
+    "libstart_stop_daemon.so": "75e82116eac07b0821c0885993840f5b2466c7710f0134c661571793afd9b487",
+    "libsysctl.so": "542f6d51761660c88b4483a1f54a8c229d6e45c7b8a52be58b02dad3466731af",
+    "libsyslogd.so": "e44417ed617b15dad51bff70753d8291c5b998206ac76d6821be35ade2065a52",
+    "libtar.so": "b1f4fa53678ced44d2a98cf94f4a3339d82f2b242cd965fb802ba603afa6ad8b",
+    "libtaskset.so": "e54f0930d6c2e8e7df2e5e9905fada0af8cddd48cc96ec0db8ad4e553bd9c7e0",
+    "libtelnet.so": "32dd17e9b1ca1fe27b421e522b7e50b4644ce8ca23897893a5028be77b3bab31",
+    "libtelnetd.so": "e1a724848241bb4d4492e648f2b4402d671ca85709cd770b0399bb2cd664c0ae",
+    "libtempfile.so": "1d3a8142d1cc4df124cf5d56cedf060c2316014f1113148a56ab71c50d45931a",
+    "libtermux_am_socket.so": "431d3d3e84b6b3b815dc841fcd4c124bf4e879500a8f52b6bd3ca86333a02f10",
+    "libtftp.so": "1d338446012fc9c83e2152a604e9474bc7de30a2a2a23fd60fd1140766dbcb5f",
+    "libtftpd.so": "90561863ab03bb20254cd962c595705839d88008bd5bb0c75ef3a282d49bc8ed",
+    "libtload.so": "90d9118729f12b25f7de95a9f2a7ea6fa3166a6e0e06ec326d8adf32cb55b81e",
+    "libtree.so": "f68fd5861fb62296c5fb2339fe7a91480dfea769892a9c5f10d36cb495a7c5f7",
+    "libtset.so": "3949ae93e091006264f179dca159a1827fb98a22d8c932e1c154abfbc2fa46d0",
+    "libuclampset.so": "22fc9b9642c15b0e994dde74a96b523f7e40aed0dbeed68a338ed45c253fb3c6",
+    "libul.so": "e9e1c07b0684b66b0e79a772fc6a9230d5b4ed2842f5d5f9e8160e8af699284e",
+    "libunix2dos.so": "d79ea66644d9080e4b3f408c48efd6e9fe6fed834a68bc4c5a36d6a361639b3e",
+    "libunshare.so": "36d559827938f8ab236d8a6310e374fac3ecfdc71351f8e451466ec99849b3d8",
+    "libunzip.so": "878c566d061f306504543e453293aea03622ab642c16e2a502f9fc7009fcd043",
+    "libunzipsfx.so": "fa62d07e78d821854aa84ce590a549989280030302269cc4b1848e0287d1855d",
+    "libupdate_alternatives.so": "47d91cf75a9fb9115d466cc07d5ff79f5a4a0436b1b02d4f2adcf07477f0af8c",
+    "libuptime.so": "818d0cf84955ce0e95e2407097db7d648bee57c81c4d513a53c4d607baa05369",
+    "libuuclient.so": "72949c19b7d7c7a0f2f6cf548733ffcbc1e75d0032d389ce0d27730e3206001f",
+    "libuuserver.so": "671007327c7865f22cada6a43573a636bd45a887a3e32959cb211df0f6c52121",
+    "libvmstat.so": "01e64a98ebb7643c592ad03fb86dc066ba78c80fab085a127cb5d99dafebecc3",
+    "libwaitpid.so": "3b2c2fc93601d1a9134f6b1ab4c99a733c1fc5d19e082956a8963cfbf568b9c5",
+    "libwatch.so": "5bf6ca75ee38ec78b8d2599aef0cf5796d1754863e4ee42765e0d77bbf262ee1",
+    "libwdctl.so": "41e79bd8e28c021e8e4aa03af3e09f84a87f4d22fbb1519dc7a814a214ea91bd",
+    "libwhereis.so": "a318cb2e119a946c39998ee08c8fa62053142d1d78b8ea5d0ba42bfb81b0e866",
+    "libwhich.so": "712172fbf3313398c4ae172cc1ada3426dced6adcec38f127d977ad680738180",
+    "libxargs.so": "7e1a4e4a2a2b7dcb91cbec3f375d6480029884d66fa5f6d78573ba02aefa3c0a",
+    "libxxhsum.so": "47b17a41249caba55aea141a83ad6fa129cec1332ac5001cd82f8976a90ffe04",
+    "libxz.so": "6ab73b1eae63946796f6e60453e0d4973760ce9f7c2612e6fd0f31a7c12d9a0d",
+    "libxzdec.so": "2d7b98994125e23833c35e20e8864c5e958caa0e44f5153d8a91b3f793f4c35f",
+    "libyat2m.so": "2b151fb83fab19834273647365d98c285cad934150fb7cb0f48e7189c3094947",
+    "libzramctl.so": "6c6fe039ecddc1b67d1ead8c21a20fdafe42977ea23c9a633bbf90e4947e96e0",
+    "libzstd.so": "89ff402fa1556afe9a7eefe68934193816b43d1c266b1a719c11611927d5f486"
+  },
+  "libraryBytes": 99184936,
+  "manifestEntries": 13858,
+  "scripts": 24,
+  "sources": [
+    {
+      "artifact": "bootstrap-x86_64.zip",
+      "kind": "bootstrap"
+    },
+    {
+      "artifact": "git_2.56.0_x86_64.deb",
+      "files": 294,
+      "kind": "deb"
+    },
+    {
+      "artifact": "ripgrep_15.2.0_x86_64.deb",
+      "files": 7,
+      "kind": "deb"
+    },
+    {
+      "artifact": "python_3.14.8_x86_64.deb",
+      "files": 959,
+      "kind": "deb"
+    },
+    {
+      "artifact": "python-pip_26.2.2-2_all.deb",
+      "files": 510,
+      "kind": "deb"
+    },
+    {
+      "artifact": "nodejs_26.12.1_x86_64.deb",
+      "files": 127,
+      "kind": "deb"
+    },
+    {
+      "artifact": "npm_11.21.1_all.deb",
+      "files": 1938,
+      "kind": "deb"
+    },
+    {
+      "artifact": "perl_5.44.0_x86_64.deb",
+      "files": 2863,
+      "kind": "deb"
+    },
+    {
+      "artifact": "ruby_4.0.7_x86_64.deb",
+      "files": 2864,
+      "kind": "deb"
+    },
+    {
+      "artifact": "jq_1.8.2_x86_64.deb",
+      "files": 11,
+      "kind": "deb"
+    },
+    {
+      "artifact": "tree_2.3.2_x86_64.deb",
+      "files": 2,
+      "kind": "deb"
+    },
+    {
+      "artifact": "which_2.25_x86_64.deb",
+      "files": 3,
+      "kind": "deb"
+    },
+    {
+      "artifact": "file_5.48-3_x86_64.deb",
+      "files": 2,
+      "kind": "deb"
+    },
+    {
+      "artifact": "openssh_10.6p1-2_x86_64.deb",
+      "files": 39,
+      "kind": "deb"
+    },
+    {
+      "artifact": "libcurl_8.23.0_x86_64.deb",
+      "files": 546,
+      "kind": "deb"
+    },
+    {
+      "artifact": "libexpat_2.9.0_x86_64.deb",
+      "files": 12,
+      "kind": "deb"
+    },
+    {
+      "artifact": "libiconv_1.19_x86_64.deb",
+      "files": 17,
+      "kind": "deb"
+    },
+    {
+      "artifact": "less_710_x86_64.deb",
+      "files": 8,
+      "kind": "deb"
+    },
+    {
+      "artifact": "openssl_1:3.6.5_x86_64.deb",
+      "files": 153,
+      "kind": "deb"
+    },
+    {
+      "artifact": "pcre2_10.49_x86_64.deb",
+      "files": 227,
+      "kind": "deb"
+    },
+    {
+      "artifact": "zlib_1.3.2_x86_64.deb",
+      "files": 6,
+      "kind": "deb"
+    },
+    {
+      "artifact": "gdbm_1.26-1_x86_64.deb",
+      "files": 13,
+      "kind": "deb"
+    },
+    {
+      "artifact": "libcrypt_0.2-6_x86_64.deb",
+      "files": 3,
+      "kind": "deb"
+    },
+    {
+      "artifact": "libffi_3.8.0_x86_64.deb",
+      "files": 10,
+      "kind": "deb"
+    },
+    {
+      "artifact": "liblzma_5.8.4_x86_64.deb",
+      "files": 39,
+      "kind": "deb"
+    },
+    {
+      "artifact": "libsqlite_3.54.1_x86_64.deb",
+      "files": 6,
+      "kind": "deb"
+    },
+    {
+      "artifact": "ncurses_6.6.20260307+really6.5.20250830_x86_64.deb",
+      "files": 183,
+      "kind": "deb"
+    },
+    {
+      "artifact": "ncurses-ui-libs_6.6.20260307+really6.5.20250830_x86_64.deb",
+      "files": 6,
+      "kind": "deb"
+    },
+    {
+      "artifact": "readline_8.3.6_x86_64.deb",
+      "files": 43,
+      "kind": "deb"
+    },
+    {
+      "artifact": "ca-certificates_1:2026.10.20-1_all.deb",
+      "files": 1,
+      "kind": "deb"
+    },
+    {
+      "artifact": "libc++_30_x86_64.deb",
+      "files": 1,
+      "kind": "deb"
+    },
+    {
+      "artifact": "c-ares_1.34.9_x86_64.deb",
+      "files": 166,
+      "kind": "deb"
+    },
+    {
+      "artifact": "libicu_78.3_x86_64.deb",
+      "files": 221,
+      "kind": "deb"
+    },
+    {
+      "artifact": "libandroid-utimes_0.4_x86_64.deb",
+      "files": 2,
+      "kind": "deb"
+    },
+    {
+      "artifact": "libandroid-execinfo_0.1-3_x86_64.deb",
+      "files": 3,
+      "kind": "deb"
+    },
+    {
+      "artifact": "libyaml_0.2.5-5_x86_64.deb",
+      "files": 4,
+      "kind": "deb"
+    },
+    {
+      "artifact": "oniguruma_6.9.10-1_x86_64.deb",
+      "files": 6,
+      "kind": "deb"
+    },
+    {
+      "artifact": "libmagic_5.48-3_x86_64.deb",
+      "files": 7,
+      "kind": "deb"
+    },
+    {
+      "artifact": "krb5_1.22.2_x86_64.deb",
+      "files": 139,
+      "kind": "deb"
+    },
+    {
+      "artifact": "ldns_1.9.2_x86_64.deb",
+      "files": 511,
+      "kind": "deb"
+    },
+    {
+      "artifact": "libedit_20260512-3.1-0_x86_64.deb",
+      "files": 7,
+      "kind": "deb"
+    },
+    {
+      "artifact": "openssh-sftp-server_10.6p1-2_x86_64.deb",
+      "files": 3,
+      "kind": "deb"
+    },
+    {
+      "artifact": "termux-auth_1.5.0-1_x86_64.deb",
+      "files": 4,
+      "kind": "deb"
+    },
+    {
+      "artifact": "libnghttp2_1.70.0_x86_64.deb",
+      "files": 6,
+      "kind": "deb"
+    },
+    {
+      "artifact": "libnghttp3_1.18.0_x86_64.deb",
+      "files": 6,
+      "kind": "deb"
+    },
+    {
+      "artifact": "libngtcp2_1.25.0_x86_64.deb",
+      "files": 14,
+      "kind": "deb"
+    },
+    {
+      "artifact": "libssh2_1.11.1-2_x86_64.deb",
+      "files": 192,
+      "kind": "deb"
+    },
+    {
+      "artifact": "libresolv-wrapper_1.1.8_x86_64.deb",
+      "files": 6,
+      "kind": "deb"
+    },
+    {
+      "artifact": "libdb_18.1.40-6_x86_64.deb",
+      "files": 5,
+      "kind": "deb"
+    }
+  ],
+  "symlinks": 1173,
+  "uniqueBinaries": 251,
+  "userlandBytes": 97633742
+}
