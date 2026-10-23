@@ -511,7 +511,7 @@ def elf_needed(content):
         return []
 
 
-def ensure_dependencies(sealed, libraries, payload, kept_links):
+def ensure_dependencies(sealed, libraries, payload, kept_links, provided=frozenset()):
     """Make sure every sealed binary's libraries exist; link or fail loudly.
 
     Android resolves DT_NEEDED by file name. A package may ship the same library
@@ -538,6 +538,11 @@ def ensure_dependencies(sealed, libraries, payload, kept_links):
                     added.append((new_link, candidates[0]))
                 continue
             if needed in SYSTEM_LIBRARIES or needed.startswith("ld-android"):
+                continue
+            # A pack sits on top of the base payload: a library the base ships
+            # is present at runtime, so a pack that does not carry it is not
+            # broken - it is smaller.
+            if needed in provided:
                 continue
             # Not shipped under that name: a versioned sibling will do.
             stem = needed.split(".so")[0] + ".so"
@@ -669,7 +674,18 @@ def write_payload(out_dir, abi, tree, sealed, libraries, payload, kept_links,
     return report
 
 
-def build(bootstrap, abi, out_dir, deb_dir=None, prefix=""):
+def provided_from_zip(path):
+    """Basenames of the files a base payload installs (its userland zip)."""
+    if not path:
+        return frozenset()
+    if not os.path.isfile(path):
+        raise SystemExit("provided payload not found: %s" % path)
+    with zipfile.ZipFile(path) as archive:
+        return frozenset(os.path.basename(name) for name in archive.namelist()
+                         if not name.endswith("/"))
+
+
+def build(bootstrap, abi, out_dir, deb_dir=None, prefix="", provided_zip=None):
     tree = Tree()
     sources = []
     if bootstrap:
@@ -711,7 +727,8 @@ def build(bootstrap, abi, out_dir, deb_dir=None, prefix=""):
     if not sealed:
         raise SystemExit("refusing to build a sealed payload with no executables")
 
-    added, problems = ensure_dependencies(sealed, libraries, payload, kept_links)
+    added, problems = ensure_dependencies(sealed, libraries, payload, kept_links,
+                                         provided_from_zip(provided_zip))
     for link, target in added:
         print("dependency link %-34s -> %s" % (link, target))
     if problems:
@@ -733,6 +750,9 @@ def main():
     parser.add_argument("--asset-prefix", default="",
                         help="prefix for the emitted asset names, e.g. 'pack-buildtools-'")
     parser.add_argument("--log", help="write a transcript here (the build reads it on failure)")
+    parser.add_argument("--provided-userland",
+                        help="another payload's userland zip; libraries it ships count as "
+                             "present (a pack is applied on top of the base payload)")
     arguments = parser.parse_args()
     if arguments.log:
         # Gradle cannot capture a child's output when the child fails, and a
@@ -755,7 +775,7 @@ def main():
         sys.stderr = Tee(sys.stderr, handle)
     try:
         build(arguments.bootstrap, arguments.abi, arguments.out, arguments.deb_dir,
-              arguments.asset_prefix)
+              arguments.asset_prefix, arguments.provided_userland)
     except BaseException as error:
         print("sealed-payload: %s" % error, file=sys.stderr)
         raise

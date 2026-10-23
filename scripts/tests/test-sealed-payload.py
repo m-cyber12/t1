@@ -318,6 +318,25 @@ def main():
         assert "share/git/template" in names, names[:5]
         assert "share/doc/readme.txt" not in names, names[:5]
 
+        # A pack may lean on the base payload: a library the base ships counts
+        # as present, so the pack is not required to ship it again.
+        import importlib.util as _ilu
+        _spec = _ilu.spec_from_file_location(
+            "build_sealed_payload", os.path.join(SCRIPTS, "build-sealed-payload.py"))
+        _builder = _ilu.module_from_spec(_spec)
+        _spec.loader.exec_module(_builder)
+        provided = _builder.provided_from_zip(
+            os.path.join(out, "assets/userland-arm64-v8a.zip"))
+        assert provided, "the base payload reports no files"
+        assert "libsec.so" in provided or any(n.endswith(".so") for n in provided), sorted(provided)
+        pack_provided = os.path.join(root, "pack-provided")
+        run([sys.executable, os.path.join(SCRIPTS, "build-sealed-payload.py"),
+             "--abi", "arm64-v8a", "--out", pack_provided, "--deb-dir", debs,
+             "--asset-prefix", "pack-provided-",
+             "--provided-userland", os.path.join(out, "assets/userland-arm64-v8a.zip")])
+        assert "pack-provided-userland-arm64-v8a.zip" in \
+            os.listdir(os.path.join(pack_provided, "assets"))
+
         # the audit of the produced payload
         assert report["libraries"] == report["uniqueBinaries"]
         assert report["scripts"] >= 1, report
