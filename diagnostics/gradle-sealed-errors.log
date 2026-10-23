@@ -1,0 +1,33 @@
+/home/runner/work/t1/t1/harness-core/src/main/java/io/mcyber12/codingharness/core/packs/PlayPackInstaller.java:339: error: cannot find symbol
+                manager.completeInstall();
+                       ^
+  symbol:   method completeInstall()
+  location: variable manager of type SplitInstallManager
+1 error
+--
+> Task :harness-core:compileDebugJavaWithJavac FAILED
+
+> Task :pack-buildtools:fetchPackDebs
+fetched 23 packages (73740 KiB installed) for aarch64
+fetched 23 packages (74168 KiB installed) for x86_64
+
+--
+* What went wrong:
+Execution failed for task ':harness-core:compileDebugJavaWithJavac'.
+> Compilation failed; see the compiler output below.
+  /home/runner/work/t1/t1/harness-core/src/main/java/io/mcyber12/codingharness/core/packs/PlayPackInstaller.java:339: error: cannot find symbol
+                  manager.completeInstall();
+                         ^
+    symbol:   method completeInstall()
+    location: variable manager of type SplitInstallManager
+  1 error
+--
+/home/runner/work/t1/t1/harness-core/src/main/java/io/mcyber12/codingharness/core/packs/PlayPackInstaller.java:339: error: cannot find symbol
+                manager.completeInstall();
+                       ^
+  symbol:   method completeInstall()
+  location: variable manager of type SplitInstallManager
+1 error
+--
+BUILD FAILED in 1m 1s
+61 actionable tasks: 52 executed, 9 from cache
