@@ -388,6 +388,9 @@ def main():
     parser.add_argument("--repo", default=DEFAULT_REPO)
     parser.add_argument("--suite", default="stable")
     parser.add_argument("--log", help="write a transcript here (the build reads it on failure)")
+    parser.add_argument("--provided-by", action="append", default=[], metavar="PACKAGES_JSON",
+                        help="another payload's packages.json; its packages are already "
+                             "present (an on-demand pack sits on top of the base payload)")
     arguments = parser.parse_args()
 
     if arguments.log:
@@ -413,6 +416,17 @@ def main():
     os.makedirs(arguments.out, exist_ok=True)
     packages, provided = load_index(arguments.repo, arguments.suite, arguments.arch)
     bootstrap = bootstrap_packages(arguments.bootstrap)
+    # A pack is applied on top of the base payload, so the base's packages are
+    # as present as the bootstrap's are: shipping them again would duplicate
+    # libraries the device already has, and a duplicate is how two payloads
+    # start disagreeing about a version.
+    for provided_path in arguments.provided_by:
+        if not os.path.isfile(provided_path):
+            print("provided-by file is missing: %s" % provided_path, file=sys.stderr)
+            return 1
+        with open(provided_path, encoding="utf-8") as handle:
+            for entry in json.load(handle).get("packages", []):
+                bootstrap.setdefault(entry["package"], entry.get("version", "0"))
     skip = set(ALWAYS_SKIP)
     log("bootstrap provides %d packages; index has %d"
         % (len(bootstrap), len(packages)))

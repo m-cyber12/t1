@@ -89,7 +89,7 @@ def runResolver = { fetch, File record, String what ->
 
 def fetchPackDebs = tasks.register("fetchPackDebs") {
     description = "Fetches the build-tools packages for the on-demand pack"
-    dependsOn(":app:downloadHarnessBootstrap")
+    dependsOn(":app:downloadHarnessBootstrap", ":app:fetchCoreDebs")
     inputs.property("packages", packPackages.join(" "))
     inputs.property("repo", packRepo)
     inputs.file(rootProject.file("scripts/fetch-core-debs.py"))
@@ -101,12 +101,17 @@ def fetchPackDebs = tasks.register("fetchPackDebs") {
             output.mkdirs()
             File record = new File(packDebDir.get().asFile, "fetch-pack-debs-${abi}.log")
             File bootstrap = new File(bootstrapDir, "bootstrap-${arch}.zip")
+            // The base payload's own package list: a pack must not re-ship what
+            // the device already has.
+            File basePayload = new File(rootProject.projectDir,
+                "app/build/generated/sealed-debs/${abi}/packages.json")
             def fetch = providers.exec {
                 commandLine(["python3", script.absolutePath,
                     "--arch", arch,
                     "--out", output.absolutePath,
                     "--repo", packRepo,
                     "--bootstrap", bootstrap.absolutePath,
+                    "--provided-by", basePayload.absolutePath,
                     "--log", record.absolutePath,
                     "--packages"] + packPackages)
             }

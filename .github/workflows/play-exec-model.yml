@@ -180,6 +180,19 @@ jobs:
             --report sealed-apk-16kb.txt --require-compliant
           cat app/build/generated/sealed-payload/assets/sealed-payload-*.json | tee sealed-payload.json
 
+      # The bundle is built at the target Play requires, on every leg: a bundle
+      # at 28 or 34 is an artefact nobody can upload, and the gate would be
+      # measuring a shape that will never be shipped. Building it here also
+      # exercises the guard in app/build.gradle that refuses a bad bundle.
+      - name: Build the store bundles at the target Play requires
+        shell: bash
+        run: |
+          set -o pipefail
+          ./gradlew --no-daemon --stacktrace \
+            -PharnessTargetSdk=36 -PharnessCompileSdk=36 \
+            -PharnessTestBuildType=sealed \
+            :app:bundleRelease :app:bundleSealed 2>&1 | tee gradle-bundles.log
+
       # The store artifact, not just the APK: a pack that is not in the bundle
       # cannot be delivered, and a pack that is in it as an install-time module
       # makes every install pay for clang.
@@ -216,19 +229,6 @@ jobs:
           #    nobody reads is not a gate.
           python3 scripts/check-bundle-size.py "$AAB" ${APK:+--apk "$APK"} \
             --json sealed-aab-size.json 2>&1 | tee -a sealed-aab.txt
-
-      # The bundle is built at the target Play requires, on every leg: a bundle
-      # at 28 or 34 is an artefact nobody can upload, and the gate would be
-      # measuring a shape that will never be shipped. Building it here also
-      # exercises the guard in app/build.gradle that refuses a bad bundle.
-      - name: Build the store bundles at the target Play requires
-        shell: bash
-        run: |
-          set -o pipefail
-          ./gradlew --no-daemon --stacktrace \
-            -PharnessTargetSdk=36 -PharnessCompileSdk=36 \
-            -PharnessTestBuildType=sealed \
-            :app:bundleRelease :app:bundleSealed 2>&1 | tee gradle-bundles.log
 
       - name: Run the exec-model measurement on an emulator
         shell: bash
