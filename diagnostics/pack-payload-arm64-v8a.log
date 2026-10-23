@@ -1,0 +1,25 @@
+unpacked make_4.4.1-1_aarch64.deb                           7 files
+unpacked pkg-config_0.29.2-3_aarch64.deb                    4 files
+unpacked glib_2.90.1_aarch64.deb                          395 files
+unpacked libandroid-support_29-1_aarch64.deb                3 files
+unpacked libffi_3.8.0_aarch64.deb                          10 files
+unpacked libiconv_1.19_aarch64.deb                         17 files
+unpacked pcre2_10.49_aarch64.deb                          227 files
+unpacked resolv-conf_1.3_aarch64.deb                        2 files
+unpacked zlib_1.3.2_aarch64.deb                             6 files
+unpacked python_3.14.8_aarch64.deb                        959 files
+unpacked gdbm_1.26-1_aarch64.deb                           13 files
+unpacked libandroid-posix-semaphore_0.1-4_aarch64.deb       2 files
+unpacked libbz2_1.0.8-8_aarch64.deb                         3 files
+unpacked libcrypt_0.2-6_aarch64.deb                         3 files
+unpacked libexpat_2.9.0_aarch64.deb                        12 files
+unpacked liblzma_5.8.4_aarch64.deb                         39 files
+unpacked libsqlite_3.54.1_aarch64.deb                       6 files
+unpacked ncurses_6.6.20260307+really6.5.20250830_aarch64.deb   183 files
+unpacked ncurses-ui-libs_6.6.20260307+really6.5.20250830_aarch64.deb     6 files
+unpacked openssl_1:3.6.5_aarch64.deb                      153 files
+unpacked readline_8.3.6_aarch64.deb                        43 files
+unpacked zstd_1.5.7-1_aarch64.deb                          15 files
+unpacked ca-certificates_1:2026.10.20-1_all.deb             1 files
+dpkg status: 23 packages marked installed (0 replaced, 23 added)
+sealed payload arm64-v8a: 29 executables -> 23 unique binaries shipped as JNI libraries (1.1 MiB), 2087 data files (20.1 MiB), 854 data links, 4 scripts in the payload
