@@ -566,8 +566,32 @@ def main():
     parser.add_argument("--abi", required=True, choices=["arm64-v8a", "x86_64"])
     parser.add_argument("--out", required=True, help="output directory")
     parser.add_argument("--deb-dir", help="directory of .deb files (and packages.json)")
+    parser.add_argument("--log", help="write a transcript here (the build reads it on failure)")
     arguments = parser.parse_args()
-    build(arguments.bootstrap, arguments.abi, arguments.out, arguments.deb_dir)
+    if arguments.log:
+        # Gradle cannot capture a child's output when the child fails, and a
+        # missing library is only useful if the message survives. Tee here.
+        handle = open(arguments.log, "w", buffering=1)
+
+        class Tee:
+            def __init__(self, *streams):
+                self.streams = streams
+
+            def write(self, text):
+                for stream in self.streams:
+                    stream.write(text)
+
+            def flush(self):
+                for stream in self.streams:
+                    stream.flush()
+
+        sys.stdout = Tee(sys.stdout, handle)
+        sys.stderr = Tee(sys.stderr, handle)
+    try:
+        build(arguments.bootstrap, arguments.abi, arguments.out, arguments.deb_dir)
+    except BaseException as error:
+        print("sealed-payload: %s" % error, file=sys.stderr)
+        raise
 
 
 if __name__ == "__main__":
