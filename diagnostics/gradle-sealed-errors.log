@@ -1,0 +1,27 @@
+> Task :app:compileSealedAndroidTestJavaWithJavac FAILED
+/home/runner/work/t1/t1/app/src/androidTest/java/io/mcyber12/codingharness/SealedShellTest.java:67: error: readLink(File) is not public in ExecAudit; cannot be accessed from outside package
+        String target = ExecAudit.readLink(bash);
+                                 ^
+1 error
+
+> Task :app:packageSealed
+--
+* What went wrong:
+Execution failed for task ':app:compileSealedAndroidTestJavaWithJavac'.
+> Compilation failed; see the compiler output below.
+  /home/runner/work/t1/t1/app/src/androidTest/java/io/mcyber12/codingharness/SealedShellTest.java:67: error: readLink(File) is not public in ExecAudit; cannot be accessed from outside package
+          String target = ExecAudit.readLink(bash);
+                                   ^
+  1 error
+
+* Try:
+--
+/home/runner/work/t1/t1/app/src/androidTest/java/io/mcyber12/codingharness/SealedShellTest.java:67: error: readLink(File) is not public in ExecAudit; cannot be accessed from outside package
+        String target = ExecAudit.readLink(bash);
+                                 ^
+1 error
+	at org.gradle.api.internal.tasks.compile.JdkJavaCompiler.execute(JdkJavaCompiler.java:89)
+	at org.gradle.api.internal.tasks.compile.JdkJavaCompiler.execute(JdkJavaCompiler.java:50)
+--
+BUILD FAILED in 1m 9s
+118 actionable tasks: 106 executed, 12 from cache
