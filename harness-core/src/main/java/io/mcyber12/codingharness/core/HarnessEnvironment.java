@@ -445,6 +445,25 @@ public final class HarnessEnvironment {
             if (preload.length() > 0) preload.append(File.pathSeparator);
             preload.append(termuxExec.getAbsolutePath());
         }
+        // CPython derives sys.prefix from /proc/self/exe (and from argv[0] when
+        // that is absolute). In the sealed build the executable is a symlink
+        // into the APK's native library directory, so that path is the APK and
+        // the stdlib is never found ("Could not find platform independent
+        // libraries <prefix>"). PYTHONHOME states the prefix explicitly, which
+        // is exactly the case CPython documents it for.
+        File pythonLibrary = new File(config.prefix, "lib");
+        if (pythonLibrary.isDirectory()) {
+            String[] children = pythonLibrary.list();
+            if (children != null) {
+                for (String child : children) {
+                    if (child.startsWith("python3.") && new File(pythonLibrary, child).isDirectory()) {
+                        environment.put("PYTHONHOME", config.prefix.getAbsolutePath());
+                        break;
+                    }
+                }
+            }
+        }
+
         String existingPreload = environment.get("LD_PRELOAD");
         if (existingPreload != null && !existingPreload.isEmpty()) {
             if (preload.length() > 0) preload.append(File.pathSeparator);
