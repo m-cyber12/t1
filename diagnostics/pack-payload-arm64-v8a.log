@@ -1,0 +1,9 @@
+unpacked make_4.4.1-1_aarch64.deb                           7 files
+unpacked pkg-config_0.29.2-3_aarch64.deb                    4 files
+unpacked glib_2.90.1_aarch64.deb                          395 files
+unpacked libandroid-support_29-1_aarch64.deb                3 files
+unpacked resolv-conf_1.3_aarch64.deb                        2 files
+dpkg status: 5 packages marked installed (0 replaced, 5 added)
+sealed-payload: bin/gi-compile-repository needs libffi.so (not in the payload)
+sealed-payload: sealed payload is missing 1 shared library(ies)
+sealed payload is missing 1 shared library(ies)

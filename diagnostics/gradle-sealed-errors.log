@@ -1,0 +1,16 @@
+> Task :pack_buildtools:buildPackPayload FAILED
+--- pack-payload-arm64-v8a.log (split the arm64-v8a payload) ---
+unpacked make_4.4.1-1_aarch64.deb                           7 files
+unpacked pkg-config_0.29.2-3_aarch64.deb                    4 files
+unpacked glib_2.90.1_aarch64.deb                          395 files
+unpacked libandroid-support_29-1_aarch64.deb                3 files
+--
+* What went wrong:
+Execution failed for task ':pack_buildtools:buildPackPayload'.
+> Process 'command 'python3'' finished with non-zero exit value 1
+
+* Try:
+> Run with --info or --debug option to get more log output.
+--
+BUILD FAILED in 2m 14s
+74 actionable tasks: 66 executed, 8 from cache
