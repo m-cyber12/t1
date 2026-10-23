@@ -1,0 +1,14 @@
+[BT:1.17.2] Error: File '/home/runner/.android/debug.keystore' was not found.
+java.lang.IllegalArgumentException: File '/home/runner/.android/debug.keystore' was not found.
+	at com.google.common.base.Preconditions.checkArgument(Preconditions.java:218)
+	at com.android.tools.build.bundletool.model.utils.files.FilePreconditions.checkFileExistsAndReadable(FilePreconditions.java:35)
+	at com.android.tools.build.bundletool.model.SignerConfig.extractFromKeystore(SignerConfig.java:106)
+	at com.android.tools.build.bundletool.commands.BuildApksCommand.populateSigningConfigurationFromFlags(BuildApksCommand.java:1699)
+	at com.android.tools.build.bundletool.commands.BuildApksCommand.fromFlags(BuildApksCommand.java:802)
+	at com.android.tools.build.bundletool.commands.BuildApksCommand.fromFlags(BuildApksCommand.java:768)
+	at com.android.tools.build.bundletool.BundleToolMain.main(BundleToolMain.java:84)
+	at com.android.tools.build.bundletool.BundleToolMain.main(BundleToolMain.java:56)
+--- pack state on the device ---
+run-as: unknown package: io.mcyber12.codingharness
+run-as: unknown package: io.mcyber12.codingharness
+run-as: unknown package: io.mcyber12.codingharness
