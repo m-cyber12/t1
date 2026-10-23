@@ -14,3 +14,7 @@ local.properties
 captures/
 .externalNativeBuild/
 .cxx/
+
+# Python bytecode from the build scripts
+__pycache__/
+*.pyc
