@@ -1,0 +1,8 @@
+* What went wrong:
+A problem occurred evaluating project ':app'.
+> Could not get unknown property 'sealedPayloadOutput' for source set sealed of type com.android.build.gradle.internal.api.DefaultAndroidSourceSet.
+
+* Try:
+> Run with --info or --debug option to get more log output.
+--
+BUILD FAILED in 32s
