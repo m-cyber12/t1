@@ -245,7 +245,11 @@ def buildSealedPayload = tasks.register("buildSealedPayload") {
             // captured child exits non-zero, so the reason for the failure - a
             // shared library missing from the payload, say - never reaches the
             // log unless the child writes it down itself.
-            File log = new File(bootstrapOutput.get().asFile, "sealed-payload-${abi}.log")
+            // Beside the assets, never inside them: anything under the asset
+            // directory is merged into the APK, and two logs with the same name
+            // collide in aapt's resource merge.
+            File log = new File(bootstrapOutput.get().asFile.parentFile,
+                    "sealed-payload-${abi}.log")
             log.parentFile.mkdirs()
             def split = providers.exec {
                 commandLine "python3", script.absolutePath,

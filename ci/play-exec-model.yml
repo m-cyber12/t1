@@ -89,7 +89,7 @@ jobs:
           grep -E 'error:|What went wrong|FAILED' -A5 gradle-sealed.log > diagnostics/gradle-sealed-errors.log 2>/dev/null || true
           # The build steps write their own transcripts; Gradle drops a failed
           # child's output, so these files are the only account of why.
-          cp app/build/generated/harness-bootstrap/assets/*.log diagnostics/ 2>/dev/null || true
+          cp app/build/generated/harness-bootstrap/*.log diagnostics/ 2>/dev/null || true
           cp app/build/fetch-core-debs-*.log diagnostics/ 2>/dev/null || true
           git add diagnostics/ || true
           git -c user.email=ci@invalid -c user.name=ci commit -qm "sealed build failure ${GITHUB_RUN_ID} [ci]" || true
@@ -174,7 +174,7 @@ jobs:
           cp manifest-tree.txt diagnostics/ 2>/dev/null || true
           cp sealed-apk-identity.txt diagnostics/ 2>/dev/null || true
           cp sealed-payload.json diagnostics/ 2>/dev/null || true
-          cp app/build/generated/harness-bootstrap/assets/sealed-payload-*.log diagnostics/ 2>/dev/null || true
+          cp app/build/generated/harness-bootstrap/sealed-payload-*.log diagnostics/ 2>/dev/null || true
           cp app/build/fetch-core-debs-*.log diagnostics/ 2>/dev/null || true
           for x in app/build/outputs/androidTest-results/connected/*.xml; do
             [ -f "$x" ] && cp "$x" diagnostics/
