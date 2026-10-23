@@ -1,0 +1,8 @@
+* What went wrong:
+BUG! exception in phase 'semantic analysis' in source unit '_BuildScript_' Cannot invoke "org.codehaus.groovy.control.SourceUnit.getErrorCollector()" because "source" is null
+> Cannot invoke "org.codehaus.groovy.control.SourceUnit.getErrorCollector()" because "source" is null
+
+* Try:
+> Run with --info or --debug option to get more log output.
+--
+BUILD FAILED in 26s
