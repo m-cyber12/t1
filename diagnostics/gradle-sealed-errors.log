@@ -1,0 +1,16 @@
+> Task :app:generateSealedFeatureMetadata FAILED
+> Task :pack-buildtools:processSealedNavigationResources
+> Task :app:mergeSealedResources
+> Task :app:mergeSealedAssets
+
+[Incubating] Problems report is available at: file:///home/runner/work/t1/t1/build/reports/problems/problems-report.html
+--
+* What went wrong:
+Execution failed for task ':app:generateSealedFeatureMetadata'.
+> A failure occurred while executing com.android.build.gradle.internal.tasks.featuresplit.FeatureSetMetadataWriterTask$FeatureSetRunnable
+   > The following feature module names contain invalid characters. Feature module names can only contain letters, digits and underscores.
+     	-> pack-buildtools
+
+--
+BUILD FAILED in 3m 16s
+107 actionable tasks: 92 executed, 15 from cache
