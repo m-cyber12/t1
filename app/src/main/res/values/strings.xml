@@ -1,3 +1,9 @@
 <resources>
     <string name="app_name">Coding Harness</string>
+    <!--
+      bundletool resolves a feature module's dist:title against the base
+      module's resource table, so the pack's title has to exist here even
+      though the pack declares it.
+    -->
+    <string name="pack_buildtools_title">Build tools (clang, cmake, make)</string>
 </resources>
