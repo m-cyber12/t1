@@ -35,6 +35,7 @@ import lzma
 import os
 import re
 import sys
+import time
 import urllib.error
 import urllib.parse
 import urllib.request
@@ -52,12 +53,26 @@ def log(message):
     print(message, file=sys.stderr)
 
 
-def open_url(url):
-    """urlopen that also understands file:// so the resolver can be tested."""
+def open_url(url, attempts=3):
+    """urlopen (file:// supported) with a short retry for a flaky mirror.
+
+    The Termux CDN occasionally serves a 5xx or times out; a build that fails on
+    the first hiccup costs a 30-minute emulator run, so one retry loop here is
+    cheaper than the rerun.
+    """
     if url.startswith("file://"):
         return urllib.request.urlopen(url)
-    request = urllib.request.Request(url, headers={"User-Agent": "coding-harness-build"})
-    return urllib.request.urlopen(request, timeout=120)
+    last = None
+    for attempt in range(1, attempts + 1):
+        try:
+            request = urllib.request.Request(url, headers={"User-Agent": "coding-harness-build"})
+            return urllib.request.urlopen(request, timeout=120)
+        except Exception as error:                     # URLError, HTTPError, timeout
+            last = error
+            log("fetch attempt %d/%d failed for %s: %s" % (attempt, attempts, url, error))
+            if attempt < attempts:
+                time.sleep(3 * attempt)
+    raise last
 
 
 def fetch(url):
@@ -372,7 +387,28 @@ def main():
     parser.add_argument("--bootstrap", help="bootstrap zip, to skip what it ships")
     parser.add_argument("--repo", default=DEFAULT_REPO)
     parser.add_argument("--suite", default="stable")
+    parser.add_argument("--log", help="write a transcript here (the build reads it on failure)")
     arguments = parser.parse_args()
+
+    if arguments.log:
+        # providers.exec throws the moment the child exits non-zero, and then
+        # every word it wrote is gone. The resolver keeps its own account.
+        handle = open(arguments.log, "w", buffering=1)
+
+        class Tee:
+            def __init__(self, *streams):
+                self.streams = streams
+
+            def write(self, text):
+                for stream in self.streams:
+                    stream.write(text)
+
+            def flush(self):
+                for stream in self.streams:
+                    stream.flush()
+
+        sys.stdout = Tee(sys.stdout, handle)
+        sys.stderr = Tee(sys.stderr, handle)
 
     os.makedirs(arguments.out, exist_ok=True)
     packages, provided = load_index(arguments.repo, arguments.suite, arguments.arch)
