@@ -1,0 +1,10 @@
+sealed-shell: second startup took 16 ms (no re-extract)
+sealed-shell: dpkg records the shipped packages as installed
+sealed-shell: payload abi=x86_64 targetSdk=34
+sealed-shell: sealed payload (x86_64): 13858 data files, 1173 data links, 535 executables from the APK, 13858 verified
+sealed-shell: bin/bash -> /data/app/~~rcjqndQ2DueOO7ggwuuHiA==/io.mcyber12.codingharness-v_-aEmN4dptX6Bi8fx1VIw==/lib/x86_64/libbash.so
+sealed-shell: bash -> exit 0 : SEALED-SHELL-OK | version=5.3.9(1)-release | prefix=/data/user/0/io.mcyber12.codingharness/files/coding-harness/rootfs/data/data/com.termux/files/usr | path=/data/user/0/io.mcyber12.codingharness/files/coding-harness/rootfs/data/data/com.termux/files/usr/bin:/data/user/0/io.mcyber12.codingharness/files/coding-harness/workspace/node_modules/.bin:/system/bin:/system/xbin | /data/user/0/io.mcyber12.codingharness/files/coding-harness/rootfs/data/data/com.termux/files/usr/bin/sed | exit-ok |
+sealed-shell: sed -> exit 0 : A1 | A2 |
+sealed-shell: bin/git -> exit 0 : git version 2.56.0
+sealed-shell: bin/python -> exit 0 : py-ssl OpenSSL 3.6.5 29 Sep 2026
+sealed-shell: bin/node -> exit 0 : v26.12.1
