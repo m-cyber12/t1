@@ -56,22 +56,43 @@ repository and payload with no network:
 | `perl`: `library "libperl.so" not found` | the package ships `libperl.so.5.44.0` and leaves the soname to its postinst; a payload runs no postinsts | the builder reads each binary's `DT_NEEDED` and creates the missing soname link |
 | build: `libclang_rt.asan` missing | the bootstrap carries the Termux packages' own sanitizer test binaries | those test trees are excluded from the payload by prefix |
 
+What the app does with that payload (the part that makes it a product rather
+than a test fixture):
+
+* **Startup installs it.** `HarnessBootstrap.ensureInstalled` looks for a sealed
+  payload first; a sealed APK installs its userland from its own assets and never
+  reaches the bootstrap/apt path. Detection is by asset, so the apt build is
+  byte-for-byte unaffected.
+* **Once, not every launch.** The build emits a short payload identity (a hash of
+  the payload's own manifests plus its size) and the app records it. Same
+  identity: start immediately. Different identity — i.e. an app upgrade that
+  ships a new payload — reinstall in full.
+* **`apt` agrees with reality.** A payload installs packages by unpacking them,
+  so the build merges each `.deb`'s control paragraph into
+  `var/lib/dpkg/status` as `install ok installed`, replacing a bootstrap
+  paragraph for the same package (`libc++ 26 → 28`) and leaving untouched
+  packages alone. That is what lets the existing SETUP path — which plans from
+  `dpkg-query` plus the presence of the commands — report READY without a
+  network call.
+* **Every file is verified.** `sealed-manifest-<abi>.txt` carries sha256 and size
+  per data file; the extractor hashes while it writes, so verification is free.
+  On device: `13858 data files … 13858 verified`.
+
 Remaining gap to a submission, in order:
 
-1. **Ship the provisioning UI** — the payload installs and runs, but the sealed
-   build has no first-run screen yet; in the shipping build that job is done by
-   `apt`. Without it there is nothing to tap from a fresh install.
+1. **Packs as Play Feature Delivery modules** — the core tier is in the APK, but
+   the on-demand packs (make, pkg-config, clang, cmake) are still `apt install`,
+   which is the downloaded-code problem for a Play build.
 2. **Target 36** — done as a measurement: the gate builds `targetSdk 36`
    against `compileSdk 36` and runs the whole core tier on an API 36 device
    (Play has required 36 for new apps and updates since 2026-08-31, with an
    extension possible until 2026-11-01). The shipping build still defaults to 28
    because its only install path is `apt`; the switch happens together with
    point 1.
-3. **Keep runtime installs out of the Play build** — `apt-get` fetching `.deb`s
-   is the Device & Network Abuse problem; packs become Play Feature Delivery
-   modules. Plus a release keystore and the store listing. (16 KB page alignment
-   is done: `-Wl,-z,max-page-size=16384` on every native object, ahead of the
-   2027-02-01 block.)
+3. **Release engineering** — a release keystore and the store listing. (16 KB
+   page alignment is done and gated: `-Wl,-z,max-page-size=16384` on every native
+   object, and `scripts/check-page-alignment.py` reads `p_align` out of every
+   `.so` in the built APK — 503/503 shipped objects are 16 KB aligned.)
 
 Sizes from the same run: **252 JNI libraries per ABI** carry the 535 executable
 names, and the payload is 13858 data files + 1173 links; the run took ~4 minutes
