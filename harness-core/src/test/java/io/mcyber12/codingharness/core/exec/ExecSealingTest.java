@@ -156,7 +156,11 @@ public class ExecSealingTest {
 
         ExecAudit.Report before = ExecAudit.audit(prefix, nativeDir);
         assertEquals(2, before.examined());
-        assertEquals(2, before.outsideApk().size());
+        // The ELF binary is the problem; the script is not, because it is run
+        // through the interpreter layer rather than exec'd.
+        assertEquals(before.toText(), 1, before.outsideApk().size());
+        assertEquals(before.toText(), 1, before.outsideScripts().size());
+        assertEquals("bin/apt-get", before.outsideApk().get(0).path);
         assertFalse(before.publishable());
         assertTrue(before.toText().contains("targetSdk <= 28 only"));
 
@@ -172,7 +176,7 @@ public class ExecSealingTest {
 
         ExecAudit.Report after = ExecAudit.audit(prefix, nativeDir);
         assertTrue(after.toText(), after.publishable());
-        assertEquals(2, after.shippedCount());
+        assertEquals(after.toText(), 2, after.shippedCount());
         assertTrue(after.toText().contains("publishable at any targetSdk"));
     }
 
@@ -219,8 +223,8 @@ public class ExecSealingTest {
             new File("../libexec/git-core/git").toPath());
 
         ExecAudit.Report report = ExecAudit.audit(prefix, temporary.newFolder("libdir"));
-        // Two executables live in app data: the binary itself and the link to
-        // it. The versioned library must not be counted at all.
+        // Two binaries live in app data: the binary itself and the link to it.
+        // The versioned library must not be counted at all.
         assertEquals(report.toText(), 2, report.outsideApk().size());
         assertTrue(report.toText(), report.toText().contains("bin/git"));
         assertTrue(report.toText(), report.toText().contains("libexec/git-core/git"));

@@ -101,9 +101,13 @@ public class SealedShellTest {
         ExecAudit.Report audit = ExecAudit.audit(config.prefix, nativeDir);
         report("sealed-shell: " + audit.toText().replace("\n", " | "));
         assertFalse("audit could not finish: " + audit.toText(), audit.truncated);
-        assertTrue("sealed payload leaves executables outside the APK: "
+        assertTrue("sealed payload leaves binaries outside the APK: "
             + audit.outsideApk().size(), audit.publishable());
         assertTrue("nothing was shipped in the APK: " + audit.toText(), audit.shippedCount() > 0);
+        // Scripts stay in the payload by design (they are interpreted, never
+        // exec'd); the count is reported so the reliance is visible, not hidden.
+        report("sealed-shell: " + audit.outsideScripts().size()
+            + " scripts in the payload run through the interpreter layer");
     }
 
     /** Append to the report the CI pulls, and to logcat so a failure is visible. */

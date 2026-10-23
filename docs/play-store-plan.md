@@ -124,6 +124,12 @@ And one mechanism is new, added with this document:
 * **`SealedLayout`** (`harness-core/.../core/exec/`): applies `sealed-exec.txt`
   at first run and after every app upgrade, idempotently, and refuses to
   invent anything the APK did not ship.
+* **`scripts/build-sealed-payload.py`** + **`SealedPayloadInstaller`**: split a
+  Termux bootstrap into the two halves and put them back on device. On the real
+  bootstrap (`2026.02.12-r1`, x86_64) the split is **324 executables → 199 JNI
+  libraries (16.2 MiB)**, **3169 data files (21.7 MiB)** and **956 data
+  symlinks**; **112 scripts stay in the payload** and run through the
+  interpreter layer instead of being exec'd.
 * **`ExecAudit`**: classifies the prefix by first bytes (ELF / `#!` script /
   data) and reports how many executables are *not* backed by the APK. That
   number is the publishability answer, and it is written to

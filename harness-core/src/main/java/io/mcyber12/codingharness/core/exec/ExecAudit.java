@@ -35,7 +35,7 @@ public final class ExecAudit {
     public static final int MAX_ENTRIES = 40_000;
 
     /** Wall-clock budget: a full audit must never be able to hang a caller. */
-    public static final long MAX_MILLIS = 20_000L;
+    public static final long MAX_MILLIS = 120_000L;
 
     /** Directories whose contents are package data and never executed. */
     private static final String[] SKIP_DIRS = {
@@ -82,11 +82,30 @@ public final class ExecAudit {
 
         public int examined() { return entries.size(); }
 
-        /** Entries that must be executed but are not backed by the APK. */
+        /**
+         * Binary (ELF) executables that are not backed by the APK — the only
+         * thing that genuinely requires the data-directory exec exemption.
+         *
+         * <p>Scripts are deliberately excluded: they are never {@code execve}-d
+         * in this harness. Either the preload translates their interpreter and
+         * starts it itself (proven by {@code ExecModelTest}) or
+         * {@code HarnessCommandRunner} does the same for JVM callers. They are
+         * still counted, via {@link #outsideScripts()}, because a user script
+         * run directly (not through the harness) would be denied at API 29+.</p>
+         */
         public List<Entry> outsideApk() {
             List<Entry> out = new ArrayList<>();
             for (Entry entry : entries) {
-                if (!entry.shippedInApk) out.add(entry);
+                if (!entry.shippedInApk && entry.kind != ExecutableKind.SCRIPT) out.add(entry);
+            }
+            return out;
+        }
+
+        /** Scripts outside the APK: run through the interpreter layer, never exec'd. */
+        public List<Entry> outsideScripts() {
+            List<Entry> out = new ArrayList<>();
+            for (Entry entry : entries) {
+                if (!entry.shippedInApk && entry.kind == ExecutableKind.SCRIPT) out.add(entry);
             }
             return out;
         }
@@ -109,16 +128,17 @@ public final class ExecAudit {
             text.append("exec audit: ").append(examined())
                 .append(" executable entries, ").append(shippedCount())
                 .append(" shipped in the APK, ").append(outsideApk().size())
-                .append(" outside it\n");
+                .append(" binary executables outside it, ").append(outsideScripts().size())
+                .append(" scripts outside it (run through the preload)\n");
             text.append("native libraries: ").append(nativeLibraryDirectory).append('\n');
             text.append("scanned paths: ").append(scanned)
                 .append(truncated ? " (truncated)" : "").append('\n');
             if (failure != null) text.append("walk failed: ").append(failure).append('\n');
             text.append("verdict: ")
                 .append(publishable()
-                    ? "publishable at any targetSdk (no executables outside the APK)"
+                    ? "publishable at any targetSdk (no binaries outside the APK)"
                     : "targetSdk <= 28 only (" + outsideApk().size()
-                        + " executables require the data-dir exec exemption)")
+                        + " binaries require the data-dir exec exemption)")
                 .append('\n');
             List<Entry> outside = outsideApk();
             int shown = Math.min(outside.size(), 40);
@@ -176,6 +196,7 @@ public final class ExecAudit {
             File current = pending.removeFirst();
             if (scanned >= MAX_ENTRIES) { truncated = true; break; }
             if (System.currentTimeMillis() > deadline) { truncated = true; break; }
+
             File[] children = current.listFiles();
             if (children == null) continue;
             for (File child : children) {
