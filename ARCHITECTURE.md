@@ -300,8 +300,9 @@ parsing. Details and a file-by-file mapping are in
 ## 10. Distribution and Google Play readiness
 
 **The migration plan is `docs/play-store-plan.md`; the execution model it
-relies on is implemented (`harness-core/.../core/exec/`) and measured by the
-`ExecModelTest` gate. Read this section as the constraint analysis and that
+relies on is implemented in `sealed-runtime/` (a module with no Android APIs,
+so the main harness can take it whole — `docs/sealed-runtime-port.md`) and
+measured by the `ExecModelTest` gate. Read this section as the constraint analysis and that
 document as the way through it.**
 
 Short answer: **the current build cannot be published on Google Play, and

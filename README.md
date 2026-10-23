@@ -160,6 +160,22 @@ policy).
 `docs/play-store-plan.md` is the way through those constraints: a *sealed*
 build that ships every executable as a JNI library inside the APK and keeps
 the Termux prefix shape with symlinks, so the harness can target a
-store-legal API level. The mechanism (`ExecAudit`, `SealedLayout`) and its
-on-device gate (`ExecModelTest`, `ci/play-exec-model.yml`) are in the tree;
-the payload packaging is the remaining work.
+store-legal API level. It is no longer a plan — the core tier (bash, git,
+python, node, perl, ruby, ripgrep and the rest of the basic tools) runs from
+the APK at `targetSdk 36` on API 36 and at 34 on API 34, with zero binaries
+outside the APK (`ci/play-exec-model.yml`).
+
+The mechanism lives in `sealed-runtime/`, a module with **no Android APIs**:
+`SealedInstaller` extracts the payload, verifies every file against its
+manifest while writing it, recreates the data links and points each executable
+at the library the APK shipped. Because it is plain Java, it is unit-tested on
+the JVM (`:sealed-runtime:test`) instead of on an emulator, and the main
+harness takes it whole:
+
+```bash
+scripts/export-sealed-runtime.sh app/src/main/java --package <your.package>
+```
+
+`docs/sealed-runtime-port.md` is the merging instruction: what moves, what
+deliberately stays behind, and the four invariants (each cost a device run
+here) that its tests enforce.

@@ -173,11 +173,16 @@ Three mechanisms already exist in this repository and are reused unchanged:
 
 And one mechanism is new, added with this document:
 
-* **`SealedLayout`** (`harness-core/.../core/exec/`): applies `sealed-exec.txt`
-  at first run and after every app upgrade, idempotently, and refuses to
-  invent anything the APK did not ship.
-* **`scripts/build-sealed-payload.py`** + **`SealedPayloadInstaller`**: split a
-  Termux bootstrap into the two halves and put them back on device. On the real
+* **`sealed-runtime/`** (its own Gradle module, no Android APIs — see
+  `docs/sealed-runtime-port.md`): `SealedLayout` applies `sealed-exec.txt` at
+  first run and after every app upgrade, idempotently, and refuses to invent
+  anything the APK did not ship; `PayloadExtractor` verifies every file against
+  `sealed-manifest.txt` *while writing it*; `SealedInstaller` is the one call
+  that does all of it. That split is what makes the mechanism portable to the
+  main harness and testable on the JVM in seconds.
+* **`scripts/build-sealed-payload.py`** + the Android adapter
+  (`SealedPayloadInstaller`): split a Termux bootstrap into the two halves and
+  put them back on device. On the real
   bootstrap (`2026.02.12-r1`, x86_64) the split is **324 executables → 199 JNI
   libraries (16.2 MiB)**, **3169 data files (21.7 MiB)** and **956 data
   symlinks**; **112 scripts stay in the payload** and run through the
