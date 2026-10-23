@@ -16,6 +16,7 @@ import java.nio.file.Files;
 import java.util.Locale;
 
 import io.mcyber12.codingharness.core.HarnessCommandRunner;
+import io.mcyber12.codingharness.core.HarnessBootstrap;
 import io.mcyber12.codingharness.core.HarnessConfig;
 import io.mcyber12.sealed.ExecAudit;
 import io.mcyber12.codingharness.core.exec.SealedPayloadInstaller;
@@ -141,6 +142,43 @@ public class SealedShellTest {
         // exec'd); the count is reported so the reliance is visible, not hidden.
         report("sealed-shell: " + audit.outsideScripts().size()
             + " scripts in the payload run through the interpreter layer");
+    }
+
+    /**
+     * The app's own startup path, not the installer on its own: a sealed APK
+     * must install itself once and then stop re-extracting 14k files on every
+     * launch, and its dpkg database must agree with what was shipped.
+     */
+    @Test
+    public void startupInstallsOnceAndDpkgAgrees() throws Exception {
+        HarnessConfig config = HarnessConfig.builder(context).build();
+        String abi = SealedPayloadInstaller.pickAbi(context);
+        assumeTrue("this APK carries no sealed payload (not the sealed variant)", abi != null);
+
+        assertTrue("the app did not take the sealed path",
+            HarnessBootstrap.ensureSealedPayload(context, config));
+
+        long started = android.os.SystemClock.uptimeMillis();
+        assertTrue("the second startup did not take the sealed path",
+            HarnessBootstrap.ensureSealedPayload(context, config));
+        long elapsed = android.os.SystemClock.uptimeMillis() - started;
+        report("sealed-shell: second startup took " + elapsed + " ms (no re-extract)");
+        assertTrue("second startup re-extracted the payload (" + elapsed + " ms)",
+            elapsed < 5_000L);
+
+        // dpkg has to know about the packages whose files came from the APK:
+        // without this, apt offers to install tools that are already present.
+        File status = new File(config.prefix, "var/lib/dpkg/status");
+        assertTrue("no dpkg status in the payload: " + status, status.isFile());
+        String database = new String(java.nio.file.Files.readAllBytes(status.toPath()),
+            StandardCharsets.UTF_8);
+        for (String packageName : new String[] {"nodejs", "perl", "ruby", "git"}) {
+            int at = database.indexOf("Package: " + packageName + "\n");
+            assertTrue(packageName + " is not recorded as installed in dpkg",
+                at >= 0 && database.startsWith("Status: install ok installed",
+                    database.indexOf("\n", at) + 1));
+        }
+        report("sealed-shell: dpkg records the shipped packages as installed");
     }
 
     /** Append to the report the CI pulls, and to logcat so a failure is visible. */

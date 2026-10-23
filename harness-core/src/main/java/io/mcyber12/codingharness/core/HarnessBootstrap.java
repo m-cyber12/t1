@@ -205,7 +205,11 @@ public final class HarnessBootstrap {
         String identity = SealedPayloadInstaller.payloadIdentity(context, abi);
         File marker = new File(harnessRoot(config), MARKER);
         if (identity != null && isSealedMarker(marker, abi, identity)) {
-            ensureSealedLayout(context, config);
+            // Same payload as last time: nothing to extract and nothing to
+            // heal, so do neither. An audit here would walk the whole prefix on
+            // every launch, which is exactly the cost this marker exists to
+            // avoid; a payload that changed has a different identity and is
+            // reinstalled in full below.
             return true;
         }
 
