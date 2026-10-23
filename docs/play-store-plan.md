@@ -1,31 +1,58 @@
 # Publishing the harness on Google Play
 
-Status: **design implemented, execution model measured on device; payload
-packaging not built yet.** Read this together with `ARCHITECTURE.md` §10 (the
-constraint analysis) and `docs/size-management.md` (what the toolchain costs).
+Status: **the sealed userland exists and runs — a real `bash` from the APK at
+`targetSdk 34` — but the toolchain inside it is still the bootstrap, not the
+`core` tier, and the target is not yet 36.** Read this together with
+`ARCHITECTURE.md` §10 (the constraint analysis) and `docs/size-management.md`
+(what the toolchain costs).
 
 ## Status on 2026-10-23 (read this first)
 
 | Artifact | `targetSdk` | Is it a working app? | Publishable? |
 |---|---|---|---|
 | `coding-harness-debug-targetSdk28` (what a human installs) | **28** | **yes** — full setup, tools, packs | **no** (the upload is rejected: Play wants 36) |
-| `sealed-targetSdk34-MEASUREMENT-ONLY-not-for-use` | 34 | **no** — it carries the probe and the bootstrap assets, not a sealed userland, so at 34 its shell could not execute anything | **no** (below 36, and the payload does not exist yet) |
+| `sealed-targetSdk34-shell-from-APK-preview` | 34 | **partly** — the shell and the bootstrap tools run from the APK; no git/python/node yet, and no provisioning UI | **no** — target is 34, not 36; toolchain incomplete |
 
-So the APK that installs and behaves exactly like the previous versions is
-still `targetSdk 28`, and **nothing is publishable yet**. What exists is the
-*mechanism* (sealed layout, audit, exec gate), proven at 34, plus the plan
-below. Three things remain, and they are the whole gap:
+**The shell milestone is done** (run `39900922926`, `Tests 2/2`, 0 skipped,
+0 failed, on the aosp_atd API 34 emulator at `-PharnessTargetSdk=34`):
 
-1. **Build the sealed payload** — the APK has to contain bash/git/python/node/…
-   as `lib*.so`. Until that exists, a 34+ build simply cannot run its shell.
-   This is the large piece (`scripts/build-sealed-payload.sh`, §5).
+```
+sealed payload (x86_64): 3169 data files, 956 data links, 324 executables from the APK
+bin/bash -> /data/app/…/lib/x86_64/libbash.so
+bash -> exit 0 : SEALED-SHELL-OK | version=5.3.9(1)-release | prefix=…/usr | exit-ok
+sed  -> exit 0 : A1 | A2
+exec audit: 338 executable entries, 324 shipped in the APK,
+            0 binary executables outside it, 14 scripts outside it (run through the preload)
+verdict: publishable at any targetSdk (no binaries outside the APK)
+```
+
+That is a real `bash 5.3.9` and a real `sed`, in the normal Termux prefix, on a
+device where the data-directory exec exemption does not exist. The 324/338
+ratio is the whole design in one line: everything executable came out of the
+APK; the 14 leftovers are package scripts, which are interpreted through the
+preload rather than exec'd.
+
+Remaining gap to a submission, in order:
+
+1. **Grow the payload past the bootstrap** — git, python, node, perl, ruby,
+   ripgrep still come from `apt`, so the sealed build has a shell but not the
+   `core` tier. The split is already generic (`scripts/build-sealed-payload.py`
+   takes a bootstrap today, a package set next), and the measurement above says
+   the shape holds at this scale.
 2. **Raise the target to 36** — Play has required API 36 for new apps and
    updates since 2026-08-31 (extension request possible until 2026-11-01).
    34 is only the measurement target, because the CI emulator image is API 34;
    it is *not* a submission target. Needs `compileSdk 36` and API 36 coverage.
 3. **Keep runtime installs out of the Play build** — `apt-get` fetching `.deb`s
    is the Device & Network Abuse problem; packs become Play Feature Delivery
-   modules. Plus the 16 KB alignment flags before 2027-02-01.
+   modules. Plus the 16 KB alignment flags before 2027-02-01, a release
+   keystore, and the store listing.
+
+Sizes from the same run: **199 JNI libraries = 16.2 MiB** of executables and
+**21.7 MiB** of data for the x86_64 bootstrap, and the test APK (both ABIs, plus
+the two apt bootstrap zips it no longer needs) is 122 MB — the payload is not
+what makes it large. Extraction of 3169 files takes ~6 minutes on the software
+emulator; it is a one-time first-run cost.
 
 Short version:
 

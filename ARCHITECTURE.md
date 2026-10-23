@@ -384,10 +384,17 @@ executables and keep everything else as data:
 - optional packs become **Play Feature Delivery modules** instead of
   `apt install`, so on-demand installs are still Play downloads.
 
-`ExecAudit` answers "is this install publishable?" with a number — executable
-entries in the prefix that are not backed by the APK — and the sealed build
-asserts it is zero. This changes nothing for the current `.deb`-based build,
-which remains the only one that can install new native code on demand.
+`ExecAudit` answers "is this install publishable?" with a number — binary
+executables in the prefix that are not backed by the APK — and the sealed build
+asserts it is zero. `scripts/build-sealed-payload.py` performs the split on a
+bootstrap (`324` executables into `199` JNI libraries, `3169` data files,
+`956` data symlinks), `SealedPayloadInstaller` applies it on device, and the
+`SealedShellTest` gate boots `bash 5.3.9` and `sed` from the APK at
+`targetSdk 34` with the audit at zero. This changes nothing for the current
+`.deb`-based build, which remains the only one that can install new native code
+on demand — and the sealed build is not yet a product: its userland is the
+bootstrap, not the `core` tier, and its target is 34, not the 36 a submission
+needs.
 
 ### 10.6 Realistic distribution options
 
