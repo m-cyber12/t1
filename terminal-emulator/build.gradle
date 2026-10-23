@@ -107,6 +107,9 @@ def buildExecProbe = tasks.register("buildExecProbe") {
             output.parentFile.mkdirs()
             providers.exec {
                 commandLine compiler.absolutePath, "-O2", "-fPIE", "-pie",
+                    // 16 KB page support, required for API 35+ (2027-02-01
+                    // enforcement); NDK r27 does not do this by itself.
+                    "-Wl,-z,max-page-size=16384", "-Wl,-z,common-page-size=16384",
                     "-o", output.absolutePath, probeSource.absolutePath
             }.result.get().assertNormalExitValue()
             if (!output.isFile()) throw new GradleException("Probe was not produced: ${output}")

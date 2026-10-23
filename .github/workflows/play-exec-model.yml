@@ -1,4 +1,4 @@
-name: Exec model (targetSdk 34)
+name: Exec model (sealed)
 
 # The publishability gate (docs/play-store-plan.md).
 #
@@ -30,6 +30,24 @@ name: Exec model (targetSdk 34)
 
 on:
   workflow_dispatch:
+    inputs:
+      target_sdk:
+        description: "targetSdk to build and measure (34 = the shell milestone, 36 = what Play requires)"
+        type: choice
+        options: ["34", "36"]
+        default: "34"
+      compile_sdk:
+        description: "compileSdk (must be >= target_sdk)"
+        type: choice
+        options: ["35", "36"]
+        default: "35"
+      system_image:
+        description: "emulator system image to measure on"
+        type: choice
+        options:
+          - "system-images;android-34;aosp_atd;x86_64"
+          - "system-images;android-36;aosp_atd;x86_64"
+        default: "system-images;android-34;aosp_atd;x86_64"
   push:
     branches: ["arena/**"]
     paths:
@@ -45,15 +63,18 @@ permissions:
 
 jobs:
   exec-model:
-    name: Sealed build / exec model at targetSdk 34
+    name: Sealed build / exec model
     runs-on: ubuntu-latest
     timeout-minutes: 180
 
     env:
+      E2E_TARGET_SDK: ${{ inputs.target_sdk || '34' }}
+      E2E_COMPILE_SDK: ${{ inputs.compile_sdk || '35' }}
+      E2E_SYSTEM_IMAGE: ${{ inputs.system_image || 'system-images;android-34;aosp_atd;x86_64' }}
       E2E_TEST_TASK: ":app:connectedSealedAndroidTest"
       E2E_TEST_CLASS: "io.mcyber12.codingharness.SealedShellTest,io.mcyber12.codingharness.ExecModelTest"
       E2E_LEAN: "1"
-      E2E_GRADLE_PROPS: "-PharnessTargetSdk=34 -PharnessTestBuildType=sealed"
+      E2E_GRADLE_PROPS: "-PharnessTargetSdk=${{ inputs.target_sdk || '34' }} -PharnessCompileSdk=${{ inputs.compile_sdk || '35' }} -PharnessTestBuildType=sealed"
 
     steps:
       - name: Check out source
@@ -69,14 +90,15 @@ jobs:
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
         with:
-          packages: 'platform-tools platforms;android-35 build-tools;35.0.0 ndk;27.2.12479018'
+          packages: 'platform-tools platforms;android-35 platforms;android-36 build-tools;35.0.0 ndk;27.2.12479018'
 
-      - name: Build the sealed variant at targetSdk 34
+      - name: Build the sealed variant
         shell: bash
         run: |
           set -o pipefail
           ./gradlew --no-daemon --stacktrace \
-            -PharnessTargetSdk=34 \
+            -PharnessTargetSdk="${E2E_TARGET_SDK}" \
+            -PharnessCompileSdk="${E2E_COMPILE_SDK}" \
             -PharnessTestBuildType=sealed \
             :app:assembleSealed :app:assembleSealedAndroidTest 2>&1 | tee gradle-sealed.log
 
@@ -190,7 +212,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: sealed-targetSdk34-shell-from-APK-preview
+          name: sealed-${{ env.E2E_TARGET_SDK }}-from-APK
           path: |
             setup-e2e-report.txt
             manifest-tree.txt

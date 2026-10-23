@@ -15,7 +15,9 @@ ext {
     // built and tested at a store-legal target without touching the shipping
     // default:  ./gradlew :app:assembleSealed -PharnessTargetSdk=34
     targetSdkVersion = (findProperty("harnessTargetSdk") ?: 28) as Integer
-    compileSdkVersion = 35
+    // Overridable so the store-legal build can be measured at the API level
+    // Play actually requires (36 since 2026-08-31):  -PharnessCompileSdk=36
+    compileSdkVersion = (findProperty("harnessCompileSdk") ?: 35) as Integer
     ndkVersion = "27.2.12479018"
 }
 

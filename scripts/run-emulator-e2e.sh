@@ -62,8 +62,12 @@ PUBLISHER_PID=$!
 
 phase "install-system-image"
 echo "SDK=$SDK"; ls "$SDK" >> e2e-logs/phases.log 2>&1
+# The image API is chosen by the caller: the sealed build is measured both on
+# the API level it targets and on a newer one, because the exec policy is a
+# property of the device, not of the manifest alone.
+SYSTEM_IMAGE="${E2E_SYSTEM_IMAGE:-system-images;android-34;aosp_atd;x86_64}"
 yes | "$SDKMANAGER" --licenses > e2e-logs/licenses.log 2>&1 || true
-"$SDKMANAGER" "emulator" "system-images;android-34;aosp_atd;x86_64" > e2e-logs/sysimg.log 2>&1
+"$SDKMANAGER" "emulator" "$SYSTEM_IMAGE" > e2e-logs/sysimg.log 2>&1
 if [ $? -ne 0 ]; then phase "system-image-failed"; tail -50 e2e-logs/sysimg.log; exit 1; fi
 
 phase "create-avd"
@@ -73,7 +77,7 @@ phase "create-avd"
 export ANDROID_AVD_HOME="${ANDROID_AVD_HOME:-$HOME/.android/avd}"
 mkdir -p "$ANDROID_AVD_HOME"
 echo "ANDROID_AVD_HOME=$ANDROID_AVD_HOME" >> e2e-logs/phases.log
-echo no | "$AVDMANAGER" create avd -n e2e -k "system-images;android-34;aosp_atd;x86_64" -d pixel_6 --force > e2e-logs/avd.log 2>&1
+echo no | "$AVDMANAGER" create avd -n e2e -k "$SYSTEM_IMAGE" -d pixel_6 --force > e2e-logs/avd.log 2>&1
 # The full coding toolchain (clang/llvm, rust-free) unpacks several GB;
 # the pixel_6 default data partition can fill up mid-install (ENOSPC
 # leaves dpkg half-configured and straggler binaries missing).
