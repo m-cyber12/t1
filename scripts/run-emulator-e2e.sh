@@ -400,6 +400,17 @@ if [ "${E2E_PACK_DEMO:-0}" = "1" ]; then
   grep -qE "Tests 1/1 completed" e2e-logs/pack-demo.log \
     || { echo "the pack test did not run (expected Tests 1/1 completed)" \
            >> e2e-logs/pack-demo.log; PACK_RC=1; }
+  # The harness uninstalls the app at the end of a connected run, taking its
+  # report file with it; logcat is the one record that survives. TestRunner has
+  # the assertion message, SealedShell has the test's own narration.
+  "$ADB" logcat -d -s SealedShell:V TestRunner:V AndroidJUnitRunner:V \
+    > e2e-logs/pack-demo-logcat.log 2>&1 || true
+  grep -E "SealedShell|TestRunner|AssertionError|junit" e2e-logs/pack-demo-logcat.log \
+    >> e2e-logs/pack-demo.log 2>/dev/null || true
+  for result in $(find app/build/outputs/androidTest-results -name '*.xml' 2>/dev/null); do
+    echo "--- $result" >> e2e-logs/pack-demo.log
+    grep -E "testcase|failure|<error" "$result" >> e2e-logs/pack-demo.log 2>/dev/null || true
+  done
   {
     echo "--- what the device kept after the run ---"
     "$ADB" shell run-as io.mcyber12.codingharness \

@@ -267,6 +267,7 @@ jobs:
           cp sealed-aab.txt diagnostics/ 2>/dev/null || true
           tail -c 60000 gradle-bundles.log > diagnostics/gradle-bundles-tail.log 2>/dev/null || true
           cp e2e-logs/pack-demo.log diagnostics/ 2>/dev/null || true
+          cp e2e-logs/pack-demo-logcat.log diagnostics/ 2>/dev/null || true
           cp app/build/generated/harness-bootstrap/sealed-payload-*.log diagnostics/ 2>/dev/null || true
           cp app/build/fetch-core-debs-*.log diagnostics/ 2>/dev/null || true
           cp pack_buildtools/build/generated/pack-debs/*.log diagnostics/ 2>/dev/null || true
@@ -299,6 +300,7 @@ jobs:
             sealed-aab.txt
             sealed-aab-size.json
             e2e-logs/pack-demo.log
+            e2e-logs/pack-demo-logcat.log
             app/build/outputs/bundle/release/*.aab
             gradle-sealed.log
             app/build/outputs/apk/sealed/*.apk
