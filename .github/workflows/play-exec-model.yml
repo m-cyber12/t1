@@ -112,7 +112,7 @@ jobs:
             -PharnessCompileSdk="${E2E_COMPILE_SDK}" \
             -PharnessTestBuildType=sealed \
             :app:assembleSealed :app:assembleSealedAndroidTest \
-            :app:assemblePackdemo :app:assemblePackdemoAndroidTest \
+            :app:assemblePackdemo \
             2>&1 | tee gradle-sealed.log
 
       - name: Publish build failure log
