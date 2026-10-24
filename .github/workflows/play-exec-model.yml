@@ -294,10 +294,13 @@ jobs:
           done
           date -u +"exec-model finished %Y-%m-%dT%H:%M:%SZ run=${GITHUB_RUN_ID}" \
             > diagnostics/exec-model-status.txt
-          git add diagnostics/
+          git add diagnostics/ || true
           git -c user.email=ci@invalid -c user.name=ci-e2e \
             commit -qm "exec model results ${GITHUB_RUN_ID} [ci]" || true
-          git push origin "HEAD:refs/heads/diagnostics/exec-model-${GITHUB_RUN_ID}-sdk${E2E_TARGET_SDK}-api${API_LEVEL}" --force
+          # A failed push must not hide the reason the job failed; the branch is
+          # diagnostics, not a gate.
+          git push origin "HEAD:refs/heads/diagnostics/exec-model-${GITHUB_RUN_ID}-sdk${E2E_TARGET_SDK}-api${API_LEVEL}" --force || \
+            echo "could not publish diagnostics" >&2
 
       - name: Upload results
         if: always()

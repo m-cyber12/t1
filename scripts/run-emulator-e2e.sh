@@ -340,16 +340,23 @@ if [ "${E2E_PACK_UNIVERSAL:-0}" = "1" ]; then
       --ks-key-alias=androiddebugkey >> e2e-logs/pack-universal.log 2>&1 || PACK_RC=1
   fi
   if [ "$PACK_RC" = "0" ]; then
-    unzip -o -q e2e-logs/universal.apks universal.apk -d e2e-logs >> e2e-logs/pack-universal.log 2>&1 || PACK_RC=1
+    # bundletool writes universal.apk at the root of the .apks zip; find it
+    # rather than assume, so a layout change is not a failed gate.
+    rm -rf e2e-logs/universal
+    unzip -o -q e2e-logs/universal.apks -d e2e-logs/universal >> e2e-logs/pack-universal.log 2>&1 || PACK_RC=1
+    UNIVERSAL_APK="$(find e2e-logs/universal -name '*.apk' | head -1)"
+    echo "universal apk: ${UNIVERSAL_APK:-<none>}" >> e2e-logs/pack-universal.log
+    [ -n "${UNIVERSAL_APK:-}" ] || PACK_RC=1
   fi
   if [ "$PACK_RC" = "0" ]; then
     # A clean install, so the core payload and the pack are installed in the
     # same run and the test proves the pair, not a leftover.
     "$ADB" uninstall io.mcyber12.codingharness >> e2e-logs/pack-universal.log 2>&1 || true
-    "$ADB" install -r e2e-logs/universal.apk >> e2e-logs/pack-universal.log 2>&1 || PACK_RC=1
+    "$ADB" install -r "$UNIVERSAL_APK" >> e2e-logs/pack-universal.log 2>&1 || PACK_RC=1
   fi
   TEST_APK=$(ls app/build/outputs/apk/androidTest/sealed/*.apk 2>/dev/null | head -1)
   if [ "$PACK_RC" = "0" ] && [ -n "${TEST_APK:-}" ]; then
+    echo "test apk: $TEST_APK" >> e2e-logs/pack-universal.log
     "$ADB" install -r "$TEST_APK" >> e2e-logs/pack-universal.log 2>&1 || PACK_RC=1
   fi
   if [ "$PACK_RC" = "0" ]; then
