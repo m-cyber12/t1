@@ -271,6 +271,23 @@ if [ "$WARM_OK" -lt 3 ]; then
   echo "device never answered getprop quickly; continuing anyway" >> e2e-logs/phases.log
 fi
 
+# Install outside Gradle first. Gradle's device layer installs through ddmlib,
+# whose shell timeout is what turns a slow emulator into "API level 1, cannot
+# install". adb has no such timeout, so the expensive part happens here and
+# Gradle's own install becomes an overwrite of an identical package.
+PRE_APP=$(ls app/build/outputs/apk/sealed/*.apk 2>/dev/null | head -1)
+PRE_TEST=$(ls app/build/outputs/apk/androidTest/sealed/*.apk 2>/dev/null | head -1)
+if [ -n "${PRE_APP:-}" ]; then
+  started=$(date +%s)
+  "$ADB" install -r -t "$PRE_APP" >> e2e-logs/install.log 2>&1 && \
+    echo "preinstalled $PRE_APP in $(( $(date +%s) - started ))s" >> e2e-logs/phases.log || \
+    echo "preinstall of $PRE_APP failed (Gradle will try)" >> e2e-logs/phases.log
+fi
+if [ -n "${PRE_TEST:-}" ]; then
+  "$ADB" install -r -t "$PRE_TEST" >> e2e-logs/install.log 2>&1 || \
+    echo "preinstall of the test APK failed (Gradle will try)" >> e2e-logs/phases.log
+fi
+
 phase "connected-test"
 TEST_ARGS=""
 if [ -n "$E2E_TEST_CLASS" ]; then
@@ -372,34 +389,57 @@ if [ "${E2E_PACK_DEMO:-0}" = "1" ]; then
   phase "pack-demo"
   PACK_RC=0
   : > e2e-logs/pack-demo.log
-  echo "task=:app:connectedPackdemoAndroidTest class=packsComeFromTheStoreAndNeverFromApt" \
-    >> e2e-logs/pack-demo.log
-  PACK_ATTEMPT=1
-  while [ "$PACK_ATTEMPT" -le 2 ]; do
-    # shellcheck disable=SC2086  # word splitting is intended for the property list
-    ./gradlew --no-daemon --stacktrace \
-      -PharnessTargetSdk="$E2E_TARGET_SDK" \
-      -PharnessCompileSdk="$E2E_COMPILE_SDK" \
-      -PharnessTestBuildType=packdemo \
-      :app:connectedPackdemoAndroidTest \
-      -Pandroid.testInstrumentationRunnerArguments.class=io.mcyber12.codingharness.SealedShellTest\#packsComeFromTheStoreAndNeverFromApt \
-      >> e2e-logs/pack-demo.log 2>&1 || PACK_RC=1
-    [ "$PACK_RC" = "0" ] && break
-    is_infrastructure_failure e2e-logs/pack-demo.log || break
-    echo "pack attempt $PACK_ATTEMPT failed for an infrastructure reason; retrying" \
-      >> e2e-logs/pack-demo.log
-    [ "$PACK_ATTEMPT" -lt 2 ] || break
-    PACK_RC=0
-    PACK_ATTEMPT=$((PACK_ATTEMPT + 1))
-    wait_for_device_again || true
-    uninstall_packages
-    sleep 20
-  done
-  # A skipped test is not a pass: the pack test skips itself when the APK has no
-  # payload, which is exactly the case this phase exists to rule out.
-  grep -qE "Tests 1/1 completed" e2e-logs/pack-demo.log \
-    || { echo "the pack test did not run (expected Tests 1/1 completed)" \
-           >> e2e-logs/pack-demo.log; PACK_RC=1; }
+
+  # Build only — no device interaction, so nothing here can time out.
+  # shellcheck disable=SC2086  # word splitting is intended for the property list
+  ./gradlew --no-daemon --stacktrace \
+    -PharnessTargetSdk="$E2E_TARGET_SDK" \
+    -PharnessCompileSdk="$E2E_COMPILE_SDK" \
+    -PharnessTestBuildType=packdemo \
+    :app:assemblePackdemo :app:assemblePackdemoAndroidTest \
+    >> e2e-logs/pack-demo.log 2>&1 || PACK_RC=1
+
+  APP_APK=$(ls app/build/outputs/apk/packdemo/*.apk 2>/dev/null | head -1)
+  TEST_APK=$(ls app/build/outputs/apk/androidTest/packdemo/*.apk 2>/dev/null | head -1)
+  echo "app=$APP_APK test=$TEST_APK" >> e2e-logs/pack-demo.log
+  if [ -z "${APP_APK:-}" ] || [ -z "${TEST_APK:-}" ]; then
+    echo "the packdemo artefacts were not built" >> e2e-logs/pack-demo.log
+    PACK_RC=1
+  fi
+
+  # No Gradle device layer here, on purpose.
+  #
+  # `connected*` runs go through UTP/ddmlib, whose shell timeout fires while a
+  # 90 MB APK installs on a KVM-less emulator; it then reports the device as API
+  # level 1 and refuses to install anything. adb has no such timeout, and
+  # `am instrument -w` streams until the test ends, so this single test is run
+  # directly. The main gate still uses Gradle, because its JUnit XML is what the
+  # assertion step reads.
+  if [ "$PACK_RC" = "0" ]; then
+    ATTEMPT=1
+    while [ "$ATTEMPT" -le 2 ]; do
+      PACK_RUN=0
+      wait_for_device_again || true
+      "$ADB" install -r -t "$APP_APK" >> e2e-logs/pack-demo.log 2>&1 || PACK_RUN=1
+      "$ADB" install -r -t "$TEST_APK" >> e2e-logs/pack-demo.log 2>&1 || PACK_RUN=1
+      if [ "$PACK_RUN" = "0" ]; then
+        "$ADB" shell am instrument -w \
+          -e class "io.mcyber12.codingharness.SealedShellTest#packsComeFromTheStoreAndNeverFromApt" \
+          io.mcyber12.codingharness.test/androidx.test.runner.AndroidJUnitRunner \
+          >> e2e-logs/pack-demo.log 2>&1 || PACK_RUN=1
+        grep -q "OK (1 test)" e2e-logs/pack-demo.log || PACK_RUN=1
+      fi
+      [ "$PACK_RUN" = "0" ] && break
+      echo "pack attempt $ATTEMPT failed; retrying on a clean device" \
+        >> e2e-logs/pack-demo.log
+      [ "$ATTEMPT" -lt 2 ] || break
+      ATTEMPT=$((ATTEMPT + 1))
+      uninstall_packages
+      sleep 20
+    done
+    PACK_RC=$PACK_RUN
+  fi
+
   # The harness uninstalls the app at the end of a connected run, taking its
   # report file with it; logcat is the one record that survives. TestRunner has
   # the assertion message, SealedShell has the test's own narration.
@@ -407,10 +447,6 @@ if [ "${E2E_PACK_DEMO:-0}" = "1" ]; then
     > e2e-logs/pack-demo-logcat.log 2>&1 || true
   grep -E "SealedShell|TestRunner|AssertionError|junit" e2e-logs/pack-demo-logcat.log \
     >> e2e-logs/pack-demo.log 2>/dev/null || true
-  for result in $(find app/build/outputs/androidTest-results -name '*.xml' 2>/dev/null); do
-    echo "--- $result" >> e2e-logs/pack-demo.log
-    grep -E "testcase|failure|<error" "$result" >> e2e-logs/pack-demo.log 2>/dev/null || true
-  done
   {
     echo "--- what the device kept after the run ---"
     "$ADB" shell run-as io.mcyber12.codingharness \
