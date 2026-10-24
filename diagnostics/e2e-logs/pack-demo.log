@@ -1,0 +1,268 @@
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/9.2.1/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build 
+> Task :harness-core:preBuild UP-TO-DATE
+> Task :harness-core:preDebugBuild UP-TO-DATE
+> Task :terminal-emulator:buildExecProbe UP-TO-DATE
+> Task :terminal-emulator:preBuild UP-TO-DATE
+> Task :terminal-emulator:preDebugBuild UP-TO-DATE
+> Task :app:downloadHarnessBootstrap UP-TO-DATE
+> Task :harness-core:generateDebugResValues UP-TO-DATE
+> Task :sealed-runtime:compileJava UP-TO-DATE
+> Task :terminal-emulator:generateDebugResValues UP-TO-DATE
+> Task :harness-core:generateDebugResources UP-TO-DATE
+> Task :terminal-emulator:generateDebugResources UP-TO-DATE
+> Task :app:fetchCoreDebs UP-TO-DATE
+> Task :sealed-runtime:processResources NO-SOURCE
+> Task :sealed-runtime:classes UP-TO-DATE
+> Task :terminal-emulator:packageDebugResources UP-TO-DATE
+> Task :harness-core:packageDebugResources UP-TO-DATE
+> Task :terminal-emulator:processDebugNavigationResources UP-TO-DATE
+> Task :harness-core:processDebugNavigationResources UP-TO-DATE
+> Task :sealed-runtime:jar UP-TO-DATE
+> Task :terminal-emulator:parseDebugLocalResources UP-TO-DATE
+> Task :harness-core:parseDebugLocalResources UP-TO-DATE
+> Task :terminal-view:preBuild UP-TO-DATE
+> Task :terminal-view:preDebugBuild UP-TO-DATE
+> Task :harness-core:generateDebugRFile UP-TO-DATE
+> Task :terminal-view:generateDebugResValues UP-TO-DATE
+> Task :harness-core:javaPreCompileDebug UP-TO-DATE
+> Task :terminal-view:generateDebugResources UP-TO-DATE
+> Task :app:buildSealedPayload UP-TO-DATE
+> Task :app:preBuild UP-TO-DATE
+> Task :terminal-view:packageDebugResources UP-TO-DATE
+> Task :terminal-view:processDebugNavigationResources UP-TO-DATE
+> Task :harness-core:processDebugJavaRes UP-TO-DATE
+> Task :terminal-emulator:generateDebugRFile UP-TO-DATE
+> Task :pack_buildtools:fetchPackDebs UP-TO-DATE
+> Task :harness-core:writeDebugAarMetadata UP-TO-DATE
+> Task :pack_buildtools:buildPackPayload UP-TO-DATE
+> Task :pack_buildtools:preBuild UP-TO-DATE
+> Task :pack_buildtools:prePackdemoBuild UP-TO-DATE
+> Task :terminal-emulator:javaPreCompileDebug UP-TO-DATE
+> Task :harness-core:extractDeepLinksDebug UP-TO-DATE
+> Task :terminal-view:parseDebugLocalResources UP-TO-DATE
+> Task :pack_buildtools:featurePackdemoWriter UP-TO-DATE
+> Task :pack_buildtools:generatePackdemoResValues UP-TO-DATE
+> Task :harness-core:processDebugManifest UP-TO-DATE
+> Task :terminal-view:generateDebugRFile UP-TO-DATE
+> Task :terminal-view:javaPreCompileDebug UP-TO-DATE
+> Task :harness-core:compileDebugLibraryResources UP-TO-DATE
+> Task :terminal-view:processDebugJavaRes NO-SOURCE
+> Task :terminal-view:writeDebugAarMetadata UP-TO-DATE
+> Task :harness-core:mergeDebugShaders UP-TO-DATE
+> Task :terminal-view:extractDeepLinksDebug UP-TO-DATE
+> Task :harness-core:compileDebugShaders NO-SOURCE
+> Task :harness-core:generateDebugAssets UP-TO-DATE
+> Task :terminal-view:processDebugManifest UP-TO-DATE
+> Task :pack_buildtools:javaPreCompilePackdemo UP-TO-DATE
+> Task :harness-core:mergeDebugAssets UP-TO-DATE
+> Task :terminal-view:compileDebugLibraryResources UP-TO-DATE
+> Task :pack_buildtools:generatePackdemoResources UP-TO-DATE
+> Task :terminal-view:mergeDebugShaders UP-TO-DATE
+> Task :harness-core:mergeDebugJniLibFolders UP-TO-DATE
+> Task :terminal-view:compileDebugShaders NO-SOURCE
+> Task :terminal-view:generateDebugAssets UP-TO-DATE
+> Task :pack_buildtools:packagePackdemoResources UP-TO-DATE
+> Task :harness-core:mergeDebugNativeLibs NO-SOURCE
+> Task :app:prePackdemoAndroidTestBuild SKIPPED
+> Task :terminal-view:mergeDebugAssets UP-TO-DATE
+> Task :harness-core:copyDebugJniLibsProjectOnly UP-TO-DATE
+> Task :terminal-view:mergeDebugJniLibFolders UP-TO-DATE
+> Task :terminal-emulator:compileDebugJavaWithJavac UP-TO-DATE
+> Task :terminal-view:mergeDebugNativeLibs NO-SOURCE
+> Task :terminal-emulator:bundleLibCompileToJarDebug UP-TO-DATE
+> Task :terminal-emulator:bundleLibRuntimeToJarDebug UP-TO-DATE
+> Task :terminal-view:copyDebugJniLibsProjectOnly UP-TO-DATE
+> Task :terminal-emulator:processDebugJavaRes NO-SOURCE
+> Task :terminal-emulator:createFullJarDebug UP-TO-DATE
+> Task :terminal-emulator:writeDebugAarMetadata UP-TO-DATE
+> Task :terminal-emulator:extractDeepLinksDebug UP-TO-DATE
+> Task :terminal-emulator:processDebugManifest UP-TO-DATE
+> Task :terminal-emulator:compileDebugLibraryResources UP-TO-DATE
+> Task :terminal-emulator:mergeDebugShaders UP-TO-DATE
+> Task :terminal-emulator:compileDebugShaders NO-SOURCE
+> Task :terminal-emulator:generateDebugAssets UP-TO-DATE
+> Task :terminal-view:compileDebugJavaWithJavac UP-TO-DATE
+> Task :app:javaPreCompilePackdemoAndroidTest FROM-CACHE
+> Task :terminal-emulator:mergeDebugAssets UP-TO-DATE
+> Task :terminal-view:bundleLibRuntimeToJarDebug UP-TO-DATE
+> Task :terminal-view:createFullJarDebug UP-TO-DATE
+> Task :terminal-emulator:bundleLibRuntimeToDirDebug UP-TO-DATE
+> Task :terminal-view:bundleLibCompileToJarDebug UP-TO-DATE
+> Task :terminal-view:bundleLibRuntimeToDirDebug UP-TO-DATE
+> Task :harness-core:compileDebugJavaWithJavac UP-TO-DATE
+> Task :harness-core:bundleLibRuntimeToJarDebug UP-TO-DATE
+> Task :harness-core:createFullJarDebug UP-TO-DATE
+> Task :harness-core:bundleLibCompileToJarDebug UP-TO-DATE
+> Task :harness-core:bundleLibRuntimeToDirDebug UP-TO-DATE
+> Task :terminal-emulator:configureNdkBuildDebug[arm64-v8a]
+> Task :app:generatePackdemoFeatureTransitiveDeps UP-TO-DATE
+> Task :app:checkPackdemoAndroidTestAarMetadata
+> Task :app:processPackdemoAndroidTestNavigationResources FROM-CACHE
+> Task :app:compilePackdemoAndroidTestNavigationResources FROM-CACHE
+> Task :pack_buildtools:generatePackdemoFeatureTransitiveDeps UP-TO-DATE
+> Task :app:generatePackdemoAndroidTestResValues FROM-CACHE
+> Task :pack_buildtools:desugarPackdemoFileDependencies UP-TO-DATE
+> Task :app:checkPackdemoLibraries UP-TO-DATE
+> Task :pack_buildtools:checkPackdemoAarMetadata UP-TO-DATE
+> Task :app:prePackdemoBuild UP-TO-DATE
+> Task :app:mergePackdemoNativeDebugMetadata NO-SOURCE
+> Task :app:javaPreCompilePackdemo UP-TO-DATE
+> Task :terminal-emulator:buildNdkBuildDebug[arm64-v8a]
+> Task :app:checkPackdemoAarMetadata UP-TO-DATE
+> Task :terminal-emulator:configureNdkBuildDebug[x86_64]
+> Task :pack_buildtools:mapPackdemoSourceSetPaths UP-TO-DATE
+> Task :app:processPackdemoNavigationResources UP-TO-DATE
+> Task :app:compilePackdemoNavigationResources UP-TO-DATE
+> Task :app:generatePackdemoResValues UP-TO-DATE
+> Task :pack_buildtools:mergePackdemoResources UP-TO-DATE
+> Task :app:mapPackdemoSourceSetPaths UP-TO-DATE
+> Task :app:generatePackdemoResources UP-TO-DATE
+> Task :terminal-emulator:buildNdkBuildDebug[x86_64]
+> Task :terminal-emulator:mergeDebugJniLibFolders UP-TO-DATE
+> Task :terminal-emulator:mergeDebugNativeLibs UP-TO-DATE
+> Task :terminal-emulator:copyDebugJniLibsProjectOnly UP-TO-DATE
+> Task :app:mergePackdemoResources UP-TO-DATE
+> Task :app:packagePackdemoResources UP-TO-DATE
+> Task :app:parsePackdemoLocalResources UP-TO-DATE
+> Task :app:createPackdemoCompatibleScreenManifests UP-TO-DATE
+> Task :app:extractDeepLinksPackdemo UP-TO-DATE
+> Task :app:writePackdemoModuleMetadata UP-TO-DATE
+> Task :app:generatePackdemoFeatureMetadata UP-TO-DATE
+> Task :app:mergePackdemoShaders UP-TO-DATE
+> Task :pack_buildtools:extractDeepLinksPackdemo UP-TO-DATE
+> Task :app:compilePackdemoShaders NO-SOURCE
+> Task :app:generatePackdemoAssets UP-TO-DATE
+> Task :app:mergePackdemoAssets UP-TO-DATE
+> Task :app:compressPackdemoAssets UP-TO-DATE
+> Task :app:checkPackdemoDuplicateClasses UP-TO-DATE
+> Task :pack_buildtools:processPackdemoMainManifest UP-TO-DATE
+> Task :pack_buildtools:copyPackdemoMergedManifest UP-TO-DATE
+> Task :app:desugarPackdemoFileDependencies UP-TO-DATE
+> Task :pack_buildtools:processApplicationManifestPackdemoForBundle UP-TO-DATE
+> Task :pack_buildtools:processManifestPackdemoForFeature UP-TO-DATE
+> Task :pack_buildtools:processPackdemoNavigationResources UP-TO-DATE
+> Task :pack_buildtools:compilePackdemoNavigationResources UP-TO-DATE
+> Task :pack_buildtools:parsePackdemoLocalResources UP-TO-DATE
+> Task :pack_buildtools:processPackdemoManifestForPackage UP-TO-DATE
+> Task :app:mergeExtDexPackdemo UP-TO-DATE
+> Task :app:processPackdemoMainManifest UP-TO-DATE
+> Task :app:processPackdemoManifest UP-TO-DATE
+> Task :app:processPackdemoManifestForPackage UP-TO-DATE
+> Task :app:processPackdemoResources UP-TO-DATE
+> Task :app:compilePackdemoJavaWithJavac UP-TO-DATE
+> Task :pack_buildtools:processPackdemoResources UP-TO-DATE
+> Task :app:mergeLibDexPackdemo UP-TO-DATE
+> Task :app:dexBuilderPackdemo UP-TO-DATE
+> Task :app:bundlePackdemoClassesToRuntimeJar UP-TO-DATE
+> Task :app:bundlePackdemoClassesToCompileJar UP-TO-DATE
+> Task :pack_buildtools:compilePackdemoJavaWithJavac NO-SOURCE
+> Task :pack_buildtools:dexBuilderPackdemo UP-TO-DATE
+> Task :app:processPackdemoJavaRes NO-SOURCE
+> Task :pack_buildtools:featureGlobalSyntheticsPackdemoMerge UP-TO-DATE
+> Task :app:mergePackdemoJavaResource UP-TO-DATE
+> Task :app:mergePackdemoGlobalSynthetics UP-TO-DATE
+> Task :app:mergeProjectDexPackdemo UP-TO-DATE
+> Task :app:mergePackdemoJniLibFolders UP-TO-DATE
+> Task :app:mergePackdemoNativeLibs UP-TO-DATE
+> Task :app:stripPackdemoDebugSymbols UP-TO-DATE
+> Task :app:validateSigningPackdemo UP-TO-DATE
+> Task :app:writePackdemoAppMetadata UP-TO-DATE
+> Task :app:writePackdemoSigningConfigVersions UP-TO-DATE
+> Task :app:packagePackdemo UP-TO-DATE
+> Task :app:createPackdemoApkListingFileRedirect UP-TO-DATE
+> Task :app:assemblePackdemo UP-TO-DATE
+> Task :app:mapPackdemoAndroidTestSourceSetPaths
+> Task :app:generatePackdemoAndroidTestResources FROM-CACHE
+> Task :app:mergePackdemoAndroidTestResources
+> Task :app:processPackdemoAndroidTestManifest
+> Task :app:mergePackdemoAndroidTestShaders
+> Task :app:compilePackdemoAndroidTestShaders NO-SOURCE
+> Task :app:generatePackdemoAndroidTestAssets UP-TO-DATE
+> Task :app:mergePackdemoAndroidTestAssets
+> Task :app:compressPackdemoAndroidTestAssets FROM-CACHE
+> Task :app:checkPackdemoAndroidTestDuplicateClasses
+> Task :app:desugarPackdemoAndroidTestFileDependencies FROM-CACHE
+> Task :app:mergeExtDexPackdemoAndroidTest FROM-CACHE
+> Task :app:mergeLibDexPackdemoAndroidTest FROM-CACHE
+> Task :app:processPackdemoAndroidTestJavaRes NO-SOURCE
+> Task :app:mergePackdemoAndroidTestJniLibFolders
+> Task :app:mergePackdemoAndroidTestNativeLibs NO-SOURCE
+> Task :app:stripPackdemoAndroidTestDebugSymbols NO-SOURCE
+> Task :app:validateSigningPackdemoAndroidTest
+> Task :app:writePackdemoAndroidTestSigningConfigVersions
+> Task :app:mergePackdemoAndroidTestJavaResource
+> Task :app:processPackdemoAndroidTestResources
+> Task :app:compilePackdemoAndroidTestJavaWithJavac FROM-CACHE
+> Task :app:dexBuilderPackdemoAndroidTest
+> Task :app:mergePackdemoAndroidTestGlobalSynthetics FROM-CACHE
+> Task :app:mergeProjectDexPackdemoAndroidTest FROM-CACHE
+> Task :app:packagePackdemoAndroidTest
+> Task :app:createPackdemoAndroidTestApkListingFileRedirect
+> Task :app:assemblePackdemoAndroidTest
+
+[Incubating] Problems report is available at: file:///home/runner/work/t1/t1/build/reports/problems/problems-report.html
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 10.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+For more on this, please refer to https://docs.gradle.org/9.2.1/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+
+BUILD SUCCESSFUL in 14s
+166 actionable tasks: 19 executed, 12 from cache, 135 up-to-date
+Consider enabling configuration cache to speed up this build: https://docs.gradle.org/9.2.1/userguide/configuration_cache_enabling.html
+app=app/build/outputs/apk/packdemo/app-packdemo.apk test=app/build/outputs/apk/androidTest/packdemo/app-packdemo-androidTest.apk
+Performing Streamed Install
+Success
+Performing Streamed Install
+Success
+
+io.mcyber12.codingharness.SealedShellTest:.
+
+Time: 235.036
+
+OK (1 test)
+
+
+10-24 05:43:29.331  3343  3357 I TestRunner: run started: 4 tests
+10-24 05:43:29.365  3343  3357 I TestRunner: started: packsComeFromTheStoreAndNeverFromApt(io.mcyber12.codingharness.SealedShellTest)
+10-24 05:46:42.171  3343  3357 I SealedShell: sealed-shell: pack state before -> Build tools (clang, cmake, make): UNAVAILABLE via no store on this device, missing [make, pkg-config, clang, cmake]
+10-24 05:46:42.282  3343  3357 I SealedShell: sealed-shell: pack install -> build-tools: UNAVAILABLE — this build carries no pack payload and there is no Play Store to fetch it
+10-24 05:47:00.210  3343  3357 I SealedShell: sealed-shell: git after pack attempt -> exit 0
+10-24 05:47:00.231  3343  3357 I TestRunner: finished: packsComeFromTheStoreAndNeverFromApt(io.mcyber12.codingharness.SealedShellTest)
+10-24 05:47:00.304  3343  3357 I TestRunner: started: startupInstallsOnceAndDpkgAgrees(io.mcyber12.codingharness.SealedShellTest)
+10-24 05:50:42.275  3343  3357 I SealedShell: sealed-shell: second startup took 13 ms (no re-extract)
+10-24 05:50:42.298  3343  3357 I SealedShell: sealed-shell: dpkg records the shipped packages as installed
+10-24 05:50:42.303  3343  3357 I TestRunner: finished: startupInstallsOnceAndDpkgAgrees(io.mcyber12.codingharness.SealedShellTest)
+10-24 05:50:42.320  3343  3357 I TestRunner: started: shellAndToolsRunFromTheApkPayload(io.mcyber12.codingharness.SealedShellTest)
+10-24 05:50:42.378  3343  3357 I SealedShell: sealed-shell: payload abi=x86_64 targetSdk=36
+10-24 05:54:08.090  3343  3357 I SealedShell: sealed-shell: sealed payload (x86_64): 13858 data files, 1173 data links, 535 executables from the APK, 13858 verified
+10-24 05:54:08.099  3343  3357 I SealedShell: sealed-shell: bin/bash -> /data/app/~~rErWwhuBElK8oK78RCmqww==/io.mcyber12.codingharness-awMYBNENIE5kSJIZpvcy_A==/lib/x86_64/libbash.so
+10-24 05:54:25.401  3343  3357 I SealedShell: sealed-shell: bash -> exit 0 : SEALED-SHELL-OK | version=5.3.9(1)-release | prefix=/data/user/0/io.mcyber12.codingharness/files/coding-harness/rootfs/data/data/com.termux/files/usr | path=/data/user/0/io.mcyber12.codingharness/files/coding-harness/rootfs/data/data/com.termux/files/usr/bin:/data/user/0/io.mcyber12.codingharness/files/coding-harness/workspace/node_modules/.bin:/system/bin:/system/xbin | /data/user/0/io.mcyber12.codingharness/files/coding-harness/rootfs/data/data/com.termux/files/usr/bin/sed | exit-ok |
+10-24 05:54:42.623  3343  3357 I SealedShell: sealed-shell: sed -> exit 0 : A1 | A2 |
+10-24 05:54:59.570  3343  3357 I SealedShell: sealed-shell: bin/git -> exit 0 : git version 2.56.0
+10-24 05:55:21.341  3343  3357 I SealedShell: sealed-shell: bin/python -> exit 0 : py-ssl OpenSSL 3.6.5 29 Sep 2026
+10-24 05:55:38.435  3343  3357 I SealedShell: sealed-shell: bin/node -> exit 0 : v26.12.1
+10-24 05:55:55.523  3343  3357 I SealedShell: sealed-shell: bin/perl -> exit 0 : v5.44.0
+10-24 05:56:13.363  3343  3357 I SealedShell: sealed-shell: bin/ruby -> exit 0 : ruby 4.0.7 (2026-09-15 revision 229531a6cf) +PRISM [x86_64-linux-android]
+10-24 05:56:30.027  3343  3357 I SealedShell: sealed-shell: bin/rg -> exit 0 : ripgrep 15.2.0  features:+pcre2 simd(compile):+SSE2,+SSSE3,-AVX2 simd(runtime):+SSE2,+SSSE3,-AVX2  PCRE2 10.45 is available (JIT is availabl
+10-24 05:56:47.935  3343  3357 I SealedShell: sealed-shell: exec audit: 560 executable entries, 535 shipped in the APK, 0 binary executables outside it, 25 scripts outside it (run through the preload) | native libraries: /data/app/~~rErWwhuBElK8oK78RCmqww==/io.mcyber12.codingharness-awMYBNENIE5kSJIZpvcy_A==/lib/x86_64 | scanned paths: 7610 | verdict: publishable at any targetSdk (no binaries outside the APK) | 
+10-24 05:56:47.976  3343  3357 I SealedShell: sealed-shell: 25 scripts in the payload run through the interpreter layer
+10-24 05:56:47.981  3343  3357 I TestRunner: finished: shellAndToolsRunFromTheApkPayload(io.mcyber12.codingharness.SealedShellTest)
+10-24 05:56:48.016  3343  3357 I TestRunner: started: dataDirectoryExecutionFollowsTargetSdk(io.mcyber12.codingharness.ExecModelTest)
+10-24 05:57:06.795  3343  3357 I TestRunner: finished: dataDirectoryExecutionFollowsTargetSdk(io.mcyber12.codingharness.ExecModelTest)
+10-24 05:57:06.866  3343  3357 I TestRunner: run finished: 4 tests, 0 failed, 0 ignored
+10-24 05:58:44.223  3526  3540 I TestRunner: run started: 1 tests
+10-24 05:58:44.239  3526  3540 I TestRunner: started: packsComeFromTheStoreAndNeverFromApt(io.mcyber12.codingharness.SealedShellTest)
+10-24 06:01:55.476  3526  3540 I SealedShell: sealed-shell: pack state before -> Build tools (clang, cmake, make): AVAILABLE_LOCALLY via play-feature-delivery, missing [make, pkg-config, clang, cmake]
+10-24 06:02:03.602  3526  3540 I SealedShell: sealed-shell: pack install -> build-tools: INSTALLED — installed from the store module (16 executables sealed; this build omits [clang, cmake]) (20533758 bytes)
+10-24 06:02:21.913  3526  3540 I SealedShell: sealed-shell: make -> exit 0 : GNU Make 4.4.1 | Built for x86_64-pc-linux-android | Copyright (C) 1988-2023 Free Software Foundation, Inc. | License GPLv3+: GNU GPL version 3 or later <https://gnu.org/licenses/gpl.html> | This is free software: you are free to change and redistribute it. | There is NO WARRANTY, to the extent permitted by law. |
+10-24 06:02:23.411  3526  3540 I SealedShell: sealed-shell: pack remove -> build-tools: REMOVED — removed; the core runtime is untouched (20533758 bytes)
+10-24 06:02:39.222  3526  3540 I SealedShell: sealed-shell: git after pack attempt -> exit 0
+10-24 06:02:39.230  3526  3540 I TestRunner: finished: packsComeFromTheStoreAndNeverFromApt(io.mcyber12.codingharness.SealedShellTest)
+10-24 06:02:39.257  3526  3540 I TestRunner: run finished: 1 tests, 0 failed, 0 ignored
+--- what the device kept after the run ---
+cat: files/coding-harness/pack-build-tools-installed.txt: No such file or directory
+cat: files/coding-harness/sealed-payload-pack-buildtools.txt: No such file or directory
+ls: files/coding-harness/rootfs/data/data/com.termux/files/usr/bin/make: No such file or directory
