@@ -241,6 +241,30 @@ for i in $(seq 1 40); do
   sleep 5
 done
 
+# A booted device is not a responsive one. Under software emulation `adb shell
+# getprop` can still take tens of seconds right after boot_completed, and if it
+# exceeds ddmlib's timeout Gradle decides the device is API 1 and refuses to
+# install anything. Wait for the device to answer *quickly* — three consecutive
+# fast reads of the SDK level — before handing it to Gradle.
+phase "device-warm"
+WARM_OK=0
+for attempt in $(seq 1 60); do
+  started=$(date +%s)
+  read_sdk="$("$ADB" shell getprop ro.build.version.sdk 2>/dev/null | tr -d '\r')"
+  took=$(( $(date +%s) - started ))
+  if [ -n "$read_sdk" ] && [ "$took" -le 5 ]; then
+    WARM_OK=$((WARM_OK + 1))
+  else
+    WARM_OK=0
+  fi
+  echo "warm $attempt: sdk='$read_sdk' in ${took}s (streak=$WARM_OK)" >> e2e-logs/phases.log
+  [ "$WARM_OK" -ge 3 ] && break
+  sleep 5
+done
+if [ "$WARM_OK" -lt 3 ]; then
+  echo "device never answered getprop quickly; continuing anyway" >> e2e-logs/phases.log
+fi
+
 phase "connected-test"
 TEST_ARGS=""
 if [ -n "$E2E_TEST_CLASS" ]; then

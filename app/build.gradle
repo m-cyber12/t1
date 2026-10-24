@@ -129,6 +129,16 @@ android {
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    // The emulator gate runs without KVM, and on the API 36 image `adb shell
+    // getprop` can take longer than ddmlib's default timeout. When that happens
+    // ddmlib decides the device is API level 1 and refuses to install the app
+    // ("Cannot install split APKs with API level < 21"), which looks like a
+    // build failure and is not. A generous timeout keeps the gate about the app
+    // instead of about how fast the runner's software emulation is today.
+    installation {
+        timeOutInMs = 20 * 60 * 1000
+    }
+
     // The base module has to name its feature modules, or the bundle is built
     // without them and the pack simply does not exist for Play to deliver. This
     // list is also what makes the pack APK a build output of this project.
