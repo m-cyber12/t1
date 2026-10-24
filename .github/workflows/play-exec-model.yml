@@ -231,7 +231,14 @@ jobs:
             echo "note: no merged feature manifest retained; source manifest checked" \
               >> sealed-aab.txt
           fi
-          # 3. The base module still fits Play's 200 MB limit, and the pack is
+          # 3. The store artefact must not carry the apt build's bootstrap: the
+          #    sealed payload replaces it, and shipping both is what pushed the
+          #    base module to the edge of Play's limit.
+          if unzip -l "$AAB" | grep -q "assets/bootstrap-.*\.zip"; then
+            echo "the bundle still carries the Termux bootstrap the sealed build never reads" >&2
+            exit 1
+          fi
+          # 4. The base module still fits Play's 200 MB limit, and the pack is
           #    what makes that true. The script fails the job; a printed number
           #    nobody reads is not a gate.
           python3 scripts/check-bundle-size.py "$AAB" ${APK:+--apk "$APK"} \

@@ -455,7 +455,14 @@ per-device figure crosses 200 MB. Its arithmetic is unit-tested, including the
 per-ABI split, because a size gate that measures the wrong thing is worse than
 no gate: it fails bundles that are fine and passes ones that are not.
 
-Measuring it properly also exposed a real problem. Play splits a bundle by ABI
+Measuring it properly also exposed two real problems. The store artefact was
+shipping the apt build's raw Termux bootstrap — ~156 MB of a file the sealed
+runtime never opens, because it installs from the split payload instead. With
+that removed the base module is what it should be: the payload, not the payload
+plus the archive it was built from. The bundle gate now fails if
+`assets/bootstrap-*.zip` reappears in a store artefact.
+
+The second: Play splits a bundle by ABI
 for **native libraries** but delivers **assets** whole, and the sealed userland
 is an asset: a bundle carrying arm64-v8a *and* x86_64 made every device download
 both payloads — 290.7 MB per device, 145% of the cap. The uploaded bundle now

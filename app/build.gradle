@@ -150,7 +150,12 @@ android {
     dynamicFeatures = [":pack_buildtools"]
 
     sourceSets {
-        main {
+        // The bootstrap archive belongs to the apt build (debug), which unpacks
+        // it on first run. The store-shaped variants do not read it at all: they
+        // ship the split payload instead, and carrying both meant the uploaded
+        // bundle held ~156 MB of a file it never opens — 97.8% of Play's 200 MB
+        // per-device cap before a single user package was added.
+        debug {
             assets.srcDir(bootstrapOutput)
         }
     }
@@ -494,7 +499,11 @@ tasks.matching {
 tasks.matching { it.name in ["preDebugBuild", "preReleaseBuild"] }.configureEach {
     dependsOn(downloadBootstrap)
 }
-tasks.matching { it.name.startsWith("merge") && it.name.endsWith("Assets") }.configureEach {
+tasks.matching {
+    (it.name.startsWith("mergeDebug") || it.name.startsWith("mergeRelease")
+        || it.name.startsWith("mergeSealed") || it.name.startsWith("mergePackdemo"))
+        && it.name.endsWith("Assets")
+}.configureEach {
     dependsOn(downloadBootstrap)
 }
 
