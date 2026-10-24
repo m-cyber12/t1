@@ -224,6 +224,16 @@ public class SealedShellTest {
 
         PackResult result = packs.install(Pack.BUILD_TOOLS);
         report("sealed-shell: pack install -> " + result.describe());
+        // The fused build exists to prove the install/remove path, so it may not
+        // quietly pass on the "no payload here" branch. An honest refusal is a
+        // valid outcome only for a build that really has no pack in it.
+        boolean packMustInstall = "true".equals(
+            androidx.test.platform.app.InstrumentationRegistry.getArguments()
+                .getString("packDemo"));
+        if (packMustInstall) {
+            assertEquals("this build carries the pack payload, so it must install: "
+                + result.describe(), PackResult.Kind.INSTALLED, result.kind);
+        }
 
         HarnessCommandRunner runner = new HarnessCommandRunner(config);
         if (result.kind == PackResult.Kind.INSTALLED) {

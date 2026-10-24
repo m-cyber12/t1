@@ -406,6 +406,16 @@ if [ "${E2E_PACK_DEMO:-0}" = "1" ]; then
     echo "the packdemo artefacts were not built" >> e2e-logs/pack-demo.log
     PACK_RC=1
   fi
+  # The variant exists to carry the pack; an APK without it would let the test
+  # pass on its "nothing to install here" branch, which proves nothing.
+  if [ "$PACK_RC" = "0" ]; then
+    unzip -l "$APP_APK" | grep -E "assets/pack-buildtools-" | head -5 \
+      >> e2e-logs/pack-demo.log || true
+    if ! unzip -l "$APP_APK" | grep -q "assets/pack-buildtools-userland-"; then
+      echo "the packdemo APK does not contain the pack payload" >> e2e-logs/pack-demo.log
+      PACK_RC=1
+    fi
+  fi
 
   # No Gradle device layer here, on purpose.
   #
@@ -425,6 +435,7 @@ if [ "${E2E_PACK_DEMO:-0}" = "1" ]; then
       if [ "$PACK_RUN" = "0" ]; then
         "$ADB" shell am instrument -w \
           -e class "io.mcyber12.codingharness.SealedShellTest#packsComeFromTheStoreAndNeverFromApt" \
+          -e packDemo true \
           io.mcyber12.codingharness.test/androidx.test.runner.AndroidJUnitRunner \
           >> e2e-logs/pack-demo.log 2>&1 || PACK_RUN=1
         grep -q "OK (1 test)" e2e-logs/pack-demo.log || PACK_RUN=1

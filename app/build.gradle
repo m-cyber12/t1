@@ -115,6 +115,11 @@ def filteredPayloadDir = layout.buildDirectory.dir("generated/sealed-payload-upl
 // The on-demand pack's payload, built by :pack_buildtools (same builder, same
 // asset names), folded into the packdemo APK only.
 def packPayloadDir = new File(rootProject.projectDir, "pack_buildtools/build/generated/sealed-pack")
+// Staged into :app's own build directory before it is merged. The pack's output
+// directory belongs to another project; pointing a merge at it directly makes
+// the ordering implicit, and an APK built without it looks exactly like a build
+// that never had a pack — a false green rather than a failure.
+def packdemoPayloadDir = layout.buildDirectory.dir("generated/packdemo-pack")
 
 android {
     namespace "io.mcyber12.codingharness"
@@ -245,8 +250,8 @@ android {
             // looks like on the device.
             assets.srcDir(new File(project.sealedPayloadDir.get().asFile, "assets"))
             jniLibs.srcDir(new File(project.sealedPayloadDir.get().asFile, "jniLibs"))
-            assets.srcDir(new File(packPayloadDir, "assets"))
-            jniLibs.srcDir(new File(packPayloadDir, "jniLibs"))
+            assets.srcDir(new File(packdemoPayloadDir.get().asFile, "assets"))
+            jniLibs.srcDir(new File(packdemoPayloadDir.get().asFile, "jniLibs"))
         }
     }
 
@@ -458,10 +463,27 @@ tasks.matching {
     dependsOn(filterSealedPayload)
 }
 
+def stagePackdemoPayload = tasks.register("stagePackdemoPayload", Sync) {
+    description = "Copies the pack's payload where the packdemo variant can merge it"
+    dependsOn(":pack_buildtools:buildPackPayload")
+    from(packPayloadDir)
+    into(packdemoPayloadDir)
+    doLast {
+        def assets = new File(packdemoPayloadDir.get().asFile, "assets")
+        def zips = assets.listFiles()?.findAll { it.name.contains("userland-") } ?: []
+        if (zips.isEmpty()) {
+            throw new GradleException(
+                "the pack produced no userland payload in ${assets} - the packdemo "
+                    + "APK would install nothing")
+        }
+        logger.lifecycle("packdemo payload: " + zips*.name.join(", "))
+    }
+}
+
 tasks.matching {
     it.name.startsWith("mergePackdemo") || it.name == "prePackdemoBuild"
 }.configureEach {
-    dependsOn(buildSealedPayload, ":pack_buildtools:buildPackPayload")
+    dependsOn(buildSealedPayload, stagePackdemoPayload)
 }
 
 // Every variant needs the bootstrap assets, not just debug/release: the
