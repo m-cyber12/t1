@@ -1,0 +1,41 @@
+[1792823605898] a01 start; prefix=/data/user/0/io.mcyber12.codingharness/files/coding-harness/rootfs/data/data/com.termux/files/usr
+[1792823673616] a01 bootstrap + cert + keyring installed
+[1792823673710] a01 java DNS: 172.67.200.228 104.21.44.149 2606:4700:3030::ac43:c8e4 2606:4700:3037::6815:2c95
+[1792823682214] a01 termux curl probe exit=0 http=200
+[1792823695074] a01 apt-get update exit=0 : Get:1 https://packages-cf.termux.dev/apt/termux-main stable InRelease [14.0 kB] Get:2 https://packages-cf.termux.dev/apt/termux-main stable/main x86_64 Packages [587 kB] Fetched 601 kB in 5s (120 kB/s) Reading package lists...
+[1792823695093] a01 package lists=1
+[1792823705653] a01 apt-get install jq exit=0 : Reading package lists... Building dependency tree... The following additional packages will be installed:   oniguruma The following NEW packages will be installed:   jq oniguruma 0 upgraded, 2 newly installed, 0 to remove and 56 not upgraded. Need to get 342 kB of archives. After this operation, 126
+[1792823711839] a01 jq --version exit=0 : jq-1.8.2
+[1792823711843] A01 SUCCESS
+[1792823711962] a02 start; prefix=/data/user/0/io.mcyber12.codingharness/files/coding-harness/rootfs/data/data/com.termux/files/usr
+[1792823712190] MainActivity launched; waiting for automatic setup
+[1792823712317] waiting… ready=bash=Y git=n rg=n python=n pip=n node=n npm=n perl=n ruby=n curl=Y
+[1792823727376] waiting… ready=bash=Y git=n rg=n python=n pip=n node=n npm=n perl=n ruby=n curl=Y
+[1792823742438] waiting… ready=bash=Y git=n rg=n python=n pip=n node=n npm=n perl=n ruby=n curl=Y
+[1792823757483] waiting… ready=bash=Y git=n rg=n python=n pip=n node=n npm=n perl=n ruby=n curl=Y
+[1792823772519] waiting… ready=bash=Y git=n rg=n python=n pip=n node=n npm=n perl=n ruby=n curl=Y
+[1792823787577] waiting… ready=bash=Y git=n rg=n python=n pip=n node=n npm=n perl=n ruby=n curl=Y
+[1792823802624] waiting… ready=bash=Y git=n rg=n python=n pip=n node=n npm=n perl=n ruby=n curl=Y
+[1792823817670] waiting… ready=bash=Y git=n rg=n python=n pip=n node=n npm=n perl=n ruby=n curl=Y
+[1792823832719] waiting… ready=bash=Y git=n rg=n python=n pip=n node=n npm=n perl=n ruby=n curl=Y
+[1792823847764] waiting… ready=bash=Y git=n rg=n python=n pip=n node=n npm=n perl=n ruby=n curl=Y
+[1792823862824] waiting… ready=bash=Y git=n rg=n python=n pip=n node=n npm=n perl=n ruby=n curl=Y
+[1792823877857] waiting… ready=bash=Y git=Y rg=n python=n pip=n node=n npm=n perl=n ruby=n curl=Y
+[1792823892927] waiting… ready=bash=Y git=Y rg=n python=n pip=n node=n npm=n perl=n ruby=n curl=Y
+[1792823908036] waiting… ready=bash=Y git=Y rg=n python=n pip=n node=Y npm=Y perl=n ruby=n curl=Y
+[1792823923097] waiting… ready=bash=Y git=Y rg=n python=n pip=n node=Y npm=Y perl=Y ruby=n curl=Y
+[1792823938163] waiting… ready=bash=Y git=Y rg=Y python=Y pip=Y node=Y npm=Y perl=Y ruby=n curl=Y
+[1792823953217] toolchain executables present; verifying each tool runs
+[1792824005856] python --version -> exit 0 : Python 3.14.8
+[1792824058175] python -c import ssl, json, sqlite3; print('py-ssl', ssl.OPENSSL_VERSION) -> exit 0 : py-ssl OpenSSL 3.6.5 29 Sep 2026
+[1792824081499] node --version -> exit 0 : v26.12.1
+[1792824100865] node -e console.log('node-ok', process.version) -> exit 0 : node-ok v26.12.1
+[1792824123941] npm --version -> exit 0 : 11.21.1
+[1792824154281] pip --version -> exit 0 : pip 26.2.2 from /data/user/0/io.mcyber12.codingharness/files/coding-harness/rootfs/data/data/com.termux/files/usr/lib/python3.14/site-packages/pip (python 3.14)
+[1792824170267] perl -e print $^V -> exit 0 : v5.44.0
+[1792824186159] ruby --version -> exit 0 : ruby 4.0.7 (2026-09-15 revision 229531a6cf) +PRISM [x86_64-linux-android]
+[1792824201991] git --version -> exit 0 : git version 2.56.0
+[1792824217219] rg --version -> exit 0 : ripgrep 15.2.0  features:+pcre2 simd(compile):+SSE2,+SSSE3,-AVX2 simd(runtime):+SSE2,+SSSE3,-AVX2  PCRE2 10.45 is available (JIT is available)
+[1792824232241] jq --version -> exit 0 : jq-1.8.2
+[1792824232250] default install contains perl+ruby and excludes clang/cmake
+[1792824232262] app-reported setup result: OK ready: Core tools (reclaimed 112.3 MiB)
