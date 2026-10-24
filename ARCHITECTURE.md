@@ -371,7 +371,7 @@ submission is attempted:
 |---|---|---|
 | 16 KB page size | **Done.** NDK 27.2 is pinned (it does not align by itself), so both ndk-build modules and the exec probe pass `-Wl,-z,max-page-size=16384 -Wl,-z,common-page-size=16384`. Play requires 16 KB support for apps targeting API 35+ (hard block on non-compliant updates from 1 Feb 2027). | — |
 | 64-bit | OK — `arm64-v8a` and `x86_64` are built | — |
-| App Bundle size | Two bootstrap zips plus assets; base module stays well under Play's 200 MB limit | Verify on the release AAB |
+| App Bundle size | Base module 136.0 MB per device against Play's 200 MB limit (measured on the API 36 leg); the apt build's bootstrap is debug-only, so the store artefact carries the split payload alone | `scripts/check-bundle-size.py` in CI |
 | Signing | CI signs with the debug keystore | Release keystore + Play App Signing |
 | minSdk | 29 — fine | — |
 | Edge-to-edge / API 36 behaviours | Not applicable yet (targets 28) | Handle insets if the target is ever raised |
@@ -432,7 +432,7 @@ submission needs except a key and a click:
 | Executables out of the APK | `sealed-runtime`, `SealedLayout` | `ExecModelTest` on API 34 and 36 |
 | targetSdk 36 | `-PharnessTargetSdk=36`, refused below 36 for any bundle | CI builds the bundle at 36 |
 | No downloaded executable code | core tier shipped in the APK, packs via Play Feature Delivery | `SealedShellTest.packsComeFromTheStoreAndNeverFromApt` |
-| Base module under 200 MB | clang lives in `pack_buildtools/` | `scripts/check-bundle-size.py` in CI |
+| Base module under 200 MB | clang lives in `pack_buildtools/`; the bootstrap zip is debug-only | `scripts/check-bundle-size.py` plus a no-bootstrap assertion in the bundle gate |
 | Release signing | `keystore.properties` / env, fails closed | `bundleRelease` logs which key signed it |
 
 What is left is not code: an upload key, listing graphics, a hosted privacy
