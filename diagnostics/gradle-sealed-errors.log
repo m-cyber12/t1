@@ -1,0 +1,8 @@
+* What went wrong:
+A problem occurred evaluating project ':app'.
+> BuildType with name 'sealed' not found.
+
+* Try:
+> Run with --info or --debug option to get more log output.
+--
+BUILD FAILED in 29s
