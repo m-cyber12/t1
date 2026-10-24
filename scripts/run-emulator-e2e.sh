@@ -305,9 +305,16 @@ if [ -n "$SERIAL" ]; then
   echo "ANDROID_SERIAL=$ANDROID_SERIAL" >> e2e-logs/phases.log
 fi
 
+# A device that stops answering leaves `am instrument` waiting forever, and the
+# job's own timeout then cancels the run before anything is uploaded - so the
+# failure costs an hour and leaves no evidence. Bound the phase instead, and
+# keep the logcat from the moment it gave up.
+CONNECTED_TEST_BUDGET="${E2E_CONNECTED_TEST_BUDGET:-2400}"
+
 run_connected_test() {
   # shellcheck disable=SC2086  # word splitting is intended for the property list
-  ./gradlew --no-daemon --stacktrace "$E2E_TEST_TASK" $TEST_ARGS $E2E_GRADLE_PROPS \
+  timeout "$CONNECTED_TEST_BUDGET" ./gradlew --no-daemon --stacktrace \
+    "$E2E_TEST_TASK" $TEST_ARGS $E2E_GRADLE_PROPS \
     >> e2e-logs/connected-test.log 2>&1
 }
 
@@ -335,6 +342,11 @@ is_infrastructure_failure() {
   grep -qE "No compatible devices connected|ShellCommandUnresponsiveException|Starting 0 tests|device offline|INSTALL_FAILED_UPDATE_INCOMPATIBLE|Unable to install" "$1"
 }
 
+# The cap above ends the attempt with 124 and no Gradle verdict at all.
+timed_out() {
+  [ "$1" -eq 124 ]
+}
+
 uninstall_packages() {
   "$ADB" shell pm uninstall io.mcyber12.codingharness >/dev/null 2>&1 || true
   "$ADB" shell pm uninstall io.mcyber12.codingharness.test >/dev/null 2>&1 || true
@@ -347,6 +359,17 @@ while [ "$ATTEMPT" -le 3 ]; do
   run_connected_test
   RC=$?
   [ "$RC" -eq 0 ] && break
+  if timed_out "$RC"; then
+    echo "attempt $ATTEMPT still running after ${CONNECTED_TEST_BUDGET}s; the device stopped answering" \
+      >> e2e-logs/phases.log
+    "$ADB" logcat -d > "e2e-logs/logcat-timeout${ATTEMPT}.log" 2>&1 || true
+    cp e2e-logs/connected-test.log "e2e-logs/connected-test-attempt${ATTEMPT}.log" 2>/dev/null || true
+    [ "$ATTEMPT" -lt 3 ] || break
+    wait_for_device_again || true
+    uninstall_packages
+    ATTEMPT=$((ATTEMPT + 1))
+    continue
+  fi
   if ! is_infrastructure_failure e2e-logs/connected-test.log; then
     echo "attempt $ATTEMPT failed on the test itself; not retrying" >> e2e-logs/phases.log
     break
