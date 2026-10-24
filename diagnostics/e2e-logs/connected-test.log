@@ -1,0 +1,225 @@
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/9.2.1/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build 
+> Task :harness-core:preBuild UP-TO-DATE
+> Task :harness-core:preDebugBuild UP-TO-DATE
+> Task :terminal-view:preBuild UP-TO-DATE
+> Task :terminal-view:preDebugBuild UP-TO-DATE
+> Task :sealed-runtime:compileJava UP-TO-DATE
+> Task :harness-core:generateDebugResValues UP-TO-DATE
+> Task :terminal-emulator:buildExecProbe UP-TO-DATE
+> Task :terminal-view:generateDebugResValues UP-TO-DATE
+> Task :terminal-emulator:preBuild UP-TO-DATE
+> Task :terminal-emulator:preDebugBuild UP-TO-DATE
+> Task :terminal-view:generateDebugResources UP-TO-DATE
+> Task :sealed-runtime:processResources NO-SOURCE
+> Task :sealed-runtime:classes UP-TO-DATE
+> Task :terminal-emulator:generateDebugResValues UP-TO-DATE
+> Task :harness-core:generateDebugResources UP-TO-DATE
+> Task :terminal-emulator:generateDebugResources UP-TO-DATE
+> Task :sealed-runtime:jar UP-TO-DATE
+> Task :terminal-emulator:packageDebugResources UP-TO-DATE
+> Task :harness-core:packageDebugResources UP-TO-DATE
+> Task :harness-core:processDebugNavigationResources UP-TO-DATE
+> Task :terminal-view:packageDebugResources UP-TO-DATE
+> Task :terminal-emulator:processDebugNavigationResources UP-TO-DATE
+> Task :terminal-emulator:parseDebugLocalResources UP-TO-DATE
+> Task :harness-core:parseDebugLocalResources UP-TO-DATE
+> Task :terminal-emulator:generateDebugRFile UP-TO-DATE
+> Task :terminal-emulator:javaPreCompileDebug UP-TO-DATE
+> Task :harness-core:generateDebugRFile UP-TO-DATE
+> Task :harness-core:javaPreCompileDebug UP-TO-DATE
+> Task :harness-core:processDebugJavaRes UP-TO-DATE
+> Task :terminal-view:processDebugNavigationResources UP-TO-DATE
+> Task :terminal-view:parseDebugLocalResources UP-TO-DATE
+> Task :terminal-view:generateDebugRFile UP-TO-DATE
+> Task :terminal-view:javaPreCompileDebug UP-TO-DATE
+> Task :terminal-view:processDebugJavaRes NO-SOURCE
+> Task :app:downloadHarnessBootstrap UP-TO-DATE
+> Task :app:fetchCoreDebs UP-TO-DATE
+> Task :app:buildSealedPayload UP-TO-DATE
+> Task :harness-core:writeDebugAarMetadata UP-TO-DATE
+> Task :terminal-view:writeDebugAarMetadata UP-TO-DATE
+> Task :harness-core:extractDeepLinksDebug UP-TO-DATE
+> Task :pack_buildtools:fetchPackDebs UP-TO-DATE
+> Task :pack_buildtools:buildPackPayload UP-TO-DATE
+> Task :pack_buildtools:preBuild UP-TO-DATE
+> Task :harness-core:processDebugManifest UP-TO-DATE
+> Task :pack_buildtools:preSealedBuild UP-TO-DATE
+> Task :terminal-view:extractDeepLinksDebug UP-TO-DATE
+> Task :pack_buildtools:featureSealedWriter UP-TO-DATE
+> Task :pack_buildtools:generateSealedResValues UP-TO-DATE
+> Task :terminal-view:processDebugManifest UP-TO-DATE
+> Task :harness-core:compileDebugLibraryResources UP-TO-DATE
+> Task :terminal-view:compileDebugLibraryResources UP-TO-DATE
+> Task :harness-core:mergeDebugShaders UP-TO-DATE
+> Task :terminal-view:mergeDebugShaders UP-TO-DATE
+> Task :harness-core:compileDebugShaders NO-SOURCE
+> Task :harness-core:generateDebugAssets UP-TO-DATE
+> Task :terminal-view:compileDebugShaders NO-SOURCE
+> Task :terminal-view:generateDebugAssets UP-TO-DATE
+> Task :harness-core:mergeDebugAssets UP-TO-DATE
+> Task :terminal-view:mergeDebugAssets UP-TO-DATE
+> Task :pack_buildtools:javaPreCompileSealed UP-TO-DATE
+> Task :pack_buildtools:generateSealedResources UP-TO-DATE
+> Task :harness-core:mergeDebugJniLibFolders UP-TO-DATE
+> Task :pack_buildtools:packageSealedResources UP-TO-DATE
+> Task :harness-core:mergeDebugNativeLibs NO-SOURCE
+> Task :harness-core:copyDebugJniLibsProjectOnly UP-TO-DATE
+> Task :terminal-view:mergeDebugJniLibFolders UP-TO-DATE
+> Task :terminal-view:mergeDebugNativeLibs NO-SOURCE
+> Task :terminal-view:copyDebugJniLibsProjectOnly UP-TO-DATE
+> Task :terminal-emulator:compileDebugJavaWithJavac UP-TO-DATE
+> Task :terminal-emulator:bundleLibCompileToJarDebug UP-TO-DATE
+> Task :terminal-emulator:bundleLibRuntimeToJarDebug UP-TO-DATE
+> Task :terminal-view:compileDebugJavaWithJavac UP-TO-DATE
+> Task :terminal-view:bundleLibRuntimeToJarDebug UP-TO-DATE
+> Task :terminal-view:createFullJarDebug UP-TO-DATE
+> Task :terminal-view:bundleLibCompileToJarDebug UP-TO-DATE
+> Task :terminal-emulator:processDebugJavaRes NO-SOURCE
+> Task :terminal-view:bundleLibRuntimeToDirDebug UP-TO-DATE
+> Task :terminal-emulator:createFullJarDebug UP-TO-DATE
+
+> Task :app:filterSealedPayloadAbis
+payload ABIs in this artefact: x86_64
+
+> Task :app:preBuild UP-TO-DATE
+> Task :app:preSealedAndroidTestBuild SKIPPED
+> Task :terminal-emulator:writeDebugAarMetadata UP-TO-DATE
+> Task :app:javaPreCompileSealedAndroidTest UP-TO-DATE
+> Task :terminal-emulator:extractDeepLinksDebug UP-TO-DATE
+> Task :terminal-emulator:processDebugManifest UP-TO-DATE
+> Task :terminal-emulator:compileDebugLibraryResources UP-TO-DATE
+> Task :terminal-emulator:mergeDebugShaders UP-TO-DATE
+> Task :terminal-emulator:compileDebugShaders NO-SOURCE
+> Task :terminal-emulator:generateDebugAssets UP-TO-DATE
+> Task :terminal-emulator:mergeDebugAssets UP-TO-DATE
+> Task :terminal-emulator:bundleLibRuntimeToDirDebug UP-TO-DATE
+> Task :harness-core:compileDebugJavaWithJavac UP-TO-DATE
+> Task :harness-core:bundleLibRuntimeToJarDebug UP-TO-DATE
+> Task :harness-core:createFullJarDebug UP-TO-DATE
+> Task :harness-core:bundleLibCompileToJarDebug UP-TO-DATE
+> Task :harness-core:bundleLibRuntimeToDirDebug UP-TO-DATE
+> Task :app:checkSealedAndroidTestAarMetadata UP-TO-DATE
+> Task :app:generateSealedFeatureTransitiveDeps UP-TO-DATE
+> Task :app:processSealedAndroidTestNavigationResources UP-TO-DATE
+> Task :app:compileSealedAndroidTestNavigationResources UP-TO-DATE
+> Task :pack_buildtools:generateSealedFeatureTransitiveDeps UP-TO-DATE
+> Task :app:generateSealedAndroidTestResValues UP-TO-DATE
+> Task :pack_buildtools:desugarSealedFileDependencies UP-TO-DATE
+> Task :app:checkSealedLibraries UP-TO-DATE
+> Task :app:preSealedBuild UP-TO-DATE
+> Task :pack_buildtools:checkSealedAarMetadata UP-TO-DATE
+> Task :app:javaPreCompileSealed UP-TO-DATE
+> Task :app:checkSealedAarMetadata UP-TO-DATE
+> Task :pack_buildtools:mapSealedSourceSetPaths UP-TO-DATE
+> Task :app:processSealedNavigationResources UP-TO-DATE
+> Task :app:compileSealedNavigationResources UP-TO-DATE
+> Task :app:generateSealedResValues UP-TO-DATE
+> Task :pack_buildtools:mergeSealedResources UP-TO-DATE
+> Task :app:mapSealedSourceSetPaths UP-TO-DATE
+> Task :app:generateSealedResources UP-TO-DATE
+> Task :terminal-emulator:configureNdkBuildDebug[arm64-v8a]
+> Task :app:mergeSealedResources UP-TO-DATE
+> Task :app:packageSealedResources UP-TO-DATE
+> Task :app:parseSealedLocalResources UP-TO-DATE
+> Task :app:createSealedCompatibleScreenManifests UP-TO-DATE
+> Task :app:extractDeepLinksSealed UP-TO-DATE
+> Task :app:writeSealedModuleMetadata UP-TO-DATE
+> Task :app:generateSealedFeatureMetadata UP-TO-DATE
+> Task :pack_buildtools:extractDeepLinksSealed UP-TO-DATE
+> Task :app:mapSealedAndroidTestSourceSetPaths UP-TO-DATE
+> Task :app:generateSealedAndroidTestResources UP-TO-DATE
+> Task :app:mergeSealedAndroidTestResources UP-TO-DATE
+> Task :app:processSealedAndroidTestManifest UP-TO-DATE
+> Task :pack_buildtools:processSealedMainManifest UP-TO-DATE
+> Task :pack_buildtools:copySealedMergedManifest UP-TO-DATE
+> Task :pack_buildtools:processApplicationManifestSealedForBundle UP-TO-DATE
+> Task :pack_buildtools:processManifestSealedForFeature UP-TO-DATE
+> Task :pack_buildtools:processSealedNavigationResources UP-TO-DATE
+> Task :pack_buildtools:compileSealedNavigationResources UP-TO-DATE
+> Task :pack_buildtools:parseSealedLocalResources UP-TO-DATE
+> Task :pack_buildtools:processSealedManifestForPackage UP-TO-DATE
+> Task :terminal-emulator:buildNdkBuildDebug[arm64-v8a]
+> Task :terminal-emulator:configureNdkBuildDebug[x86_64]
+> Task :terminal-emulator:buildNdkBuildDebug[x86_64]
+> Task :terminal-emulator:mergeDebugJniLibFolders UP-TO-DATE
+> Task :terminal-emulator:mergeDebugNativeLibs UP-TO-DATE
+> Task :terminal-emulator:copyDebugJniLibsProjectOnly UP-TO-DATE
+> Task :app:processSealedAndroidTestResources UP-TO-DATE
+> Task :app:processSealedMainManifest UP-TO-DATE
+> Task :app:processSealedManifest UP-TO-DATE
+> Task :app:processSealedManifestForPackage UP-TO-DATE
+> Task :app:processSealedResources UP-TO-DATE
+> Task :app:compileSealedJavaWithJavac UP-TO-DATE
+> Task :app:bundleSealedClassesToCompileJar UP-TO-DATE
+> Task :pack_buildtools:processSealedResources UP-TO-DATE
+> Task :pack_buildtools:compileSealedJavaWithJavac NO-SOURCE
+> Task :pack_buildtools:dexBuilderSealed UP-TO-DATE
+> Task :app:compileSealedAndroidTestJavaWithJavac UP-TO-DATE
+> Task :app:mergeSealedShaders UP-TO-DATE
+> Task :app:compileSealedShaders NO-SOURCE
+> Task :app:generateSealedAssets UP-TO-DATE
+> Task :app:mergeSealedAssets UP-TO-DATE
+> Task :app:compressSealedAssets UP-TO-DATE
+> Task :app:checkSealedDuplicateClasses UP-TO-DATE
+> Task :app:desugarSealedFileDependencies UP-TO-DATE
+> Task :app:mergeExtDexSealed UP-TO-DATE
+> Task :app:mergeLibDexSealed UP-TO-DATE
+> Task :app:dexBuilderSealed UP-TO-DATE
+> Task :app:mergeProjectDexSealed UP-TO-DATE
+> Task :app:bundleSealedClassesToRuntimeJar UP-TO-DATE
+> Task :app:processSealedJavaRes NO-SOURCE
+> Task :app:mergeSealedJavaResource UP-TO-DATE
+> Task :pack_buildtools:featureGlobalSyntheticsSealedMerge UP-TO-DATE
+> Task :app:mergeSealedJniLibFolders UP-TO-DATE
+> Task :app:mergeSealedGlobalSynthetics UP-TO-DATE
+> Task :app:mergeSealedNativeLibs UP-TO-DATE
+> Task :app:stripSealedDebugSymbols UP-TO-DATE
+> Task :app:validateSigningSealed UP-TO-DATE
+> Task :app:writeSealedAppMetadata UP-TO-DATE
+> Task :app:writeSealedSigningConfigVersions UP-TO-DATE
+> Task :app:packageSealed UP-TO-DATE
+> Task :app:createSealedApkListingFileRedirect UP-TO-DATE
+> Task :app:mergeSealedAndroidTestShaders UP-TO-DATE
+> Task :app:compileSealedAndroidTestShaders NO-SOURCE
+> Task :app:generateSealedAndroidTestAssets UP-TO-DATE
+> Task :app:mergeSealedAndroidTestAssets UP-TO-DATE
+> Task :app:compressSealedAndroidTestAssets UP-TO-DATE
+> Task :app:checkSealedAndroidTestDuplicateClasses UP-TO-DATE
+> Task :app:desugarSealedAndroidTestFileDependencies UP-TO-DATE
+> Task :app:mergeExtDexSealedAndroidTest UP-TO-DATE
+> Task :app:mergeLibDexSealedAndroidTest UP-TO-DATE
+> Task :app:dexBuilderSealedAndroidTest UP-TO-DATE
+> Task :app:mergeProjectDexSealedAndroidTest UP-TO-DATE
+> Task :app:mergeSealedAndroidTestGlobalSynthetics UP-TO-DATE
+> Task :app:processSealedAndroidTestJavaRes NO-SOURCE
+> Task :app:mergeSealedAndroidTestJavaResource UP-TO-DATE
+> Task :app:mergeSealedAndroidTestJniLibFolders UP-TO-DATE
+> Task :app:mergeSealedAndroidTestNativeLibs NO-SOURCE
+> Task :app:stripSealedAndroidTestDebugSymbols NO-SOURCE
+> Task :app:validateSigningSealedAndroidTest UP-TO-DATE
+> Task :app:writeSealedAndroidTestSigningConfigVersions UP-TO-DATE
+> Task :app:packageSealedAndroidTest UP-TO-DATE
+> Task :app:createSealedAndroidTestApkListingFileRedirect UP-TO-DATE
+[EmulatorConsole]: Failed to start Emulator console for 5554
+> Task :app:connectedSealedAndroidTest
+Starting 4 tests on emulator-5554 - 16
+
+emulator-5554 - 16 Tests 0/4 completed. (0 skipped) (0 failed)
+emulator-5554 - 16 Tests 1/4 completed. (0 skipped) (0 failed)
+emulator-5554 - 16 Tests 2/4 completed. (0 skipped) (0 failed)
+emulator-5554 - 16 Tests 3/4 completed. (0 skipped) (0 failed)
+emulator-5554 - 16 Tests 4/4 completed. (0 skipped) (0 failed)
+Finished 4 tests on emulator-5554 - 16
+
+[Incubating] Problems report is available at: file:///home/runner/work/t1/t1/build/reports/problems/problems-report.html
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 10.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+For more on this, please refer to https://docs.gradle.org/9.2.1/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+
+BUILD SUCCESSFUL in 16m 5s
+168 actionable tasks: 6 executed, 162 up-to-date
+Consider enabling configuration cache to speed up this build: https://docs.gradle.org/9.2.1/userguide/configuration_cache_enabling.html
