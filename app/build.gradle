@@ -177,16 +177,6 @@ android {
             // Its signing config is attached below, and only when a real key
             // exists.
         }
-        // `packdemo`: the sealed shape with the pack's payload folded into the
-        // base APK, so the pack's install → run → remove path can be exercised
-        // on an emulator. Play delivers the pack as a separate module, and
-        // `:app:assembleSealed` cannot contain one (Gradle builds base and
-        // feature separately); this variant is the same classes and the same
-        // payload format, packaged as one APK. It is never published.
-        packdemo {
-            initWith(getByName("sealed"))
-            matchingFallbacks.addAll(["sealed", "debug", "release"])
-        }
         // `sealed`: the store-shaped build (docs/play-store-plan.md).
         //
         // Two things change, and only these two:
@@ -207,6 +197,17 @@ android {
             // Same shape as `release`, debuggable so instrumentation can run
             // against it; measured at whatever target the gate asks for.
             matchingFallbacks.addAll(["debug", "release"])
+        }
+
+        // `packdemo`: the sealed shape with the pack's payload folded into the
+        // base APK, so the pack's install → run → remove path can be exercised
+        // on an emulator. Play delivers the pack as a separate module, and
+        // `:app:assembleSealed` cannot contain one (Gradle builds base and
+        // feature separately); this variant is the same classes and the same
+        // payload format, packaged as one APK. It is never published.
+        packdemo {
+            initWith(getByName("sealed"))
+            matchingFallbacks.addAll(["sealed", "debug", "release"])
         }
     }
 
