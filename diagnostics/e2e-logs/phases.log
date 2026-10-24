@@ -1,0 +1,41 @@
+[05:00:24] phase=install-system-image
+build-tools
+cmake
+cmdline-tools
+extras
+licenses
+ndk
+packages-list.txt
+platform-tools
+platforms
+repositories.cfg
+[05:00:51] phase=create-avd
+ANDROID_AVD_HOME=/home/runner/.android/avd
+dataPartition: disk.dataPartition.size=16384M
+total 16
+drwxr-xr-x 3 runner runner 4096 Oct 24 05:00 .
+drwxr-xr-x 3 runner runner 4096 Oct 24 05:00 ..
+drwxr-xr-x 2 runner runner 4096 Oct 24 05:00 e2e.avd
+-rw-r--r-- 1 runner runner   80 Oct 24 05:00 e2e.ini
+[05:00:53] phase=launch-emulator
+KVM unavailable; using -no-accel (software emulation)
+[05:08:58] phase=network-check
+[05:11:00] phase=device-ready
+device ready: sdk=36 (attempt 1)
+[05:11:13] phase=device-warm
+warm 1: sdk='36' in 1s (streak=1)
+warm 2: sdk='36' in 2s (streak=2)
+warm 3: sdk='36' in 2s (streak=3)
+[05:11:30] phase=connected-test
+task=:app:connectedSealedAndroidTest class=io.mcyber12.codingharness.SealedShellTest,io.mcyber12.codingharness.ExecModelTest props=-PharnessTargetSdk=36 -PharnessCompileSdk=36 -PharnessTestBuildType=sealed -PharnessPayloadAbis=x86_64
+ANDROID_SERIAL=emulator-5554
+attempt 1 failed for an infrastructure reason; retrying
+device back after 3 check(s)
+attempt 2 failed for an infrastructure reason; retrying
+device back after 4 check(s)
+attempt 3 failed for an infrastructure reason; retrying
+:app:connectedSealedAndroidTest exit=1 (attempts=3)
+adb: error: failed to stat remote object '/sdcard/Android/data/io.mcyber12.codingharness/files/setup-e2e-report.txt': Input/output error
+[05:19:54] phase=pack-demo
+device back after 1 check(s)
+pack-demo exit=1
