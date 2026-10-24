@@ -1,0 +1,14 @@
+--------- beginning of main
+10-24 07:01:39.350  8151  8151 I AndroidJUnitRunner: newApplication android.app.Application
+10-24 07:01:39.387  8151  8151 I AndroidJUnitRunner: onCreate Bundle[mParcelledData.dataSize=232]
+10-24 07:01:39.411  8151  8151 D AndroidJUnitRunner: Use the raw file system for managing file I/O.
+10-24 07:01:40.030  8151  8164 D AndroidJUnitRunner: onStart is called.
+10-24 07:01:40.446  8151  8164 I TestRunner: run started: 1 tests
+10-24 07:01:40.485  8151  8164 I TestRunner: started: packsComeFromTheStoreAndNeverFromApt(io.mcyber12.codingharness.SealedShellTest)
+10-24 07:05:38.525  8151  8164 I SealedShell: sealed-shell: pack state before -> Build tools (clang, cmake, make): AVAILABLE_LOCALLY via play-feature-delivery, missing [make, pkg-config, clang, cmake]
+10-24 07:05:47.837  8151  8164 I SealedShell: sealed-shell: pack install -> build-tools: INSTALLED — installed from the store module (16 executables sealed; this build omits [clang, cmake]) (20533758 bytes)
+10-24 07:06:09.203  8151  8164 I SealedShell: sealed-shell: make -> exit 0 : GNU Make 4.4.1 | Built for x86_64-pc-linux-android | Copyright (C) 1988-2023 Free Software Foundation, Inc. | License GPLv3+: GNU GPL version 3 or later <https://gnu.org/licenses/gpl.html> | This is free software: you are free to change and redistribute it. | There is NO WARRANTY, to the extent permitted by law. |
+10-24 07:06:10.968  8151  8164 I SealedShell: sealed-shell: pack remove -> build-tools: REMOVED — removed; the core runtime is untouched (20533758 bytes)
+10-24 07:06:29.232  8151  8164 I SealedShell: sealed-shell: git after pack attempt -> exit 0
+10-24 07:06:29.240  8151  8164 I TestRunner: finished: packsComeFromTheStoreAndNeverFromApt(io.mcyber12.codingharness.SealedShellTest)
+10-24 07:06:29.267  8151  8164 I TestRunner: run finished: 1 tests, 0 failed, 0 ignored

@@ -1,0 +1,297 @@
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/9.2.1/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build 
+> Task :harness-core:preBuild UP-TO-DATE
+> Task :harness-core:preDebugBuild UP-TO-DATE
+> Task :app:downloadHarnessBootstrap UP-TO-DATE
+> Task :terminal-emulator:buildExecProbe UP-TO-DATE
+> Task :harness-core:generateDebugResValues UP-TO-DATE
+> Task :terminal-emulator:preBuild UP-TO-DATE
+> Task :terminal-emulator:preDebugBuild UP-TO-DATE
+> Task :sealed-runtime:compileJava UP-TO-DATE
+> Task :terminal-emulator:generateDebugResValues UP-TO-DATE
+> Task :sealed-runtime:processResources NO-SOURCE
+> Task :sealed-runtime:classes UP-TO-DATE
+> Task :app:fetchCoreDebs UP-TO-DATE
+> Task :harness-core:generateDebugResources UP-TO-DATE
+> Task :terminal-emulator:generateDebugResources UP-TO-DATE
+> Task :sealed-runtime:jar UP-TO-DATE
+> Task :harness-core:packageDebugResources UP-TO-DATE
+> Task :terminal-view:preBuild UP-TO-DATE
+> Task :terminal-view:preDebugBuild UP-TO-DATE
+> Task :harness-core:processDebugNavigationResources UP-TO-DATE
+> Task :terminal-view:generateDebugResValues UP-TO-DATE
+> Task :terminal-view:generateDebugResources UP-TO-DATE
+> Task :harness-core:parseDebugLocalResources UP-TO-DATE
+> Task :app:buildSealedPayload UP-TO-DATE
+> Task :app:preBuild UP-TO-DATE
+> Task :terminal-emulator:packageDebugResources UP-TO-DATE
+> Task :pack_buildtools:fetchPackDebs UP-TO-DATE
+> Task :terminal-emulator:processDebugNavigationResources UP-TO-DATE
+> Task :terminal-view:packageDebugResources UP-TO-DATE
+> Task :harness-core:generateDebugRFile UP-TO-DATE
+> Task :terminal-view:processDebugNavigationResources UP-TO-DATE
+> Task :harness-core:javaPreCompileDebug UP-TO-DATE
+> Task :pack_buildtools:buildPackPayload UP-TO-DATE
+> Task :terminal-emulator:parseDebugLocalResources UP-TO-DATE
+> Task :terminal-view:parseDebugLocalResources UP-TO-DATE
+> Task :app:stagePackdemoPayload UP-TO-DATE
+> Task :pack_buildtools:preBuild UP-TO-DATE
+> Task :pack_buildtools:prePackdemoBuild UP-TO-DATE
+> Task :terminal-view:generateDebugRFile UP-TO-DATE
+> Task :terminal-emulator:generateDebugRFile UP-TO-DATE
+> Task :pack_buildtools:featurePackdemoWriter UP-TO-DATE
+> Task :terminal-emulator:javaPreCompileDebug UP-TO-DATE
+> Task :pack_buildtools:generatePackdemoResValues UP-TO-DATE
+> Task :terminal-view:javaPreCompileDebug UP-TO-DATE
+> Task :harness-core:processDebugJavaRes UP-TO-DATE
+> Task :harness-core:writeDebugAarMetadata UP-TO-DATE
+> Task :terminal-view:processDebugJavaRes NO-SOURCE
+> Task :terminal-view:writeDebugAarMetadata UP-TO-DATE
+> Task :harness-core:extractDeepLinksDebug UP-TO-DATE
+> Task :terminal-view:extractDeepLinksDebug UP-TO-DATE
+> Task :harness-core:processDebugManifest UP-TO-DATE
+> Task :terminal-view:processDebugManifest UP-TO-DATE
+> Task :harness-core:compileDebugLibraryResources UP-TO-DATE
+> Task :terminal-view:compileDebugLibraryResources UP-TO-DATE
+> Task :harness-core:mergeDebugShaders UP-TO-DATE
+> Task :harness-core:compileDebugShaders NO-SOURCE
+> Task :terminal-view:mergeDebugShaders UP-TO-DATE
+> Task :harness-core:generateDebugAssets UP-TO-DATE
+> Task :terminal-view:compileDebugShaders NO-SOURCE
+> Task :terminal-view:generateDebugAssets UP-TO-DATE
+> Task :harness-core:mergeDebugAssets UP-TO-DATE
+> Task :pack_buildtools:javaPreCompilePackdemo UP-TO-DATE
+> Task :terminal-view:mergeDebugAssets UP-TO-DATE
+> Task :harness-core:mergeDebugJniLibFolders UP-TO-DATE
+> Task :terminal-view:mergeDebugJniLibFolders UP-TO-DATE
+> Task :pack_buildtools:generatePackdemoResources UP-TO-DATE
+> Task :terminal-view:mergeDebugNativeLibs NO-SOURCE
+> Task :harness-core:mergeDebugNativeLibs NO-SOURCE
+> Task :terminal-view:copyDebugJniLibsProjectOnly UP-TO-DATE
+> Task :harness-core:copyDebugJniLibsProjectOnly UP-TO-DATE
+> Task :pack_buildtools:packagePackdemoResources UP-TO-DATE
+> Task :app:prePackdemoAndroidTestBuild SKIPPED
+> Task :terminal-emulator:compileDebugJavaWithJavac UP-TO-DATE
+> Task :terminal-emulator:bundleLibCompileToJarDebug UP-TO-DATE
+> Task :terminal-emulator:bundleLibRuntimeToJarDebug UP-TO-DATE
+> Task :terminal-emulator:processDebugJavaRes NO-SOURCE
+> Task :terminal-emulator:createFullJarDebug UP-TO-DATE
+> Task :terminal-emulator:writeDebugAarMetadata UP-TO-DATE
+> Task :terminal-emulator:extractDeepLinksDebug UP-TO-DATE
+> Task :terminal-emulator:processDebugManifest UP-TO-DATE
+> Task :terminal-view:compileDebugJavaWithJavac UP-TO-DATE
+> Task :terminal-emulator:compileDebugLibraryResources UP-TO-DATE
+> Task :terminal-view:bundleLibRuntimeToJarDebug UP-TO-DATE
+> Task :terminal-emulator:mergeDebugShaders UP-TO-DATE
+> Task :terminal-view:createFullJarDebug UP-TO-DATE
+> Task :terminal-emulator:compileDebugShaders NO-SOURCE
+> Task :terminal-emulator:generateDebugAssets UP-TO-DATE
+> Task :terminal-view:bundleLibCompileToJarDebug UP-TO-DATE
+> Task :terminal-emulator:mergeDebugAssets UP-TO-DATE
+> Task :terminal-emulator:bundleLibRuntimeToDirDebug UP-TO-DATE
+> Task :terminal-view:bundleLibRuntimeToDirDebug UP-TO-DATE
+> Task :app:javaPreCompilePackdemoAndroidTest FROM-CACHE
+> Task :harness-core:compileDebugJavaWithJavac UP-TO-DATE
+> Task :harness-core:bundleLibRuntimeToJarDebug UP-TO-DATE
+> Task :harness-core:createFullJarDebug UP-TO-DATE
+> Task :harness-core:bundleLibCompileToJarDebug UP-TO-DATE
+> Task :harness-core:bundleLibRuntimeToDirDebug UP-TO-DATE
+> Task :terminal-emulator:configureNdkBuildDebug[arm64-v8a]
+> Task :app:generatePackdemoFeatureTransitiveDeps UP-TO-DATE
+> Task :app:processPackdemoAndroidTestNavigationResources FROM-CACHE
+> Task :app:compilePackdemoAndroidTestNavigationResources FROM-CACHE
+> Task :app:checkPackdemoAndroidTestAarMetadata
+> Task :app:generatePackdemoAndroidTestResValues FROM-CACHE
+> Task :pack_buildtools:generatePackdemoFeatureTransitiveDeps UP-TO-DATE
+> Task :pack_buildtools:desugarPackdemoFileDependencies UP-TO-DATE
+> Task :pack_buildtools:checkPackdemoAarMetadata UP-TO-DATE
+> Task :app:mapPackdemoAndroidTestSourceSetPaths
+> Task :app:checkPackdemoLibraries UP-TO-DATE
+> Task :app:prePackdemoBuild UP-TO-DATE
+> Task :app:mergePackdemoNativeDebugMetadata NO-SOURCE
+> Task :app:javaPreCompilePackdemo UP-TO-DATE
+> Task :pack_buildtools:mapPackdemoSourceSetPaths UP-TO-DATE
+> Task :app:checkPackdemoAarMetadata UP-TO-DATE
+> Task :pack_buildtools:mergePackdemoResources UP-TO-DATE
+> Task :terminal-emulator:buildNdkBuildDebug[arm64-v8a]
+> Task :app:processPackdemoNavigationResources UP-TO-DATE
+> Task :app:compilePackdemoNavigationResources UP-TO-DATE
+> Task :app:generatePackdemoResValues UP-TO-DATE
+> Task :terminal-emulator:configureNdkBuildDebug[x86_64]
+> Task :app:mapPackdemoSourceSetPaths UP-TO-DATE
+> Task :app:generatePackdemoResources UP-TO-DATE
+> Task :app:mergePackdemoResources UP-TO-DATE
+> Task :app:packagePackdemoResources UP-TO-DATE
+> Task :app:parsePackdemoLocalResources UP-TO-DATE
+> Task :app:createPackdemoCompatibleScreenManifests UP-TO-DATE
+> Task :app:extractDeepLinksPackdemo UP-TO-DATE
+> Task :app:writePackdemoModuleMetadata UP-TO-DATE
+> Task :app:generatePackdemoFeatureMetadata UP-TO-DATE
+> Task :app:mergePackdemoShaders UP-TO-DATE
+> Task :app:compilePackdemoShaders NO-SOURCE
+> Task :pack_buildtools:extractDeepLinksPackdemo UP-TO-DATE
+> Task :app:generatePackdemoAssets UP-TO-DATE
+> Task :terminal-emulator:buildNdkBuildDebug[x86_64]
+> Task :terminal-emulator:mergeDebugJniLibFolders UP-TO-DATE
+> Task :app:mergePackdemoAssets UP-TO-DATE
+> Task :terminal-emulator:mergeDebugNativeLibs UP-TO-DATE
+> Task :terminal-emulator:copyDebugJniLibsProjectOnly UP-TO-DATE
+> Task :app:compressPackdemoAssets UP-TO-DATE
+> Task :app:checkPackdemoDuplicateClasses UP-TO-DATE
+> Task :pack_buildtools:processPackdemoMainManifest UP-TO-DATE
+> Task :app:desugarPackdemoFileDependencies UP-TO-DATE
+> Task :pack_buildtools:copyPackdemoMergedManifest UP-TO-DATE
+> Task :pack_buildtools:processApplicationManifestPackdemoForBundle UP-TO-DATE
+> Task :pack_buildtools:processManifestPackdemoForFeature UP-TO-DATE
+> Task :pack_buildtools:processPackdemoNavigationResources UP-TO-DATE
+> Task :pack_buildtools:compilePackdemoNavigationResources UP-TO-DATE
+> Task :pack_buildtools:parsePackdemoLocalResources UP-TO-DATE
+> Task :pack_buildtools:processPackdemoManifestForPackage UP-TO-DATE
+> Task :app:mergeExtDexPackdemo UP-TO-DATE
+> Task :app:processPackdemoMainManifest UP-TO-DATE
+> Task :app:processPackdemoManifest UP-TO-DATE
+> Task :app:processPackdemoManifestForPackage UP-TO-DATE
+> Task :app:processPackdemoResources UP-TO-DATE
+> Task :app:compilePackdemoJavaWithJavac UP-TO-DATE
+> Task :pack_buildtools:processPackdemoResources UP-TO-DATE
+> Task :app:mergeLibDexPackdemo UP-TO-DATE
+> Task :app:dexBuilderPackdemo UP-TO-DATE
+> Task :app:bundlePackdemoClassesToRuntimeJar UP-TO-DATE
+> Task :app:bundlePackdemoClassesToCompileJar UP-TO-DATE
+> Task :pack_buildtools:compilePackdemoJavaWithJavac NO-SOURCE
+> Task :app:processPackdemoJavaRes NO-SOURCE
+> Task :pack_buildtools:dexBuilderPackdemo UP-TO-DATE
+> Task :pack_buildtools:featureGlobalSyntheticsPackdemoMerge UP-TO-DATE
+> Task :app:mergePackdemoJavaResource UP-TO-DATE
+> Task :app:mergePackdemoGlobalSynthetics UP-TO-DATE
+> Task :app:mergeProjectDexPackdemo UP-TO-DATE
+> Task :app:mergePackdemoJniLibFolders UP-TO-DATE
+> Task :app:mergePackdemoNativeLibs UP-TO-DATE
+> Task :app:stripPackdemoDebugSymbols UP-TO-DATE
+> Task :app:validateSigningPackdemo UP-TO-DATE
+> Task :app:writePackdemoAppMetadata UP-TO-DATE
+> Task :app:writePackdemoSigningConfigVersions UP-TO-DATE
+> Task :app:packagePackdemo UP-TO-DATE
+> Task :app:createPackdemoApkListingFileRedirect UP-TO-DATE
+> Task :app:assemblePackdemo UP-TO-DATE
+> Task :app:generatePackdemoAndroidTestResources FROM-CACHE
+> Task :app:mergePackdemoAndroidTestResources
+> Task :app:processPackdemoAndroidTestManifest
+> Task :app:mergePackdemoAndroidTestShaders
+> Task :app:compilePackdemoAndroidTestShaders NO-SOURCE
+> Task :app:generatePackdemoAndroidTestAssets UP-TO-DATE
+> Task :app:mergePackdemoAndroidTestAssets
+> Task :app:compressPackdemoAndroidTestAssets FROM-CACHE
+> Task :app:desugarPackdemoAndroidTestFileDependencies FROM-CACHE
+> Task :app:checkPackdemoAndroidTestDuplicateClasses
+> Task :app:processPackdemoAndroidTestJavaRes NO-SOURCE
+> Task :app:mergeExtDexPackdemoAndroidTest FROM-CACHE
+> Task :app:mergeLibDexPackdemoAndroidTest FROM-CACHE
+> Task :app:mergePackdemoAndroidTestJniLibFolders
+> Task :app:mergePackdemoAndroidTestNativeLibs NO-SOURCE
+> Task :app:stripPackdemoAndroidTestDebugSymbols NO-SOURCE
+> Task :app:validateSigningPackdemoAndroidTest
+> Task :app:writePackdemoAndroidTestSigningConfigVersions
+> Task :app:mergePackdemoAndroidTestJavaResource
+> Task :app:processPackdemoAndroidTestResources
+> Task :app:compilePackdemoAndroidTestJavaWithJavac FROM-CACHE
+> Task :app:dexBuilderPackdemoAndroidTest
+> Task :app:mergePackdemoAndroidTestGlobalSynthetics FROM-CACHE
+> Task :app:mergeProjectDexPackdemoAndroidTest FROM-CACHE
+> Task :app:packagePackdemoAndroidTest
+> Task :app:createPackdemoAndroidTestApkListingFileRedirect
+> Task :app:assemblePackdemoAndroidTest
+
+[Incubating] Problems report is available at: file:///home/runner/work/t1/t1/build/reports/problems/problems-report.html
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 10.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+For more on this, please refer to https://docs.gradle.org/9.2.1/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+
+BUILD SUCCESSFUL in 20s
+167 actionable tasks: 19 executed, 12 from cache, 136 up-to-date
+Consider enabling configuration cache to speed up this build: https://docs.gradle.org/9.2.1/userguide/configuration_cache_enabling.html
+app=app/build/outputs/apk/packdemo/app-packdemo.apk test=app/build/outputs/apk/androidTest/packdemo/app-packdemo-androidTest.apk
+      677  1981-01-01 01:01   assets/pack-buildtools-sealed-exec-arm64-v8a.txt
+      677  1981-01-01 01:01   assets/pack-buildtools-sealed-exec-x86_64.txt
+    42253  1981-01-01 01:01   assets/pack-buildtools-sealed-manifest-arm64-v8a.txt
+    42253  1981-01-01 01:01   assets/pack-buildtools-sealed-manifest-x86_64.txt
+     2294  1981-01-01 01:01   assets/pack-buildtools-sealed-payload-arm64-v8a.json
+Performing Streamed Install
+adb: failed to install app/build/outputs/apk/packdemo/app-packdemo.apk: 
+Exception occurred while executing 'install':
+java.lang.NullPointerException: Attempt to invoke virtual method 'void android.content.pm.PackageManagerInternal.freeStorage(java.lang.String, long, int)' on a null object reference
+	at com.android.server.StorageManagerService.allocateBytes(StorageManagerService.java:4305)
+	at android.os.storage.StorageManager.allocateBytes(StorageManager.java:2381)
+	at android.os.storage.StorageManager.allocateBytes(StorageManager.java:2459)
+	at com.android.server.pm.PackageInstallerSession.doWriteInternal(PackageInstallerSession.java:2042)
+	at com.android.server.pm.PackageInstallerSession.write(PackageInstallerSession.java:1944)
+	at android.content.pm.PackageInstaller$Session.write(PackageInstaller.java:1630)
+	at com.android.server.pm.PackageManagerShellCommand.doWriteSplit(PackageManagerShellCommand.java:4236)
+	at com.android.server.pm.PackageManagerShellCommand.doWriteSplits(PackageManagerShellCommand.java:4185)
+	at com.android.server.pm.PackageManagerShellCommand.doRunInstall(PackageManagerShellCommand.java:1636)
+	at com.android.server.pm.PackageManagerShellCommand.runInstall(PackageManagerShellCommand.java:1562)
+	at com.android.server.pm.PackageManagerShellCommand.onCommand(PackageManagerShellCommand.java:246)
+	at com.android.modules.utils.BasicShellCommandHandler.exec(BasicShellCommandHandler.java:97)
+	at android.os.ShellCommand.exec(ShellCommand.java:38)
+	at com.android.server.pm.PackageManagerService$IPackageManagerImpl.onShellCommand(PackageManagerService.java:6684)
+	at android.os.Binder.shellCommand(Binder.java:1151)
+	at android.os.Binder.onTransact(Binder.java:953)
+	at android.content.pm.IPackageManager$Stub.onTransact(IPackageManager.java:4729)
+	at com.android.server.pm.PackageManagerService$IPackageManagerImpl.onTransact(PackageManagerService.java:6668)
+	at android.os.Binder.execTransactInternal(Binder.java:1426)
+	at android.os.Binder.execTransact(Binder.java:1365)
+
+Performing Streamed Install
+adb: failed to install app/build/outputs/apk/androidTest/packdemo/app-packdemo-androidTest.apk: 
+Exception occurred while executing 'install':
+java.lang.NullPointerException: Attempt to invoke virtual method 'void android.content.pm.PackageManagerInternal.freeStorage(java.lang.String, long, int)' on a null object reference
+	at com.android.server.StorageManagerService.allocateBytes(StorageManagerService.java:4305)
+	at android.os.storage.StorageManager.allocateBytes(StorageManager.java:2381)
+	at android.os.storage.StorageManager.allocateBytes(StorageManager.java:2459)
+	at com.android.server.pm.PackageInstallerSession.doWriteInternal(PackageInstallerSession.java:2042)
+	at com.android.server.pm.PackageInstallerSession.write(PackageInstallerSession.java:1944)
+	at android.content.pm.PackageInstaller$Session.write(PackageInstaller.java:1630)
+	at com.android.server.pm.PackageManagerShellCommand.doWriteSplit(PackageManagerShellCommand.java:4236)
+	at com.android.server.pm.PackageManagerShellCommand.doWriteSplits(PackageManagerShellCommand.java:4185)
+	at com.android.server.pm.PackageManagerShellCommand.doRunInstall(PackageManagerShellCommand.java:1636)
+	at com.android.server.pm.PackageManagerShellCommand.runInstall(PackageManagerShellCommand.java:1562)
+	at com.android.server.pm.PackageManagerShellCommand.onCommand(PackageManagerShellCommand.java:246)
+	at com.android.modules.utils.BasicShellCommandHandler.exec(BasicShellCommandHandler.java:97)
+	at android.os.ShellCommand.exec(ShellCommand.java:38)
+	at com.android.server.pm.PackageManagerService$IPackageManagerImpl.onShellCommand(PackageManagerService.java:6684)
+	at android.os.Binder.shellCommand(Binder.java:1151)
+	at android.os.Binder.onTransact(Binder.java:953)
+	at android.content.pm.IPackageManager$Stub.onTransact(IPackageManager.java:4729)
+	at com.android.server.pm.PackageManagerService$IPackageManagerImpl.onTransact(PackageManagerService.java:6668)
+	at android.os.Binder.execTransactInternal(Binder.java:1426)
+	at android.os.Binder.execTransact(Binder.java:1365)
+
+pack attempt 1 failed; retrying on a clean device
+Performing Streamed Install
+Success
+Performing Streamed Install
+Success
+
+io.mcyber12.codingharness.SealedShellTest:.
+
+Time: 288.827
+
+OK (1 test)
+
+
+10-24 07:01:40.446  8151  8164 I TestRunner: run started: 1 tests
+10-24 07:01:40.485  8151  8164 I TestRunner: started: packsComeFromTheStoreAndNeverFromApt(io.mcyber12.codingharness.SealedShellTest)
+10-24 07:05:38.525  8151  8164 I SealedShell: sealed-shell: pack state before -> Build tools (clang, cmake, make): AVAILABLE_LOCALLY via play-feature-delivery, missing [make, pkg-config, clang, cmake]
+10-24 07:05:47.837  8151  8164 I SealedShell: sealed-shell: pack install -> build-tools: INSTALLED — installed from the store module (16 executables sealed; this build omits [clang, cmake]) (20533758 bytes)
+10-24 07:06:09.203  8151  8164 I SealedShell: sealed-shell: make -> exit 0 : GNU Make 4.4.1 | Built for x86_64-pc-linux-android | Copyright (C) 1988-2023 Free Software Foundation, Inc. | License GPLv3+: GNU GPL version 3 or later <https://gnu.org/licenses/gpl.html> | This is free software: you are free to change and redistribute it. | There is NO WARRANTY, to the extent permitted by law. |
+10-24 07:06:10.968  8151  8164 I SealedShell: sealed-shell: pack remove -> build-tools: REMOVED — removed; the core runtime is untouched (20533758 bytes)
+10-24 07:06:29.232  8151  8164 I SealedShell: sealed-shell: git after pack attempt -> exit 0
+10-24 07:06:29.240  8151  8164 I TestRunner: finished: packsComeFromTheStoreAndNeverFromApt(io.mcyber12.codingharness.SealedShellTest)
+10-24 07:06:29.267  8151  8164 I TestRunner: run finished: 1 tests, 0 failed, 0 ignored
+--- what the device kept after the run ---
+cat: files/coding-harness/pack-build-tools-installed.txt: No such file or directory
+cat: files/coding-harness/sealed-payload-pack-buildtools.txt: No such file or directory
+ls: files/coding-harness/rootfs/data/data/com.termux/files/usr/bin/make: No such file or directory

@@ -1,0 +1,5 @@
+Performing Streamed Install
+Success
+Performing Streamed Install
+adb: failed to install app/build/outputs/apk/androidTest/sealed/app-sealed-androidTest.apk: cmd: Failure calling service package: Broken pipe (32)
+
