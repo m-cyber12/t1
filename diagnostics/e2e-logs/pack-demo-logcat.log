@@ -1,0 +1,46 @@
+--------- beginning of main
+10-24 06:48:09.808  4073  4073 I AndroidJUnitRunner: newApplication android.app.Application
+10-24 06:48:09.842  4073  4073 I AndroidJUnitRunner: onCreate Bundle[mParcelledData.dataSize=468]
+10-24 06:48:09.860  4073  4073 D AndroidJUnitRunner: Use the raw file system for managing file I/O.
+10-24 06:48:10.295  4073  4088 D AndroidJUnitRunner: onStart is called.
+10-24 06:48:10.783  4073  4088 I TestRunner: run started: 4 tests
+10-24 06:48:10.803  4073  4088 I TestRunner: started: packsComeFromTheStoreAndNeverFromApt(io.mcyber12.codingharness.SealedShellTest)
+10-24 06:52:31.595  4073  4088 I SealedShell: sealed-shell: pack state before -> Build tools (clang, cmake, make): UNAVAILABLE via no store on this device, missing [make, pkg-config, clang, cmake]
+10-24 06:52:31.717  4073  4088 I SealedShell: sealed-shell: pack install -> build-tools: UNAVAILABLE — this build carries no pack payload and there is no Play Store to fetch it
+10-24 06:52:54.669  4073  4088 I SealedShell: sealed-shell: git after pack attempt -> exit 0
+10-24 06:52:54.684  4073  4088 I TestRunner: finished: packsComeFromTheStoreAndNeverFromApt(io.mcyber12.codingharness.SealedShellTest)
+10-24 06:52:54.774  4073  4088 I TestRunner: started: startupInstallsOnceAndDpkgAgrees(io.mcyber12.codingharness.SealedShellTest)
+10-24 06:57:20.046  4073  4088 I SealedShell: sealed-shell: second startup took 22 ms (no re-extract)
+10-24 06:57:20.090  4073  4088 I SealedShell: sealed-shell: dpkg records the shipped packages as installed
+10-24 06:57:20.098  4073  4088 I TestRunner: finished: startupInstallsOnceAndDpkgAgrees(io.mcyber12.codingharness.SealedShellTest)
+10-24 06:57:20.123  4073  4088 I TestRunner: started: shellAndToolsRunFromTheApkPayload(io.mcyber12.codingharness.SealedShellTest)
+10-24 06:57:20.180  4073  4088 I SealedShell: sealed-shell: payload abi=x86_64 targetSdk=36
+10-24 07:01:20.464  4073  4088 I SealedShell: sealed-shell: sealed payload (x86_64): 13858 data files, 1173 data links, 535 executables from the APK, 13858 verified
+10-24 07:01:20.472  4073  4088 I SealedShell: sealed-shell: bin/bash -> /data/app/~~eO9Mky1zulrHyy2jnBnbsQ==/io.mcyber12.codingharness-S-Qm54DmQ-UTbn1QPviBvQ==/lib/x86_64/libbash.so
+10-24 07:01:40.874  4073  4088 I SealedShell: sealed-shell: bash -> exit 0 : SEALED-SHELL-OK | version=5.3.9(1)-release | prefix=/data/user/0/io.mcyber12.codingharness/files/coding-harness/rootfs/data/data/com.termux/files/usr | path=/data/user/0/io.mcyber12.codingharness/files/coding-harness/rootfs/data/data/com.termux/files/usr/bin:/data/user/0/io.mcyber12.codingharness/files/coding-harness/workspace/node_modules/.bin:/system/bin:/system/xbin | /data/user/0/io.mcyber12.codingharness/files/coding-harness/rootfs/data/data/com.termux/files/usr/bin/sed | exit-ok |
+10-24 07:02:01.287  4073  4088 I SealedShell: sealed-shell: sed -> exit 0 : A1 | A2 |
+10-24 07:02:21.570  4073  4088 I SealedShell: sealed-shell: bin/git -> exit 0 : git version 2.56.0
+10-24 07:02:48.216  4073  4088 I SealedShell: sealed-shell: bin/python -> exit 0 : py-ssl OpenSSL 3.6.5 29 Sep 2026
+10-24 07:03:08.759  4073  4088 I SealedShell: sealed-shell: bin/node -> exit 0 : v26.12.1
+10-24 07:03:29.052  4073  4088 I SealedShell: sealed-shell: bin/perl -> exit 0 : v5.44.0
+10-24 07:03:49.398  4073  4088 I SealedShell: sealed-shell: bin/ruby -> exit 0 : ruby 4.0.7 (2026-09-15 revision 229531a6cf) +PRISM [x86_64-linux-android]
+10-24 07:04:09.611  4073  4088 I SealedShell: sealed-shell: bin/rg -> exit 0 : ripgrep 15.2.0  features:+pcre2 simd(compile):+SSE2,+SSSE3,-AVX2 simd(runtime):+SSE2,+SSSE3,-AVX2  PCRE2 10.45 is available (JIT is availabl
+10-24 07:04:29.671  4073  4088 I SealedShell: sealed-shell: exec audit: 560 executable entries, 535 shipped in the APK, 0 binary executables outside it, 25 scripts outside it (run through the preload) | native libraries: /data/app/~~eO9Mky1zulrHyy2jnBnbsQ==/io.mcyber12.codingharness-S-Qm54DmQ-UTbn1QPviBvQ==/lib/x86_64 | scanned paths: 7610 | verdict: publishable at any targetSdk (no binaries outside the APK) | 
+10-24 07:04:29.720  4073  4088 I SealedShell: sealed-shell: 25 scripts in the payload run through the interpreter layer
+10-24 07:04:29.725  4073  4088 I TestRunner: finished: shellAndToolsRunFromTheApkPayload(io.mcyber12.codingharness.SealedShellTest)
+10-24 07:04:29.748  4073  4088 I TestRunner: started: dataDirectoryExecutionFollowsTargetSdk(io.mcyber12.codingharness.ExecModelTest)
+10-24 07:04:50.386  4073  4088 I TestRunner: finished: dataDirectoryExecutionFollowsTargetSdk(io.mcyber12.codingharness.ExecModelTest)
+10-24 07:04:50.417  4073  4088 I TestRunner: run finished: 4 tests, 0 failed, 0 ignored
+10-24 07:06:46.207  4257  4257 I AndroidJUnitRunner: newApplication android.app.Application
+10-24 07:06:46.231  4257  4257 I AndroidJUnitRunner: onCreate Bundle[mParcelledData.dataSize=232]
+10-24 07:06:46.248  4257  4257 D AndroidJUnitRunner: Use the raw file system for managing file I/O.
+10-24 07:06:46.864  4257  4271 D AndroidJUnitRunner: onStart is called.
+10-24 07:06:47.292  4257  4271 I TestRunner: run started: 1 tests
+10-24 07:06:47.314  4257  4271 I TestRunner: started: packsComeFromTheStoreAndNeverFromApt(io.mcyber12.codingharness.SealedShellTest)
+10-24 07:10:59.800  4257  4271 I SealedShell: sealed-shell: pack state before -> Build tools (clang, cmake, make): AVAILABLE_LOCALLY via play-feature-delivery, missing [make, pkg-config, clang, cmake]
+10-24 07:11:10.475  4257  4271 I SealedShell: sealed-shell: pack install -> build-tools: INSTALLED — installed from the store module (16 executables sealed; this build omits [clang, cmake]) (20533758 bytes)
+10-24 07:11:34.134  4257  4271 I SealedShell: sealed-shell: make -> exit 0 : GNU Make 4.4.1 | Built for x86_64-pc-linux-android | Copyright (C) 1988-2023 Free Software Foundation, Inc. | License GPLv3+: GNU GPL version 3 or later <https://gnu.org/licenses/gpl.html> | This is free software: you are free to change and redistribute it. | There is NO WARRANTY, to the extent permitted by law. |
+10-24 07:11:35.666  4257  4271 I SealedShell: sealed-shell: pack remove -> build-tools: REMOVED — removed; the core runtime is untouched (20533758 bytes)
+10-24 07:11:55.872  4257  4271 I SealedShell: sealed-shell: git after pack attempt -> exit 0
+10-24 07:11:55.878  4257  4271 I TestRunner: finished: packsComeFromTheStoreAndNeverFromApt(io.mcyber12.codingharness.SealedShellTest)
+10-24 07:11:55.926  4257  4271 I TestRunner: run finished: 1 tests, 0 failed, 0 ignored
