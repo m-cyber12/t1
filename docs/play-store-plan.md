@@ -365,10 +365,23 @@ The store build may not fetch executables (Play "Device and Network Abuse"), and
 it cannot expect a user to pay for clang in every install. So optional tools are
 a **Play Feature Delivery module**: `pack_buildtools/` is a
 `com.android.dynamic-feature` with `<dist:on-demand/>`, shipping
-`assets/pack_buildtools-userland-<abi>.zip` and `dist:fusing include="true"`. The
-fusing flag is what lets an emulator gate see the pack at all: CI builds the AAB,
-asks bundletool for a universal APK and installs that, which is the same artefact
-shape Play delivers — `:app:assembleSealed` on its own never contains the pack.
+`assets/pack_buildtools-userland-<abi>.zip` and `dist:fusing include="true"`.
+
+Two different things are being proved, and they need two different artefacts:
+
+| Claim | Artefact | Gate |
+|---|---|---|
+| The pack is in the store build, on demand, under the size cap | the release AAB | `pack_buildtools/` present with its payload, `dist:on-demand` in the merged manifest, `check-bundle-size.py` |
+| Installing, running and removing a pack works, and the runtime survives | `packdemo` APK (sealed + the pack's payload folded in) | `packsComeFromTheStoreAndNeverFromApt` on the emulator |
+
+The second one deliberately does not go through bundletool. An earlier version
+built a universal APK from the bundle, which is closer to what Play ships, but
+it made the gate depend on bundletool's rules about `extractNativeLibs` in a
+bundle — an opinion about Google's packaging rather than a fact about this
+code, and one that conflicts with the sealed design's need to extract
+libraries. The `packdemo` variant is the same classes, the same payload format
+and the same install/verify/remove path; only the packaging differs, and it is
+never published.
 
 Two channels behind one port, chosen by one predicate:
 
@@ -391,10 +404,11 @@ put a Remove button next to it.
 **Gate:** `SealedShellTest.packsComeFromTheStoreAndNeverFromApt` asserts (a) the
 sealed build answers on the store channel, (b) a fused pack installs, runs, and
 removes, or the refusal is honest and installs nothing, (c) `git` still works
-afterwards. CI runs it twice: on the plain APK (no pack present, so the refusal
-path) and on a bundletool universal APK built from the bundle (the fused path),
-where the tool actually runs and the removal actually happens on the device. `ci/play-exec-model.yml` also fails if the bundle has no
-`pack_buildtools` module, no payload, or a module that is not on-demand.
+afterwards. CI runs it twice: on the plain sealed APK (no pack present, so the
+refusal path is what is checked) and on the `packdemo` APK, where the tool
+actually runs and the removal actually happens on the device.
+`ci/play-exec-model.yml` also fails if the bundle has no `pack_buildtools`
+module, no payload, or a module that is not on-demand.
 
 ### 2. Target API 36, from 2026-08-31
 

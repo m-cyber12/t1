@@ -36,7 +36,8 @@ harness-core/        All provisioning logic (no UI, JVM-testable)
   core/packs/        Optional packs: one port, two channels (Play / apt)
   core/exec/         Sealed-payload adapter for the Android asset manager
 sealed-runtime/      Android-free kernel: install, verify, uninstall, audit
-pack_buildtools/     Play Feature Delivery module (on-demand build tools)
+pack_buildtools/     Play Feature Delivery module (on-demand build tools);
+                     `packdemo` = sealed + pack payload, test-only shape
 terminal-emulator/   Termux terminal emulator + JNI helper + preload lib
 terminal-view/       Termux terminal view/renderer
 scripts/             Payload builder, gate checks, emulator E2E driver

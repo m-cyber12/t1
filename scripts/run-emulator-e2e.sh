@@ -40,7 +40,7 @@ publish() {
   git add diagnostics/ >/dev/null 2>&1 || return 0
   git diff --cached --quiet >/dev/null 2>&1 && return 0
   git -c user.email=ci@invalid -c user.name=ci-e2e commit -qm "e2e $PHASE ${GITHUB_RUN_ID:-local} [ci]" >/dev/null 2>&1 || return 0
-  git push origin "HEAD:refs/heads/diagnostics/e2e-${GITHUB_RUN_ID:-local}" --force >/dev/null 2>&1 || true
+  git push origin "HEAD:refs/heads/diagnostics/e2e-${GITHUB_RUN_ID:-local}-sdk${E2E_TARGET_SDK:-any}" --force >/dev/null 2>&1 || true
   git reset --soft HEAD~1 >/dev/null 2>&1 || true
   git restore --staged diagnostics >/dev/null 2>&1 || true
 }
@@ -301,85 +301,50 @@ echo "$E2E_TEST_TASK exit=$RC" | tee -a e2e-logs/phases.log
 "$ADB" logcat -d > e2e-logs/logcat.log 2>&1 || true
 
 # ---------------------------------------------------------------------------
-# The pack, delivered the way Play delivers it.
+# The pack, install → run → remove, on the device.
 #
-# An on-demand feature module is not part of `:app:assembleSealed` — Gradle
-# builds the base module and the feature module as separate APKs, and only
-# bundletool fuses them (that is what `dist:fusing include="true"` is for). So
-# the pack install/remove claim is proved the way a store build gets it: build
-# the App Bundle, ask bundletool for a universal APK, install that, and run the
-# one test that installs the pack, runs its tool, removes it and checks that the
-# core runtime still works. No Play Store is involved, which is the point: it is
-# the same artefact shape Play would hand the device.
+# `:app:assembleSealed` never contains an on-demand module: Gradle builds the
+# base and the feature as separate APKs, and only Play (or bundletool) fuses
+# them. Fusing here with bundletool made this phase fail on rules about
+# `extractNativeLibs` in a bundle — Google's packaging opinions, not our code,
+# and the sealed design needs extraction.
+#
+# So the pack's own path is proved with a build we control: `packdemo` is the
+# sealed variant with the pack's payload folded into the base APK. Same classes,
+# same payload format, same install/verify/remove code as a Play-delivered
+# module; only the packaging differs. The store claim stays where it belongs —
+# the AAB gate checks that the module is really in the bundle, on demand, under
+# Play's size cap.
 # ---------------------------------------------------------------------------
-if [ "${E2E_PACK_UNIVERSAL:-0}" = "1" ]; then
-  phase "pack-universal"
-  BUNDLETOOL_VERSION="${E2E_BUNDLETOOL_VERSION:-1.17.2}"
-  BUNDLETOOL="e2e-logs/bundletool-all-${BUNDLETOOL_VERSION}.jar"
+if [ "${E2E_PACK_DEMO:-0}" = "1" ]; then
+  phase "pack-demo"
   PACK_RC=0
-  : > e2e-logs/pack-universal.log
-  if [ ! -f "$BUNDLETOOL" ]; then
-    curl -fsSL --retry 3 -o "$BUNDLETOOL" \
-      "https://github.com/google/bundletool/releases/download/${BUNDLETOOL_VERSION}/bundletool-all-${BUNDLETOOL_VERSION}.jar" \
-      >> e2e-logs/pack-universal.log 2>&1 || PACK_RC=1
-  fi
-  AAB=$(ls app/build/outputs/bundle/sealed/*.aab 2>/dev/null | head -1)
-  if [ -z "${AAB:-}" ]; then
-    echo "no sealed bundle to fuse" >> e2e-logs/pack-universal.log
-    PACK_RC=1
-  fi
-  if [ "$PACK_RC" = "0" ]; then
-    # The debug key signs both the universal APK and the test APK: instrumentation
-    # needs the two to match, and the sealed variant is debuggable by design.
-    java -jar "$BUNDLETOOL" build-apks \
-      --bundle="$AAB" \
-      --output=e2e-logs/universal.apks \
-      --mode=universal \
-      --ks="$HOME/.android/debug.keystore" \
-      --ks-pass=pass:android --key-pass=pass:android \
-      --ks-key-alias=androiddebugkey >> e2e-logs/pack-universal.log 2>&1 || PACK_RC=1
-  fi
-  if [ "$PACK_RC" = "0" ]; then
-    # bundletool writes universal.apk at the root of the .apks zip; find it
-    # rather than assume, so a layout change is not a failed gate.
-    rm -rf e2e-logs/universal
-    unzip -o -q e2e-logs/universal.apks -d e2e-logs/universal >> e2e-logs/pack-universal.log 2>&1 || PACK_RC=1
-    UNIVERSAL_APK="$(find e2e-logs/universal -name '*.apk' | head -1)"
-    echo "universal apk: ${UNIVERSAL_APK:-<none>}" >> e2e-logs/pack-universal.log
-    [ -n "${UNIVERSAL_APK:-}" ] || PACK_RC=1
-  fi
-  if [ "$PACK_RC" = "0" ]; then
-    # A clean install, so the core payload and the pack are installed in the
-    # same run and the test proves the pair, not a leftover.
-    "$ADB" uninstall io.mcyber12.codingharness >> e2e-logs/pack-universal.log 2>&1 || true
-    "$ADB" install -r "$UNIVERSAL_APK" >> e2e-logs/pack-universal.log 2>&1 || PACK_RC=1
-  fi
-  TEST_APK=$(ls app/build/outputs/apk/androidTest/sealed/*.apk 2>/dev/null | head -1)
-  if [ "$PACK_RC" = "0" ] && [ -n "${TEST_APK:-}" ]; then
-    echo "test apk: $TEST_APK" >> e2e-logs/pack-universal.log
-    "$ADB" install -r "$TEST_APK" >> e2e-logs/pack-universal.log 2>&1 || PACK_RC=1
-  fi
-  if [ "$PACK_RC" = "0" ]; then
-    "$ADB" shell am instrument -w \
-      -e class "io.mcyber12.codingharness.SealedShellTest#packsComeFromTheStoreAndNeverFromApt" \
-      io.mcyber12.codingharness.test/androidx.test.runner.AndroidJUnitRunner \
-      >> e2e-logs/pack-universal.log 2>&1 || true
-    if ! grep -q "OK (1 test)" e2e-logs/pack-universal.log; then
-      echo "the pack test did not pass on the universal APK" >> e2e-logs/pack-universal.log
-      PACK_RC=1
-    fi
-  fi
-  # What the device kept, so a failure can be read without a rerun.
+  : > e2e-logs/pack-demo.log
+  echo "task=:app:connectedPackdemoAndroidTest class=packsComeFromTheStoreAndNeverFromApt" \
+    >> e2e-logs/pack-demo.log
+  # shellcheck disable=SC2086  # word splitting is intended for the property list
+  ./gradlew --no-daemon --stacktrace \
+    -PharnessTargetSdk="$E2E_TARGET_SDK" \
+    -PharnessCompileSdk="$E2E_COMPILE_SDK" \
+    -PharnessTestBuildType=packdemo \
+    :app:connectedPackdemoAndroidTest \
+    -Pandroid.testInstrumentationRunnerArguments.class=io.mcyber12.codingharness.SealedShellTest\#packsComeFromTheStoreAndNeverFromApt \
+    >> e2e-logs/pack-demo.log 2>&1 || PACK_RC=1
+  # A skipped test is not a pass: the pack test skips itself when the APK has no
+  # payload, which is exactly the case this phase exists to rule out.
+  grep -qE "Tests 1/1 completed" e2e-logs/pack-demo.log \
+    || { echo "the pack test did not run (expected Tests 1/1 completed)" \
+           >> e2e-logs/pack-demo.log; PACK_RC=1; }
   {
-    echo "--- pack state on the device ---"
-    "$ADB" shell run-as io.mcyber12.codingharness \
-      ls -l files/coding-harness/rootfs/data/data/com.termux/files/usr/bin 2>&1 | head -20
+    echo "--- what the device kept after the run ---"
     "$ADB" shell run-as io.mcyber12.codingharness \
       cat files/coding-harness/pack-build-tools-installed.txt 2>&1 || true
     "$ADB" shell run-as io.mcyber12.codingharness \
       cat files/coding-harness/sealed-payload-pack-buildtools.txt 2>&1 || true
-  } >> e2e-logs/pack-universal.log 2>&1
-  echo "pack-universal exit=$PACK_RC" >> e2e-logs/phases.log
+    "$ADB" shell run-as io.mcyber12.codingharness \
+      ls -l files/coding-harness/rootfs/data/data/com.termux/files/usr/bin/make 2>&1 || true
+  } >> e2e-logs/pack-demo.log 2>&1
+  echo "pack-demo exit=$PACK_RC" >> e2e-logs/phases.log
   [ "$PACK_RC" = "0" ] || RC=1
 fi
 

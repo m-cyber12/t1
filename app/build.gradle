@@ -112,6 +112,9 @@ def payloadAbis = ((findProperty("harnessPayloadAbis")
     .split(",").collect { it.trim() }.findAll { !it.isEmpty() }
 ext.sealedPayloadAbis = payloadAbis
 def filteredPayloadDir = layout.buildDirectory.dir("generated/sealed-payload-upload")
+// The on-demand pack's payload, built by :pack_buildtools (same builder, same
+// asset names), folded into the packdemo APK only.
+def packPayloadDir = new File(rootProject.projectDir, "pack_buildtools/build/generated/sealed-pack")
 
 android {
     namespace "io.mcyber12.codingharness"
@@ -174,6 +177,16 @@ android {
             // Its signing config is attached below, and only when a real key
             // exists.
         }
+        // `packdemo`: the sealed shape with the pack's payload folded into the
+        // base APK, so the pack's install → run → remove path can be exercised
+        // on an emulator. Play delivers the pack as a separate module, and
+        // `:app:assembleSealed` cannot contain one (Gradle builds base and
+        // feature separately); this variant is the same classes and the same
+        // payload format, packaged as one APK. It is never published.
+        packdemo {
+            initWith(getByName("sealed"))
+            matchingFallbacks.addAll(["sealed", "debug", "release"])
+        }
         // `sealed`: the store-shaped build (docs/play-store-plan.md).
         //
         // Two things change, and only these two:
@@ -212,6 +225,14 @@ android {
             // Filtered: only the ABIs this artefact ships (see above).
             assets.srcDir(new File(filteredPayloadDir.get().asFile, "assets"))
             jniLibs.srcDir(new File(filteredPayloadDir.get().asFile, "jniLibs"))
+        }
+        packdemo {
+            // The base payload plus the pack's, which is what a fused module
+            // looks like on the device.
+            assets.srcDir(new File(project.sealedPayloadDir.get().asFile, "assets"))
+            jniLibs.srcDir(new File(project.sealedPayloadDir.get().asFile, "jniLibs"))
+            assets.srcDir(new File(packPayloadDir, "assets"))
+            jniLibs.srcDir(new File(packPayloadDir, "jniLibs"))
         }
     }
 
@@ -426,6 +447,12 @@ tasks.matching {
     it.name.startsWith("mergeRelease") || it.name == "preReleaseBuild"
 }.configureEach {
     dependsOn(filterSealedPayload)
+}
+
+tasks.matching {
+    it.name.startsWith("mergePackdemo") || it.name == "prePackdemoBuild"
+}.configureEach {
+    dependsOn(buildSealedPayload, ":pack_buildtools:buildPackPayload")
 }
 
 // Every variant needs the bootstrap assets, not just debug/release: the

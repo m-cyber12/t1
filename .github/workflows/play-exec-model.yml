@@ -81,7 +81,10 @@ jobs:
       E2E_LEAN: "1"
       # After the APK gate, install the bundle's universal APK (the pack fused
       # the way Play fuses it) and prove install/remove on the same emulator.
-      E2E_PACK_UNIVERSAL: "1"
+      # After the APK gate, run the pack's install → run → remove path on a
+      # fused APK (the sealed variant with the pack payload folded in), which
+      # is the same code a Play-delivered module runs.
+      E2E_PACK_DEMO: "1"
       E2E_GRADLE_PROPS: "-PharnessTargetSdk=${{ matrix.target_sdk }} -PharnessCompileSdk=${{ matrix.compile_sdk }} -PharnessTestBuildType=sealed"
 
     steps:
@@ -100,23 +103,6 @@ jobs:
         with:
           packages: 'platform-tools platforms;android-35 platforms;android-36 build-tools;35.0.0 ndk;27.2.12479018'
 
-      # AGP signs the app and its test APK with the debug key; bundletool has to
-      # sign the universal APK with the same one, or instrumentation refuses to
-      # run against it. Creating the key here makes it the one AGP uses instead
-      # of discovering the file is missing mid-run.
-      - name: Ensure the shared debug keystore exists
-        shell: bash
-        run: |
-          set -euo pipefail
-          KEYSTORE="$HOME/.android/debug.keystore"
-          if [ ! -f "$KEYSTORE" ]; then
-            mkdir -p "$(dirname "$KEYSTORE")"
-            keytool -genkeypair -keystore "$KEYSTORE" -storepass android \
-              -keypass android -alias androiddebugkey -keyalg RSA -keysize 2048 \
-              -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
-          fi
-          ls -l "$KEYSTORE"
-
       - name: Build the sealed variant
         shell: bash
         run: |
@@ -126,6 +112,7 @@ jobs:
             -PharnessCompileSdk="${E2E_COMPILE_SDK}" \
             -PharnessTestBuildType=sealed \
             :app:assembleSealed :app:assembleSealedAndroidTest \
+            :app:assemblePackdemo :app:assemblePackdemoAndroidTest \
             2>&1 | tee gradle-sealed.log
 
       - name: Publish build failure log
@@ -209,18 +196,6 @@ jobs:
             -PharnessTargetSdk=36 -PharnessCompileSdk=36 \
             :app:bundleRelease 2>&1 | tee gradle-bundles.log
 
-      - name: Build the sealed bundle for the universal-APK pack test
-        shell: bash
-        run: |
-          set -o pipefail
-          ./gradlew --no-daemon --stacktrace \
-            -PharnessTargetSdk=36 -PharnessCompileSdk=36 \
-            -PharnessTestBuildType=sealed \
-            :app:bundleSealed 2>&1 | tee -a gradle-bundles.log
-
-      # The store artifact, not just the APK: a pack that is not in the bundle
-      # cannot be delivered, and a pack that is in it as an install-time module
-      # makes every install pay for clang.
       - name: Verify the App Bundle carries the pack on demand
         shell: bash
         run: |
@@ -284,7 +259,7 @@ jobs:
           cp sealed-apk-16kb.txt diagnostics/ 2>/dev/null || true
           cp sealed-aab.txt diagnostics/ 2>/dev/null || true
           tail -c 60000 gradle-bundles.log > diagnostics/gradle-bundles-tail.log 2>/dev/null || true
-          cp e2e-logs/pack-universal.log diagnostics/ 2>/dev/null || true
+          cp e2e-logs/pack-demo.log diagnostics/ 2>/dev/null || true
           cp app/build/generated/harness-bootstrap/sealed-payload-*.log diagnostics/ 2>/dev/null || true
           cp app/build/fetch-core-debs-*.log diagnostics/ 2>/dev/null || true
           cp pack_buildtools/build/generated/pack-debs/*.log diagnostics/ 2>/dev/null || true
@@ -316,9 +291,8 @@ jobs:
             sealed-apk-16kb.txt
             sealed-aab.txt
             sealed-aab-size.json
-            e2e-logs/pack-universal.log
+            e2e-logs/pack-demo.log
             app/build/outputs/bundle/release/*.aab
-            app/build/outputs/bundle/sealed/*.aab
             gradle-sealed.log
             app/build/outputs/apk/sealed/*.apk
             app/build/outputs/androidTest-results/

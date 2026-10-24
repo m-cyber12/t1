@@ -57,6 +57,12 @@ android {
             initWith(getByName("debug"))
             matchingFallbacks.addAll(["debug", "release"])
         }
+        // Mirrors the base's test-only variant (see app/build.gradle); the
+        // pack's payload is the same, this only lets that variant resolve.
+        packdemo {
+            initWith(getByName("sealed"))
+            matchingFallbacks.addAll(["sealed", "debug", "release"])
+        }
     }
 
     sourceSets {
@@ -64,6 +70,7 @@ android {
         // ships it rather than to `main`.
         release { assets.srcDir(new File(packOutput.get().asFile, "assets")); jniLibs.srcDir(new File(packOutput.get().asFile, "jniLibs")) }
         sealed { assets.srcDir(new File(packOutput.get().asFile, "assets")); jniLibs.srcDir(new File(packOutput.get().asFile, "jniLibs")) }
+        packdemo { assets.srcDir(new File(packOutput.get().asFile, "assets")); jniLibs.srcDir(new File(packOutput.get().asFile, "jniLibs")) }
     }
 
     compileOptions {
@@ -157,7 +164,8 @@ def buildPackPayload = tasks.register("buildPackPayload") {
 // its package fetch would be pure cost on every push.
 tasks.matching {
     it.name.startsWith("mergeRelease") || it.name.startsWith("mergeSealed")
-        || it.name in ["preReleaseBuild", "preSealedBuild"]
+        || it.name.startsWith("mergePackdemo")
+        || it.name in ["preReleaseBuild", "preSealedBuild", "prePackdemoBuild"]
 }.configureEach {
     dependsOn(buildPackPayload)
 }
