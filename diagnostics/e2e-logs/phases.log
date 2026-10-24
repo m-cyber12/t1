@@ -1,0 +1,37 @@
+[08:32:41] phase=install-system-image
+build-tools
+cmake
+cmdline-tools
+extras
+licenses
+ndk
+packages-list.txt
+platform-tools
+platforms
+repositories.cfg
+[08:33:26] phase=create-avd
+ANDROID_AVD_HOME=/home/runner/.android/avd
+dataPartition: disk.dataPartition.size=16384M
+total 16
+drwxr-xr-x 3 runner runner 4096 Oct 24 08:33 .
+drwxr-xr-x 3 runner runner 4096 Oct 24 08:33 ..
+drwxr-xr-x 2 runner runner 4096 Oct 24 08:33 e2e.avd
+-rw-r--r-- 1 runner runner   80 Oct 24 08:33 e2e.ini
+[08:33:29] phase=launch-emulator
+KVM unavailable; using -no-accel (software emulation)
+[08:39:33] phase=network-check
+[08:41:49] phase=device-ready
+device ready: sdk=34 (attempt 1)
+[08:42:01] phase=device-warm
+warm 1: sdk='34' in 1s (streak=1)
+warm 2: sdk='34' in 1s (streak=2)
+warm 3: sdk='34' in 1s (streak=3)
+preinstalled app/build/outputs/apk/sealed/app-sealed.apk in 115s
+[08:44:17] phase=connected-test
+task=:app:connectedSealedAndroidTest class=io.mcyber12.codingharness.SealedShellTest,io.mcyber12.codingharness.ExecModelTest props=-PharnessTargetSdk=34 -PharnessCompileSdk=35 -PharnessTestBuildType=sealed -PharnessPayloadAbis=x86_64
+ANDROID_SERIAL=emulator-5554
+:app:connectedSealedAndroidTest exit=0 (attempts=1)
+adb: error: failed to stat remote object '/sdcard/Android/data/io.mcyber12.codingharness/files/setup-e2e-report.txt': No such file or directory
+[09:14:32] phase=pack-demo
+device back after 1 check(s)
+pack-demo exit=0
