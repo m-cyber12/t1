@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  `packdemo` variant — the sealed shape, used only by the emulator gate that
+  proves a pack can be installed, run and removed.
+
+  It exists as its own source set because of this file. A build type takes its
+  manifest from src/<buildType>/, and without `extractNativeLibs="true"` no
+  library is ever extracted from the APK: the native library directory stays
+  empty, every sealed symlink points at nothing, and the pack cannot be applied.
+  The variant would then fail for a reason that has nothing to do with the code
+  under test.
+
+  It is never published.
+-->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <application android:extractNativeLibs="true" />
+</manifest>

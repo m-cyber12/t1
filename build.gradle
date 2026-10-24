@@ -1,0 +1,50 @@
+plugins {
+    id "com.android.application" version "8.13.2" apply false
+    id "com.android.library" version "8.13.2" apply false
+    // The on-demand pack (pack_buildtools/) is a Play Feature Delivery module.
+    id "com.android.dynamic-feature" version "8.13.2" apply false
+}
+
+ext {
+    minSdkVersion = 29
+    // The harness extracts and executes the Termux userspace from app-private
+    // storage. Android 10+ blocks execution from app data for apps targeting
+    // API 29+, while the Termux-style runtime requires those files to run.
+    // Keep the compatibility target until the runtime is packaged through the
+    // native-library execution path instead of being installed under files/.
+    //
+    // Overridable so the sealed variant (see docs/play-store-plan.md) can be
+    // built and tested at a store-legal target without touching the shipping
+    // default:  ./gradlew :app:assembleSealed -PharnessTargetSdk=34
+    targetSdkVersion = (findProperty("harnessTargetSdk") ?: 28) as Integer
+    // Overridable so the store-legal build can be measured at the API level
+    // Play actually requires (36 since 2026-08-31):  -PharnessCompileSdk=36
+    compileSdkVersion = (findProperty("harnessCompileSdk") ?: 35) as Integer
+    ndkVersion = "27.2.12479018"
+}
+
+allprojects {
+    group = "io.mcyber12.codingharness"
+    version = "0.1.0"
+}
+
+subprojects {
+    tasks.withType(Test).configureEach {
+        testLogging {
+            events "failed"
+            exceptionFormat "full"
+            showExceptions true
+            showCauses true
+            showStackTraces true
+        }
+    }
+}
+
+// Keep the copied Termux terminal libraries boring and independently reusable.
+// This task is deliberately separate from the application build so the same
+// harness-core + terminal modules can be added to a larger Android app later.
+tasks.register("printHarnessModules") {
+    doLast {
+        println("sealed-runtime + terminal-emulator + terminal-view + harness-core + app")
+    }
+}

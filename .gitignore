@@ -1,0 +1,26 @@
+# Gradle
+.gradle/
+**/build/
+local.properties
+
+# IDE
+.idea/
+*.iml
+.DS_Store
+
+# Android artifacts
+*.apk
+*.aab
+captures/
+.externalNativeBuild/
+.cxx/
+
+# Python bytecode from the build scripts
+__pycache__/
+*.pyc
+
+# Release signing: never commit a key or its passwords
+keystore.properties
+*.jks
+*.keystore
+!**/testonly-debug-signing.p12

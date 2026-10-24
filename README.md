@@ -1,1 +1,184 @@
-# t1
+# Coding Harness for Android
+
+A separate Android terminal app for coding agents. It uses the reusable terminal
+engine from Termux, installs a small Termux-style userspace, and provisions the
+language/tool packages that coding harnesses commonly need.
+
+This project is intentionally separate from the OpenCode Android app. The
+standalone APK is `app`; the code that the main app can later reuse is in
+`harness-core`, `terminal-emulator`, and `terminal-view`.
+
+## What this app provides
+
+This is not the complete Termux product or a general-purpose package catalog.
+It is a focused coding harness containing:
+
+- a real PTY-backed interactive shell;
+- Termux terminal emulation, touch input, keyboard input, scrollback and
+  copy/paste;
+- an app-private Termux-style `PREFIX`, `HOME`, `TMPDIR`, XDG directories and
+  workspace;
+- the Termux bootstrap layer with `apt`/`dpkg`, shell, certificates and base
+  Unix tools;
+- first-run installation of the agentic core — Python/pip, Node.js/npm, Perl,
+  Ruby, Git, ripgrep and small utilities — with the compiler toolchain
+  (clang/cmake) as an on-demand pack (docs/size-management.md);
+- a one-shot command runner for agent tools;
+- explicit tool discovery and a setup/retry path in the standalone UI.
+
+The first-run package setup uses the official Termux package repository. After
+setup, the terminal has `python`, `pip`, `node`, `npm`, `perl`, `ruby`, `git`,
+`rg`, `bash`, `curl` and related core tools in its private prefix;
+`clang`/`cmake`/`make` install on demand from the TOOLS dialog.
+The package installation is done inside the app sandbox; it does not need
+Termux to be installed separately.
+
+Bun is not duplicated here. The standalone app recognizes Bun as an optional
+host-provided tool, and the future OpenCode app can point `HarnessConfig` at its
+existing Bun/runtime directory.
+
+## Architecture
+
+```
+app/                 actual standalone Coding Harness APK
+harness-core/        reusable bootstrap, package, process, paths and tool APIs
+sealed-runtime/      Android-free install/verify/uninstall kernel (port surface)
+pack_buildtools/     Play Feature Delivery module: optional build tools
+terminal-view/       Termux terminal UI source
+terminal-emulator/   Termux terminal emulator + PTY JNI source
+ci/                  CI workflow template; copied manually into GitHub Actions
+store/               Store listing, data-safety answers, release checklist
+```
+
+The reusable integration surface is:
+
+```java
+HarnessConfig config = HarnessConfig.builder(context)
+    .workspace(existingWorkspace)
+    .home(existingHome)
+    .prefix(existingPrefix)
+    .toolDirectory(existingToolDirectory)
+    .libraryDirectory(existingLibraryDirectory)
+    .shellPath("/system/bin/sh")
+    .build();
+
+HarnessSession session = HarnessSession.start(context, config, terminalSessionClient);
+terminalView.attachSession(session.terminalSession());
+```
+
+The future main app can therefore reuse the process/runtime modules while
+providing its own Compose/UI layer, OpenCode runtime supervisor and workspace
+store. No `Activity`, `View`, OpenCode class or app package is referenced by
+`harness-core`.
+
+## Build
+
+```bash
+./gradlew :app:assembleDebug
+./gradlew test
+```
+
+Building the APK downloads and SHA-256 verifies the arm64-v8a and x86_64
+Termux bootstrap archives into Gradle's generated build directory. They are not
+checked into Git. The resulting APK contains both ABI bootstrap assets; the
+runtime selects the device ABI at first launch.
+
+The first app launch extracts the base bootstrap and then runs `apt-get update`
+and installs the coding package set. That step needs network access and may
+take a few minutes. If it fails, the shell remains usable and the SETUP button
+retries it.
+
+The app currently targets Android API 28 intentionally. Android 10 and newer
+block apps targeting API 29 or higher from executing binaries extracted into
+private app data, while this focused harness installs and updates its Termux
+userspace under the app-private `files/coding-harness` directory. Raising the
+target requires moving the complete mutable runtime to Android's native-library
+execution path; it is not enough to chmod the extracted files.
+
+## How the standalone app works
+
+The startup path is deliberately small and layered:
+
+1. `MainActivity` creates the terminal view and a private runtime configuration.
+2. `HarnessBootstrap` extracts the ABI-specific Termux bootstrap into the app's
+   private `files/coding-harness/usr` prefix and restores its symlinks and
+   executable permissions.
+3. `HarnessSession` starts a real PTY-backed Bash process in the private
+   workspace. `terminal-emulator` handles terminal parsing and PTY I/O;
+   `terminal-view` renders it and forwards touch/keyboard input.
+4. `HarnessEnvironment` supplies `HOME`, `PREFIX`, `PATH`, XDG directories,
+   library paths and Termux relocation variables. The small `harness-exec`
+   preload translates the official bootstrap's `/data/data/com.termux` script
+   interpreters to this app's private prefix.
+5. `HarnessPackageInstaller` runs `apt-get` inside that same environment and
+   installs the focused coding set: Python, Node.js/npm, Perl, Ruby, Git,
+   ripgrep, Clang, Make, CMake, curl, SSH and common Unix tools.
+
+This is a real Linux userspace and process environment inside the Android app,
+not a fake command console. It has a persistent workspace, a private HOME,
+package state, shell processes, executable toolchain, environment variables,
+PTY behavior, scrollback, copy/paste and keyboard input. It intentionally does
+not include Termux's Android UI, plugins, services, add-on ecosystem, storage
+browser or general-purpose distribution surface. The reusable process,
+bootstrap and environment modules remain independent of this Activity so the
+main OpenCode app can later attach its own UI and workspace policy.
+
+## CI workflow template
+
+The workflow template is deliberately stored outside `.github/workflows`:
+
+```text
+ci/android-jdk-builder.yml
+```
+
+Copy it manually to `.github/workflows/android-jdk-builder.yml` in the target
+repository. It selects Temurin JDK 17, installs Android SDK 35 and NDK
+27.2.12479018, runs tests, downloads the bootstrap assets during the Gradle
+build, and uploads the debug APK.
+
+## Termux source provenance
+
+`terminal-emulator/` and `terminal-view/` are derived from:
+
+- repository: https://github.com/termux/termux-app
+- source revision: `8629e632fcb95da272221be327db653fb24befe9`
+- source modules: `terminal-emulator`, `terminal-view`
+
+The bootstrap archive is fetched from the official `termux/termux-packages`
+release during the build and is pinned by version and SHA-256 in
+`app/build.gradle`. The copied modules retain the upstream
+`com.termux.terminal` and `com.termux.view` package names so upstream fixes can
+be merged cleanly.
+
+See `TERMUX_SOURCE.md` for the integration and update procedure.
+
+## Architecture and distribution
+
+`ARCHITECTURE.md` describes the module layout, the on-device runtime
+layout, the exec/preload translation layer, the provisioning module and
+its invariants, how verification works, and the constraints on Google
+Play distribution (target API level, W^X execution, downloaded-code
+policy).
+
+`docs/play-store-plan.md` is the way through those constraints: a *sealed*
+build that ships every executable as a JNI library inside the APK and keeps
+the Termux prefix shape with symlinks, so the harness can target a
+store-legal API level. It is no longer a plan — the core tier (bash, git,
+python, node, perl, ruby, ripgrep and the rest of the basic tools) runs from
+the APK at `targetSdk 36` on API 36 and at 34 on API 34, with zero binaries
+outside the APK (`ci/play-exec-model.yml`).
+
+The mechanism lives in `sealed-runtime/`, a module with **no Android APIs**:
+`SealedInstaller` extracts the payload, verifies every file against its
+manifest while writing it, recreates the data links and points each executable
+at the library the APK shipped. Because it is plain Java, it is unit-tested on
+the JVM (`:sealed-runtime:test`) instead of on an emulator, and the main
+harness takes it whole:
+
+```bash
+scripts/export-sealed-runtime.sh app/src/main/java --package <your.package>
+```
+
+`docs/sealed-runtime-port.md` is the merging instruction: what moves, what
+deliberately stays behind, and the four invariants (each cost a device run
+here) that its tests enforce.

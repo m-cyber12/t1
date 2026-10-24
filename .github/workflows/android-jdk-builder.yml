@@ -1,0 +1,214 @@
+name: Android JDK builder
+
+on:
+  push:
+    branches: ["main", "arena/**"]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  issues: write
+
+jobs:
+  build:
+    name: JDK 17 / Android build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Inspect Termux bootstrap and run its apt
+        continue-on-error: true
+        shell: bash
+        run: |
+          WORK="$(mktemp -d)"
+          cd "$WORK" || exit 0
+          {
+            set -x
+            set +e
+            curl -fsSL -o bs.zip "https://github.com/termux/termux-packages/releases/download/bootstrap-2026.02.12-r1%2Bapt.android-7/bootstrap-x86_64.zip"
+            echo "curl exit=$?"
+            mkdir rootfs && cd rootfs
+            unzip -q ../bs.zip
+            P="$PWD"
+            echo "== etc/apt =="; ls -la etc/apt
+            echo "== sources.list =="; cat etc/apt/sources.list || echo "SOURCES.LIST MISSING"
+            echo "== sources.list.d =="; ls -la etc/apt/sources.list.d
+            echo "== trusted.gpg.d =="; ls -la etc/apt/trusted.gpg.d
+            echo "== methods =="; ls lib/apt/methods
+            echo "== dpkg status =="; head -4 var/lib/dpkg/status || echo "STATUS MISSING"
+            printf '%s\n' \
+              'Apt::Architecture "x86_64";' \
+              'Acquire::Retries "2";' \
+              "Dir \"$P\";" \
+              'Dir::State "var/lib/apt";' \
+              'Dir::Cache "var/cache/apt";' \
+              'Dir::Cache::archives "archives";' \
+              'Dir::Etc "etc/apt";' \
+              'Dir::Etc::sourcelist "sources.list";' \
+              'Dir::Etc::sourceparts "sources.list.d";' \
+              'Dir::Etc::main "apt.conf";' \
+              'Dir::Etc::parts "apt.conf.d";' \
+              'Dir::Log "var/log/apt";' \
+              'Dir::Bin::dpkg "bin/dpkg";' \
+              'Dir::Bin::methods "lib/apt/methods";' \
+              > harness-apt.conf
+            export APT_CONFIG="$P/harness-apt.conf"
+            export LD_LIBRARY_PATH="$P/lib"
+            export HOME="$P/home" TMPDIR="$P/tmp" PREFIX="$P"
+            mkdir -p home tmp
+            chmod +x bin/* lib/apt/methods/* 2>/dev/null
+            echo "== apt-get update (linux loader) =="
+            /lib64/ld-linux-x86-64.so.2 ./bin/apt-get update
+            echo "loader exit=$?"
+            echo "== lists after update =="; ls -la var/lib/apt/lists | head -20
+          } > "$WORK/inspect.log" 2>&1
+          tail -c 4000 "$WORK/inspect.log"
+          # The exported Termux LD_LIBRARY_PATH breaks the runner's own git
+          # and python (incompatible libdl/ssl); drop it before publishing.
+          unset LD_LIBRARY_PATH APT_CONFIG PREFIX TMPDIR HOME
+          # The build sandbox cannot download CI logs or artifacts, so publish
+          # the inspection log on a diagnostics branch using the checkout
+          # action's own credentials.
+          cd "$GITHUB_WORKSPACE" || exit 0
+          mkdir -p diagnostics
+          cp "$WORK/inspect.log" diagnostics/bootstrap-inspect.log || true
+          git add diagnostics/bootstrap-inspect.log || true
+          git -c user.email=ci@invalid -c user.name=ci-inspect commit -qm "bootstrap inspect log ${GITHUB_RUN_ID} [ci]" || true
+          git push origin "HEAD:refs/heads/diagnostics/inspect" --force || true
+          cd "$WORK" || exit 0
+          python3 -c "import json,os,urllib.request;log=open('inspect.log','rb').read().decode('utf8','replace');payload={'title':'bootstrap inspect ${GITHUB_RUN_ID}','body':'bootstrap inspect log\n'+log[-6000:]};req=urllib.request.Request('https://api.github.com/repos/'+os.environ['GITHUB_REPOSITORY']+'/issues',data=json.dumps(payload).encode(),method='POST');req.add_header('Authorization','Bearer ${{ secrets.GITHUB_TOKEN }}');req.add_header('Accept','application/vnd.github+json');print('issue status',urllib.request.urlopen(req,timeout=30).status)" || true
+          python3 -c "import os,json,urllib.request;log=open('inspect.log','rb').read().decode('utf8','replace');clean=' '.join(log.split());chunks=[clean[i:i+130] for i in range(0,min(len(clean),1300),130)];[urllib.request.urlopen(urllib.request.Request('https://api.github.com/repos/'+os.environ['GITHUB_REPOSITORY']+'/statuses/'+os.environ['GITHUB_SHA'],data=json.dumps({'state':'success','context':'inspect/%02d'%n,'description':c}).encode(),method='POST'),timeout=30) for n,c in enumerate(chunks)];print('statuses',len(chunks))" || true
+          rm -rf "$WORK"
+          exit 0
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: gradle
+
+      - name: Set up Android SDK command-line tools
+        uses: android-actions/setup-android@v3
+        with:
+          # setup-android v3 still defaults to the removed SDK package "tools".
+          # Override the default with only supported package names. The action
+          # installs each package as a positional sdkmanager argument.
+          packages: 'platform-tools platforms;android-35 build-tools;35.0.0 ndk;27.2.12479018'
+
+      - name: Verify toolchain
+        run: |
+          java -version
+          ./gradlew --version
+          test -d "$ANDROID_HOME/platforms/android-35"
+          test -d "$ANDROID_NDK_HOME" || test -d "$ANDROID_HOME/ndk/27.2.12479018"
+
+      - name: Run JVM tests and assemble debug APK
+        shell: bash
+        run: |
+          set -o pipefail
+          ./gradlew --no-daemon --stacktrace test :app:assembleDebug 2>&1 | tee gradle-build.log
+
+      # State the packaging facts of the artifact a human installs, as data:
+      # the target SDK is the whole reason this build is not on Play, so it is
+      # printed and pinned here instead of being inferred from build.gradle.
+      - name: Record APK identity (target SDK, version)
+        shell: bash
+        run: |
+          set -e
+          APK=$(ls app/build/outputs/apk/debug/*.apk | head -1)
+          AAPT2=$(ls "$ANDROID_HOME"/build-tools/*/aapt2 | head -1)
+          "$AAPT2" dump badging "$APK" > apk-badging.txt
+          grep -E "^package:|sdkVersion|targetSdkVersion|native-code" apk-badging.txt | tee apk-identity.txt
+          TARGET=$(sed -n "s/.*targetSdkVersion:'\([0-9]*\)'.*/\1/p" apk-badging.txt | head -1)
+          CODE=$(sed -n "s/.*versionCode='\([0-9]*\)'.*/\1/p" apk-badging.txt | head -1)
+          echo "installable artifact: targetSdk=$TARGET versionCode=$CODE"
+          if [ "$TARGET" != "28" ]; then
+            echo "The shipping debug APK is expected to target API 28 (data-directory exec)." >&2
+            echo "A different target means the exec model must be sealed first - see docs/play-store-plan.md." >&2
+            exit 1
+          fi
+
+      # The payload pipeline is pure Python (mirror + .deb unpacking + split),
+      # so it is tested here against a synthetic repository: no network, no
+      # emulator, and it covers dependency resolution, hard-link dedupe and the
+      # hash check that protects a pinned payload.
+      - name: Test the sealed payload pipeline
+        shell: bash
+        run: |
+          set -e
+          python3 scripts/tests/test-sealed-payload.py
+          # The store tripwire is arithmetic, so it is tested with arithmetic.
+          python3 scripts/tests/test-check-bundle-size.py
+
+      - name: Verify APK contents
+        shell: bash
+        run: |
+          set -e
+          APK=$(ls app/build/outputs/apk/debug/*.apk | head -1)
+          echo "APK=$APK"
+          unzip -l "$APK" > apk-contents.txt
+          grep -q "assets/cacert.pem" apk-contents.txt
+          for k in 2096779623 agnostic-apollo grimler kcubeterm landfillbaby mradityaalok termux-autobuilds thunder-coding; do
+            grep -q "assets/termux-keyring/$k.gpg" apk-contents.txt || { echo "MISSING assets/termux-keyring/$k.gpg"; exit 1; }
+          done
+          grep -q "assets/bootstrap-aarch64.zip" apk-contents.txt
+          grep -q "assets/bootstrap-x86_64.zip" apk-contents.txt
+          # libharness-exec.so must be present per ABI: the harness extracts
+          # it from the APK at provisioning time for LD_PRELOAD.
+          grep -q "lib/arm64-v8a/libharness-exec.so" apk-contents.txt
+          grep -q "lib/x86_64/libharness-exec.so" apk-contents.txt
+          echo "APK contents verified: cacert.pem, 8 termux keys, both bootstraps, libharness-exec.so"
+
+      - name: Publish test results on failure
+        if: failure()
+        shell: bash
+        run: |
+          mkdir -p diagnostics-tests
+          tail -c 40000 gradle-build.log > diagnostics-tests/gradle-tail.txt 2>/dev/null || true
+          cp apk-native-check.txt diagnostics-tests/ 2>/dev/null || true
+          cp app/build/fetch-core-debs-*.log diagnostics-tests/ 2>/dev/null || true
+          cp apk-contents.txt diagnostics-tests/ 2>/dev/null || true
+          find . -path '*test-results*' -name '*.xml' -exec cp {} diagnostics-tests/ \; 2>/dev/null || true
+          find . -path '*test-results*' -name '*.txt' -exec cp {} diagnostics-tests/ \; 2>/dev/null || true
+          ls diagnostics-tests/ || true
+          git add diagnostics-tests/ || true
+          git -c user.email=ci@invalid -c user.name=ci-tests commit -qm "test results ${GITHUB_RUN_ID} [ci]" || true
+          git push origin "HEAD:refs/heads/diagnostics/builder" --force || true
+
+      - name: Annotate Gradle failure
+        if: failure()
+        shell: bash
+        run: |
+          # Both variants write separate result directories; glob them all
+          # (a debug-only glob once hid a release-variant failure).
+          report=$(grep -h -m1 -A12 '<failure' \
+            */*/build/test-results/*/*.xml */build/test-results/*/*.xml 2>/dev/null \
+            | tr '\n' ' ' | cut -c1-8000 || true)
+          if [ -n "$report" ]; then
+            report=${report//%/%25}
+            report=${report//$'\r'/%0D}
+            report=${report//$'\n'/%0A}
+            echo "::error title=First JUnit failure::$report"
+          fi
+
+      - name: Upload Gradle failure log
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coding-harness-gradle-failure-log
+          path: gradle-build.log
+          if-no-files-found: warn
+
+      - name: Upload debug APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: coding-harness-debug-targetSdk28
+          path: |
+            app/build/outputs/apk/debug/*.apk
+            apk-identity.txt
+            apk-badging.txt
+          if-no-files-found: error

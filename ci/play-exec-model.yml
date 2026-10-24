@@ -1,0 +1,315 @@
+name: Exec model (sealed)
+
+# The publishability gate (docs/play-store-plan.md).
+#
+# The shipping build targets API 28, because it executes the userland it
+# installed under its own data directory — which Android 10+ forbids for apps
+# targeting 29+. This workflow builds the *sealed* variant at targetSdk 34
+# (extractNativeLibs=true, executables shipped as JNI libraries, the rest of the
+# userland as an asset payload) and runs two tests on an emulator.
+#
+# SealedShellTest — the milestone: a real userland from the APK.
+#   * the payload installs, bin/bash is a symlink into the native library dir;
+#   * bash runs a script, reaches its last line, and reports its version/PATH;
+#   * sed filters through a pipe in the same shell;
+#   * the audit finds zero executables outside the APK.
+#
+# ExecModelTest — the rule underneath, measured:
+#   * a file in the native library directory executes;
+#   * the same bytes copied into app-private storage do NOT execute;
+#   * a prefix symlink into the native library directory DOES execute;
+#   * a script whose shebang names the official Termux prefix runs through the
+#     preload (interpreter translated, script only read);
+#   * direct execution of a data-dir script is denied.
+#
+# It needs no network and no package installation, so it is fast and cannot
+# flake on a repository mirror. The full setup E2E (a01–a04) remains the
+# correctness gate for the apt-based build.
+#
+# Authored at ci/play-exec-model.yml and copied into .github/workflows/.
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ["arena/**"]
+    paths:
+      - "app/**"
+      - "harness-core/**"
+      - "pack_buildtools/**"
+      - "sealed-runtime/**"
+      - "terminal-emulator/**"
+      - "scripts/**"
+      - "build.gradle"
+      - "settings.gradle"
+      - "ci/play-exec-model.yml"
+      - ".github/workflows/play-exec-model.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  exec-model:
+    name: Sealed / targetSdk ${{ matrix.target_sdk }} on API ${{ matrix.api }}
+    # Two measurements, because the claim is two-part: the sealed runtime must
+    # work at the API level Play requires (36), and it must still work on the
+    # level the mechanism was designed against (34). The exec policy belongs to
+    # the device, so each target is measured on a device of that API level.
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target_sdk: 34
+            compile_sdk: 35
+            api: 34
+            image: "system-images;android-34;aosp_atd;x86_64"
+          - target_sdk: 36
+            compile_sdk: 36
+            api: 36
+            image: "system-images;android-36;aosp_atd;x86_64"
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+
+    env:
+      E2E_TARGET_SDK: ${{ matrix.target_sdk }}
+      E2E_COMPILE_SDK: ${{ matrix.compile_sdk }}
+      E2E_SYSTEM_IMAGE: ${{ matrix.image }}
+      # Every matrix leg publishes its own branch: both legs push diagnostics,
+      # and a shared name meant the second push silently replaced the first.
+      API_LEVEL: ${{ matrix.api }}
+      E2E_TEST_TASK: ":app:connectedSealedAndroidTest"
+      E2E_TEST_CLASS: "io.mcyber12.codingharness.SealedShellTest,io.mcyber12.codingharness.ExecModelTest"
+      E2E_LEAN: "1"
+      # After the APK gate, install the bundle's universal APK (the pack fused
+      # the way Play fuses it) and prove install/remove on the same emulator.
+      # After the APK gate, run the pack's install → run → remove path on a
+      # fused APK (the sealed variant with the pack payload folded in), which
+      # is the same code a Play-delivered module runs.
+      E2E_PACK_DEMO: "1"
+      # One ABI: the emulator is x86_64, and installing a payload for a CPU
+      # the device does not have doubled the install time for no coverage.
+      E2E_GRADLE_PROPS: "-PharnessTargetSdk=${{ matrix.target_sdk }} -PharnessCompileSdk=${{ matrix.compile_sdk }} -PharnessTestBuildType=sealed -PharnessPayloadAbis=x86_64"
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: gradle
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+        with:
+          packages: 'platform-tools platforms;android-35 platforms;android-36 build-tools;35.0.0 ndk;27.2.12479018'
+
+      - name: Build the sealed variant
+        shell: bash
+        run: |
+          set -o pipefail
+          ./gradlew --no-daemon --stacktrace \
+            -PharnessTargetSdk="${E2E_TARGET_SDK}" \
+            -PharnessCompileSdk="${E2E_COMPILE_SDK}" \
+            -PharnessTestBuildType=sealed \
+            -PharnessPayloadAbis=x86_64 \
+            :app:assembleSealed :app:assembleSealedAndroidTest \
+            :app:assemblePackdemo \
+            2>&1 | tee gradle-sealed.log
+
+      - name: Publish build failure log
+        if: failure()
+        shell: bash
+        run: |
+          mkdir -p diagnostics
+          tail -c 60000 gradle-sealed.log > diagnostics/gradle-sealed-tail.log 2>/dev/null || true
+          tail -c 60000 gradle-bundles.log > diagnostics/gradle-bundles-tail.log 2>/dev/null || true
+          grep -E 'error:|What went wrong|FAILED' -A5 gradle-sealed.log > diagnostics/gradle-sealed-errors.log 2>/dev/null || true
+          # The build steps write their own transcripts; Gradle drops a failed
+          # child's output, so these files are the only account of why.
+          cp app/build/generated/harness-bootstrap/*.log diagnostics/ 2>/dev/null || true
+          cp app/build/fetch-core-debs-*.log diagnostics/ 2>/dev/null || true
+          cp pack_buildtools/build/generated/pack-debs/*.log diagnostics/ 2>/dev/null || true
+          cp pack_buildtools/build/generated/sealed-pack/*.log diagnostics/ 2>/dev/null || true
+          git add diagnostics/ || true
+          git -c user.email=ci@invalid -c user.name=ci commit -qm "sealed build failure ${GITHUB_RUN_ID} [ci]" || true
+          git push origin "HEAD:refs/heads/diagnostics/sealed-${GITHUB_RUN_ID}-sdk${E2E_TARGET_SDK}" --force || true
+
+      # The whole point of the variant: prove the APK really carries the exec
+      # policy it claims to. If extractNativeLibs silently stayed false, the
+      # on-device test would fail in a much more confusing way.
+      - name: Verify the sealed APK shape
+        shell: bash
+        run: |
+          set -euo pipefail
+          AAPT2="$(ls "$ANDROID_HOME"/build-tools/*/aapt2 | head -1)"
+          APK="$(ls app/build/outputs/apk/sealed/*.apk | head -1)"
+          echo "apk=$APK"
+          "$AAPT2" dump badging "$APK" | grep -E "package:|sdkVersion|targetSdkVersion|native-code" | tee sealed-apk-identity.txt || true
+          "$AAPT2" dump xmltree --file AndroidManifest.xml "$APK" > manifest-tree.txt
+          grep -A1 "extractNativeLibs" manifest-tree.txt || true
+          if ! grep -q "extractNativeLibs" manifest-tree.txt; then
+            echo "extractNativeLibs is not set in the sealed manifest" >&2; exit 1
+          fi
+          unzip -l "$APK" | grep -E "lib/.*/(libharnessprobe|libharness-exec)\.so" || {
+            echo "expected native libraries are missing from the APK" >&2; exit 1; }
+          # The sealed userland: the data half and the executables it points at.
+          # Which ABIs the APK carries is the build's choice (one for the store,
+          # one for the emulator); what matters is that every ABI it does carry
+          # is complete, so the list comes from the APK rather than from a guess.
+          ABIS="$(unzip -l "$APK" | sed -n 's|.*lib/\([^/]*\)/libbash\.so|\1|p' | sort -u)"
+          echo "abis=$ABIS" | tee -a sealed-apk-identity.txt
+          [ -n "$ABIS" ] || { echo "no ABI ships the shell" >&2; exit 1; }
+          for abi in $ABIS; do
+            unzip -l "$APK" | grep -q "assets/userland-${abi}.zip" || {
+              echo "no sealed payload for ${abi} in the APK" >&2; exit 1; }
+            unzip -l "$APK" | grep -q "assets/sealed-exec-${abi}.txt" || {
+              echo "no sealed-exec manifest for ${abi}" >&2; exit 1; }
+            # The core tier, not just the shell: every tool below has to be in
+            # the manifest, and the library it names has to be in the APK.
+            unzip -p "$APK" "assets/sealed-exec-${abi}.txt" > "sealed-exec-${abi}.txt"
+            for path in bin/git bin/python bin/node bin/perl bin/ruby bin/rg; do
+              line=$(awk -v p="${path}" -F'\t' '$1==p {print; exit}' "sealed-exec-${abi}.txt")
+              if [ -z "$line" ]; then
+                echo "${path} is not sealed in ${abi}" >&2; exit 1
+              fi
+              library=$(printf '%s' "$line" | cut -f2)
+              unzip -l "$APK" | grep -q "lib/${abi}/${library}" || {
+                echo "${path} -> ${library} is missing from the APK (${abi})" >&2; exit 1; }
+              echo "sealed ${path} -> lib/${abi}/${library}"
+            done
+            echo "sealed executables: $(grep -vc '^#' "sealed-exec-${abi}.txt")"
+          done
+          # 16 KB page support is an ELF property (p_align of the loadable
+          # segments), not a zip property: these libraries are packaged
+          # compressed and extracted at install time, so `zipalign -P 16` has
+          # nothing to say about them. The objects compiled here are gated; the
+          # shipped userland is reported, because its alignment is decided by
+          # how the Termux packages were built.
+          python3 scripts/check-page-alignment.py "$APK" \
+            --report sealed-apk-16kb.txt --require-compliant
+          cat app/build/generated/sealed-payload/assets/sealed-payload-*.json | tee sealed-payload.json
+
+      # The bundle is built at the target Play requires, on every leg: a bundle
+      # at 28 or 34 is an artefact nobody can upload, and the gate would be
+      # measuring a shape that will never be shipped. Building it here also
+      # exercises the guard in app/build.gradle that refuses a bad bundle.
+      - name: Build the release bundle at the target Play requires
+        shell: bash
+        run: |
+          set -o pipefail
+          ./gradlew --no-daemon --stacktrace \
+            -PharnessTargetSdk=36 -PharnessCompileSdk=36 \
+            :app:bundleRelease 2>&1 | tee gradle-bundles.log
+
+      - name: Verify the App Bundle carries the pack on demand
+        shell: bash
+        run: |
+          set -euo pipefail
+          AAB="$(ls app/build/outputs/bundle/release/*.aab | head -1)"
+          APK="$(ls app/build/outputs/apk/sealed/*.apk | head -1 || true)"
+          echo "aab=$AAB ($(stat -c%s "$AAB") bytes)" | tee sealed-aab.txt
+          unzip -l "$AAB" | grep "pack_buildtools/" | head -20 >> sealed-aab.txt || true
+
+          # 1. The module is in the bundle, with its payload.
+          unzip -l "$AAB" | grep -q "pack_buildtools/manifest/AndroidManifest.xml" \
+            || { echo "the pack module is not in the bundle" >&2; exit 1; }
+          unzip -l "$AAB" | grep -q "pack_buildtools/assets/pack-buildtools-userland-" \
+            || { echo "the pack module carries no payload" >&2; exit 1; }
+          # 2. It is delivered on demand, not fused into every install. The
+          #    bundle stores this manifest as protobuf, so the merged XML from
+          #    the build is what can be read; the source manifest says the same.
+          grep -q "on-demand" pack_buildtools/src/main/AndroidManifest.xml \
+            || { echo "the pack is not on-demand in its manifest" >&2; exit 1; }
+          MERGED="$(grep -rl "dist:on-demand" pack_buildtools/build/intermediates \
+            --include=AndroidManifest.xml 2>/dev/null | head -1 || true)"
+          if [ -n "$MERGED" ]; then
+            echo "merged feature manifest: $MERGED" >> sealed-aab.txt
+            grep -E "dist:module|dist:on-demand|dist:fusing" "$MERGED" >> sealed-aab.txt
+          else
+            echo "note: no merged feature manifest retained; source manifest checked" \
+              >> sealed-aab.txt
+          fi
+          # 3. The store artefact must not carry the apt build's bootstrap: the
+          #    sealed payload replaces it, and shipping both is what pushed the
+          #    base module to the edge of Play's limit.
+          if unzip -l "$AAB" | grep -q "assets/bootstrap-.*\.zip"; then
+            echo "the bundle still carries the Termux bootstrap the sealed build never reads" >&2
+            exit 1
+          fi
+          # 4. The base module still fits Play's 200 MB limit, and the pack is
+          #    what makes that true. The script fails the job; a printed number
+          #    nobody reads is not a gate.
+          python3 scripts/check-bundle-size.py "$AAB" ${APK:+--apk "$APK"} \
+            --json sealed-aab-size.json 2>&1 | tee -a sealed-aab.txt
+
+      - name: Run the exec-model measurement on an emulator
+        shell: bash
+        run: bash scripts/run-emulator-e2e.sh
+
+      # A skipped test is not a pass: ExecModelTest skips itself in builds that
+      # do not extract native libraries, so assert it actually ran. The run log
+      # is the primary evidence; the JUnit XML is a cross-check.
+      - name: Assert both gates actually ran
+        shell: bash
+        run: |
+          set -uo pipefail
+          grep -E "Tests [0-9]+/[0-9]+ completed" e2e-logs/connected-test.log | tail -3 || true
+          # The results tree is variant-nested; the script walks it and prints
+          # what it saw, so a wrong path is diagnosed here and not in a rerun.
+          python3 scripts/assert-gate-results.py app/build/outputs/androidTest-results
+
+      - name: Publish diagnostics
+        if: always()
+        shell: bash
+        run: |
+          mkdir -p diagnostics
+          cp ./setup-e2e-report.txt diagnostics/setup-e2e-report.txt 2>/dev/null \
+            || echo "no setup-e2e-report.txt pulled" > diagnostics/setup-e2e-report.txt
+          cp manifest-tree.txt diagnostics/ 2>/dev/null || true
+          cp sealed-apk-identity.txt diagnostics/ 2>/dev/null || true
+          cp sealed-payload.json diagnostics/ 2>/dev/null || true
+          cp sealed-apk-16kb.txt diagnostics/ 2>/dev/null || true
+          cp sealed-aab.txt diagnostics/ 2>/dev/null || true
+          tail -c 60000 gradle-bundles.log > diagnostics/gradle-bundles-tail.log 2>/dev/null || true
+          cp e2e-logs/pack-demo.log diagnostics/ 2>/dev/null || true
+          cp e2e-logs/pack-demo-logcat.log diagnostics/ 2>/dev/null || true
+          cp app/build/generated/harness-bootstrap/sealed-payload-*.log diagnostics/ 2>/dev/null || true
+          cp app/build/fetch-core-debs-*.log diagnostics/ 2>/dev/null || true
+          cp pack_buildtools/build/generated/pack-debs/*.log diagnostics/ 2>/dev/null || true
+          cp pack_buildtools/build/generated/sealed-pack/*.log diagnostics/ 2>/dev/null || true
+          for x in app/build/outputs/androidTest-results/connected/*.xml; do
+            [ -f "$x" ] && cp "$x" diagnostics/
+          done
+          date -u +"exec-model finished %Y-%m-%dT%H:%M:%SZ run=${GITHUB_RUN_ID}" \
+            > diagnostics/exec-model-status.txt
+          git add diagnostics/ || true
+          git -c user.email=ci@invalid -c user.name=ci-e2e \
+            commit -qm "exec model results ${GITHUB_RUN_ID} [ci]" || true
+          # A failed push must not hide the reason the job failed; the branch is
+          # diagnostics, not a gate.
+          git push origin "HEAD:refs/heads/diagnostics/exec-model-${GITHUB_RUN_ID}-sdk${E2E_TARGET_SDK}-api${API_LEVEL}" --force || \
+            echo "could not publish diagnostics" >&2
+
+      - name: Upload results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sealed-targetSdk${{ matrix.target_sdk }}-api${{ matrix.api }}-from-APK
+          path: |
+            setup-e2e-report.txt
+            manifest-tree.txt
+            sealed-apk-identity.txt
+            sealed-payload.json
+            sealed-exec-*.txt
+            sealed-apk-16kb.txt
+            sealed-aab.txt
+            sealed-aab-size.json
+            e2e-logs/pack-demo.log
+            e2e-logs/pack-demo-logcat.log
+            app/build/outputs/bundle/release/*.aab
+            gradle-sealed.log
+            app/build/outputs/apk/sealed/*.apk
+            app/build/outputs/androidTest-results/
+          if-no-files-found: warn
