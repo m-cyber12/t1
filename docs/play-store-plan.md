@@ -371,7 +371,7 @@ Two different things are being proved, and they need two different artefacts:
 
 | Claim | Artefact | Gate |
 |---|---|---|
-| The pack is in the store build, on demand, under the size cap | the release AAB | `pack_buildtools/` present with its payload, `dist:on-demand` in the merged manifest, `check-bundle-size.py` |
+| The pack is in the store build, on demand, under the size cap | the release AAB | `pack_buildtools/` present with its payload, `dist:on-demand` in the merged manifest, `check-bundle-size.py`, no `assets/bootstrap-*.zip` |
 | Installing, running and removing a pack works, and the runtime survives | `packdemo` APK (sealed + the pack's payload folded in) | `packsComeFromTheStoreAndNeverFromApt` on the emulator |
 
 The second one deliberately does not go through bundletool. An earlier version
@@ -409,6 +409,17 @@ refusal path is what is checked) and on the `packdemo` APK, where the tool
 actually runs and the removal actually happens on the device.
 `ci/play-exec-model.yml` also fails if the bundle has no `pack_buildtools`
 module, no payload, or a module that is not on-demand.
+
+The second run is the one that can lie. A fused build that ships no payload still
+satisfies the refusal branch, so it passes while proving nothing — that is exactly
+what a green run did before this was tightened. The phase now asserts three
+things before it believes the test: the APK contains
+`assets/pack-buildtools-userland-*.zip`, the test is told `packDemo=true` and
+therefore *requires* `INSTALLED`, and the staging task fails the build if the
+payload it copies is missing. Measured on both legs of run `40078102513`:
+`build-tools: INSTALLED — installed from the store module (16 executables sealed;
+this build omits [clang, cmake]) (20533758 bytes)`, then `REMOVED — removed; the
+core runtime is untouched (20533758 bytes)`, with `git` at exit 0 across it.
 
 ### 2. Target API 36, from 2026-08-31
 
