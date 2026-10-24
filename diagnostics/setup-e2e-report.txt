@@ -1,0 +1,66 @@
+[1792820326138] a01 start; prefix=/data/user/0/io.mcyber12.codingharness/files/coding-harness/rootfs/data/data/com.termux/files/usr
+[1792820450203] a01 bootstrap + cert + keyring installed
+[1792820450327] a01 java DNS: 172.67.200.228 104.21.44.149 2606:4700:3037::6815:2c95 2606:4700:3030::ac43:c8e4
+[1792820463892] a01 termux curl probe exit=0 http=200
+[1792820485679] a01 apt-get update exit=0 : Get:1 https://packages-cf.termux.dev/apt/termux-main stable InRelease [14.0 kB] Get:2 https://packages-cf.termux.dev/apt/termux-main stable/main x86_64 Packages [587 kB] Fetched 601 kB in 9s (70.3 kB/s) Reading package lists...
+[1792820485707] a01 package lists=1
+[1792820503939] a01 apt-get install jq exit=0 : Reading package lists... Building dependency tree... The following additional packages will be installed:   oniguruma The following NEW packages will be installed:   jq oniguruma 0 upgraded, 2 newly installed, 0 to remove and 56 not upgraded. Need to get 342 kB of archives. After this operation, 126
+[1792820515536] a01 jq --version exit=0 : jq-1.8.2
+[1792820515542] A01 SUCCESS
+[1792820515742] a02 start; prefix=/data/user/0/io.mcyber12.codingharness/files/coding-harness/rootfs/data/data/com.termux/files/usr
+[1792820516119] MainActivity launched; waiting for automatic setup
+[1792820516418] waiting… ready=bash=Y git=n rg=n python=n pip=n node=n npm=n perl=n ruby=n curl=Y
+[1792820531501] waiting… ready=bash=Y git=n rg=n python=n pip=n node=n npm=n perl=n ruby=n curl=Y
+[1792820546592] waiting… ready=bash=Y git=n rg=n python=n pip=n node=n npm=n perl=n ruby=n curl=Y
+[1792820561682] waiting… ready=bash=Y git=n rg=n python=n pip=n node=n npm=n perl=n ruby=n curl=Y
+[1792820576763] waiting… ready=bash=Y git=n rg=n python=n pip=n node=n npm=n perl=n ruby=n curl=Y
+[1792820591865] waiting… ready=bash=Y git=n rg=n python=n pip=n node=n npm=n perl=n ruby=n curl=Y
+[1792820606917] waiting… ready=bash=Y git=n rg=n python=n pip=n node=n npm=n perl=n ruby=n curl=Y
+[1792820622042] waiting… ready=bash=Y git=n rg=n python=n pip=n node=n npm=n perl=n ruby=n curl=Y
+[1792820637183] waiting… ready=bash=Y git=n rg=n python=n pip=n node=n npm=n perl=n ruby=n curl=Y
+[1792820652294] waiting… ready=bash=Y git=n rg=n python=n pip=n node=n npm=n perl=n ruby=n curl=Y
+[1792820667400] waiting… ready=bash=Y git=n rg=n python=n pip=n node=n npm=n perl=n ruby=n curl=Y
+[1792820682463] waiting… ready=bash=Y git=n rg=n python=n pip=n node=n npm=n perl=n ruby=n curl=Y
+[1792820697545] waiting… ready=bash=Y git=n rg=n python=n pip=n node=n npm=n perl=n ruby=n curl=Y
+[1792820712658] waiting… ready=bash=Y git=n rg=n python=n pip=n node=n npm=n perl=n ruby=n curl=Y
+[1792820727763] waiting… ready=bash=Y git=n rg=n python=n pip=n node=n npm=n perl=n ruby=n curl=Y
+[1792820742823] waiting… ready=bash=Y git=n rg=n python=n pip=n node=n npm=n perl=n ruby=n curl=Y
+[1792820757890] waiting… ready=bash=Y git=n rg=n python=n pip=n node=n npm=n perl=n ruby=n curl=Y
+[1792820772962] waiting… ready=bash=Y git=n rg=n python=n pip=n node=n npm=n perl=n ruby=n curl=Y
+[1792820788127] waiting… ready=bash=Y git=n rg=n python=n pip=n node=n npm=n perl=n ruby=n curl=Y
+[1792820803189] waiting… ready=bash=Y git=Y rg=n python=n pip=n node=n npm=n perl=n ruby=n curl=Y
+[1792820818249] waiting… ready=bash=Y git=Y rg=n python=n pip=n node=n npm=n perl=n ruby=n curl=Y
+[1792820833330] waiting… ready=bash=Y git=Y rg=n python=n pip=n node=n npm=n perl=n ruby=n curl=Y
+[1792820848414] waiting… ready=bash=Y git=Y rg=n python=n pip=n node=Y npm=n perl=n ruby=n curl=Y
+[1792820863521] waiting… ready=bash=Y git=Y rg=n python=n pip=n node=Y npm=Y perl=n ruby=n curl=Y
+[1792820878689] waiting… ready=bash=Y git=Y rg=n python=n pip=n node=Y npm=Y perl=n ruby=n curl=Y
+[1792820893797] waiting… ready=bash=Y git=Y rg=n python=n pip=n node=Y npm=Y perl=n ruby=n curl=Y
+[1792820908884] waiting… ready=bash=Y git=Y rg=n python=n pip=n node=Y npm=Y perl=Y ruby=n curl=Y
+[1792820924001] waiting… ready=bash=Y git=Y rg=Y python=Y pip=Y node=Y npm=Y perl=Y ruby=n curl=Y
+[1792820939083] waiting… ready=bash=Y git=Y rg=Y python=Y pip=Y node=Y npm=Y perl=Y ruby=n curl=Y
+[1792820954147] toolchain executables present; verifying each tool runs
+[1792821052580] python --version -> exit 0 : Python 3.14.8
+[1792821153877] python -c import ssl, json, sqlite3; print('py-ssl', ssl.OPENSSL_VERSION) -> exit 0 : 
+[1792821224507] node --version -> exit 0 : v26.12.1
+[1792821263161] node -e console.log('node-ok', process.version) -> exit 0 : node-ok v26.12.1
+[1792821305914] npm --version -> exit 0 : 11.21.1
+[1792821365828] pip --version -> exit 0 : pip 26.2.2 from /data/user/0/io.mcyber12.codingharness/files/coding-harness/rootfs/data/data/com.termux/files/usr/lib/python3.14/site-packages/pip (python 3.14)
+[1792821396498] perl -e print $^V -> exit 0 : v5.44.0
+[1792821427325] ruby --version -> exit 0 : ruby 4.0.7 (2026-09-15 revision 229531a6cf) +PRISM [x86_64-linux-android]
+[1792821458237] git --version -> exit 0 : git version 2.56.0
+[1792821487697] rg --version -> exit 0 : ripgrep 15.2.0  features:+pcre2 simd(compile):+SSE2,+SSSE3,-AVX2 simd(runtime):+SSE2,+SSSE3,-AVX2  PCRE2 10.45 is available (JIT is available)
+[1792821516246] jq --version -> exit 0 : jq-1.8.2
+[1792821516813] TOOL FAILURES
+Some tools failed to run:
+python -c import ssl, json, sqlite3; print('py-ssl', ssl.OPENSSL_VERSION) -> exit 0 : 
+
+--- C++ runtime ---
+installed libc++ candidates: libc++_shared.so(1390752B,hasHashMemory=true) 
+python names: ; failure: python -c import ssl, json, sqlite3; print('py-ssl', ssl.OPENSSL_VERSION) -> exit 0 : 
+
+[1792821518893] a03 start; provisioning service snapshot over the installed prefix
+[1792821518983] service.isReady()=true, state=IDLE: not started
+[1792821519049] listener received initial snapshot: IDLE
+[1792821519342] provision(core) on installed prefix -> READY in 274 ms
+[1792821519347] A03 SUCCESS: service ready without rebuild
+[1792821519521] a04 start; build tools pack install + remove
