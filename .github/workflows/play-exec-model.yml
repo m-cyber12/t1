@@ -85,7 +85,9 @@ jobs:
       # fused APK (the sealed variant with the pack payload folded in), which
       # is the same code a Play-delivered module runs.
       E2E_PACK_DEMO: "1"
-      E2E_GRADLE_PROPS: "-PharnessTargetSdk=${{ matrix.target_sdk }} -PharnessCompileSdk=${{ matrix.compile_sdk }} -PharnessTestBuildType=sealed"
+      # One ABI: the emulator is x86_64, and installing a payload for a CPU
+      # the device does not have doubled the install time for no coverage.
+      E2E_GRADLE_PROPS: "-PharnessTargetSdk=${{ matrix.target_sdk }} -PharnessCompileSdk=${{ matrix.compile_sdk }} -PharnessTestBuildType=sealed -PharnessPayloadAbis=x86_64"
 
     steps:
       - name: Check out source
@@ -111,6 +113,7 @@ jobs:
             -PharnessTargetSdk="${E2E_TARGET_SDK}" \
             -PharnessCompileSdk="${E2E_COMPILE_SDK}" \
             -PharnessTestBuildType=sealed \
+            -PharnessPayloadAbis=x86_64 \
             :app:assembleSealed :app:assembleSealedAndroidTest \
             :app:assemblePackdemo \
             2>&1 | tee gradle-sealed.log
@@ -152,13 +155,17 @@ jobs:
           unzip -l "$APK" | grep -E "lib/.*/(libharnessprobe|libharness-exec)\.so" || {
             echo "expected native libraries are missing from the APK" >&2; exit 1; }
           # The sealed userland: the data half and the executables it points at.
-          for abi in x86_64 arm64-v8a; do
+          # Which ABIs the APK carries is the build's choice (one for the store,
+          # one for the emulator); what matters is that every ABI it does carry
+          # is complete, so the list comes from the APK rather than from a guess.
+          ABIS="$(unzip -l "$APK" | sed -n 's|.*lib/\([^/]*\)/libbash\.so|\1|p' | sort -u)"
+          echo "abis=$ABIS" | tee -a sealed-apk-identity.txt
+          [ -n "$ABIS" ] || { echo "no ABI ships the shell" >&2; exit 1; }
+          for abi in $ABIS; do
             unzip -l "$APK" | grep -q "assets/userland-${abi}.zip" || {
               echo "no sealed payload for ${abi} in the APK" >&2; exit 1; }
             unzip -l "$APK" | grep -q "assets/sealed-exec-${abi}.txt" || {
               echo "no sealed-exec manifest for ${abi}" >&2; exit 1; }
-            unzip -l "$APK" | grep -q "lib/${abi}/libbash.so" || {
-              echo "the shell is not shipped as a JNI library for ${abi}" >&2; exit 1; }
             # The core tier, not just the shell: every tool below has to be in
             # the manifest, and the library it names has to be in the APK.
             unzip -p "$APK" "assets/sealed-exec-${abi}.txt" > "sealed-exec-${abi}.txt"

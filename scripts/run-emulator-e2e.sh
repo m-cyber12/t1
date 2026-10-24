@@ -241,6 +241,12 @@ for i in $(seq 1 40); do
   sleep 5
 done
 
+# Package verification is another way an install of a 90 MB APK stalls on a
+# KVM-less emulator: nothing is being checked against a store, so turning the
+# verifier off removes a wait that measures the runner, not the app.
+"$ADB" shell settings put global verifier_verify_adb_installs 0 >/dev/null 2>&1 || true
+"$ADB" shell settings put global package_verifier_enable 0 >/dev/null 2>&1 || true
+
 # A booted device is not a responsive one. Under software emulation `adb shell
 # getprop` can still take tens of seconds right after boot_completed, and if it
 # exceeds ddmlib's timeout Gradle decides the device is API 1 and refuses to

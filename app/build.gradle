@@ -229,8 +229,11 @@ android {
     // payload, so the gate exercises the artefact's own shape.
     sourceSets {
         sealed {
-            assets.srcDir(new File(project.sealedPayloadDir.get().asFile, "assets"))
-            jniLibs.srcDir(new File(project.sealedPayloadDir.get().asFile, "jniLibs"))
+            // Also filtered: the gate installs what the upload ships, one ABI,
+            // so the emulator is not asked to swallow a payload for a CPU it
+            // does not have.
+            assets.srcDir(new File(filteredPayloadDir.get().asFile, "assets"))
+            jniLibs.srcDir(new File(filteredPayloadDir.get().asFile, "jniLibs"))
         }
         release {
             // Filtered: only the ABIs this artefact ships (see above).
@@ -450,12 +453,7 @@ def filterSealedPayload = tasks.register("filterSealedPayloadAbis", Sync) {
 
 tasks.matching {
     it.name.startsWith("mergeSealed") || it.name.startsWith("preSealed")
-}.configureEach {
-    dependsOn(buildSealedPayload)
-}
-
-tasks.matching {
-    it.name.startsWith("mergeRelease") || it.name == "preReleaseBuild"
+        || it.name.startsWith("mergeRelease") || it.name == "preReleaseBuild"
 }.configureEach {
     dependsOn(filterSealedPayload)
 }
