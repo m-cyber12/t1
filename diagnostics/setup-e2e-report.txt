@@ -1,0 +1,64 @@
+[1792810858069] a01 start; prefix=/data/user/0/io.mcyber12.codingharness/files/coding-harness/rootfs/data/data/com.termux/files/usr
+[1792810956285] a01 bootstrap + cert + keyring installed
+[1792810956384] a01 java DNS: 172.67.200.228 104.21.44.149 2606:4700:3030::ac43:c8e4 2606:4700:3037::6815:2c95
+[1792810967186] a01 termux curl probe exit=0 http=200
+[1792810984823] a01 apt-get update exit=0 : Get:1 https://packages-cf.termux.dev/apt/termux-main stable InRelease [14.0 kB] Get:2 https://packages-cf.termux.dev/apt/termux-main stable/main x86_64 Packages [587 kB] Fetched 601 kB in 7s (84.3 kB/s) Reading package lists...
+[1792810984847] a01 package lists=1
+[1792810999174] a01 apt-get install jq exit=0 : Reading package lists... Building dependency tree... The following additional packages will be installed:   oniguruma The following NEW packages will be installed:   jq oniguruma 0 upgraded, 2 newly installed, 0 to remove and 56 not upgraded. Need to get 342 kB of archives. After this operation, 126
+[1792811007937] a01 jq --version exit=0 : jq-1.8.2
+[1792811007942] A01 SUCCESS
+[1792811008112] a02 start; prefix=/data/user/0/io.mcyber12.codingharness/files/coding-harness/rootfs/data/data/com.termux/files/usr
+[1792811008436] MainActivity launched; waiting for automatic setup
+[1792811008638] waiting… ready=bash=Y git=n rg=n python=n pip=n node=n npm=n perl=n ruby=n curl=Y
+[1792811023736] waiting… ready=bash=Y git=n rg=n python=n pip=n node=n npm=n perl=n ruby=n curl=Y
+[1792811038805] waiting… ready=bash=Y git=n rg=n python=n pip=n node=n npm=n perl=n ruby=n curl=Y
+[1792811053843] waiting… ready=bash=Y git=n rg=n python=n pip=n node=n npm=n perl=n ruby=n curl=Y
+[1792811068887] waiting… ready=bash=Y git=n rg=n python=n pip=n node=n npm=n perl=n ruby=n curl=Y
+[1792811083966] waiting… ready=bash=Y git=n rg=n python=n pip=n node=n npm=n perl=n ruby=n curl=Y
+[1792811099049] waiting… ready=bash=Y git=n rg=n python=n pip=n node=n npm=n perl=n ruby=n curl=Y
+[1792811114111] waiting… ready=bash=Y git=n rg=n python=n pip=n node=n npm=n perl=n ruby=n curl=Y
+[1792811129175] waiting… ready=bash=Y git=n rg=n python=n pip=n node=n npm=n perl=n ruby=n curl=Y
+[1792811144241] waiting… ready=bash=Y git=n rg=n python=n pip=n node=n npm=n perl=n ruby=n curl=Y
+[1792811159326] waiting… ready=bash=Y git=n rg=n python=n pip=n node=n npm=n perl=n ruby=n curl=Y
+[1792811174397] waiting… ready=bash=Y git=n rg=n python=n pip=n node=n npm=n perl=n ruby=n curl=Y
+[1792811189446] waiting… ready=bash=Y git=n rg=n python=n pip=n node=n npm=n perl=n ruby=n curl=Y
+[1792811204575] waiting… ready=bash=Y git=n rg=n python=n pip=n node=n npm=n perl=n ruby=n curl=Y
+[1792811219794] waiting… ready=bash=Y git=n rg=n python=n pip=n node=n npm=n perl=n ruby=n curl=Y
+[1792811234860] waiting… ready=bash=Y git=n rg=n python=n pip=n node=n npm=n perl=n ruby=n curl=Y
+[1792811249958] waiting… ready=bash=Y git=Y rg=n python=n pip=n node=n npm=n perl=n ruby=n curl=Y
+[1792811265027] waiting… ready=bash=Y git=Y rg=n python=n pip=n node=n npm=n perl=n ruby=n curl=Y
+[1792811280099] waiting… ready=bash=Y git=Y rg=n python=n pip=n node=Y npm=n perl=n ruby=n curl=Y
+[1792811295171] waiting… ready=bash=Y git=Y rg=n python=n pip=n node=Y npm=Y perl=n ruby=n curl=Y
+[1792811310254] waiting… ready=bash=Y git=Y rg=n python=n pip=n node=Y npm=Y perl=n ruby=n curl=Y
+[1792811325358] waiting… ready=bash=Y git=Y rg=n python=n pip=n node=Y npm=Y perl=Y ruby=n curl=Y
+[1792811340456] waiting… ready=bash=Y git=Y rg=Y python=Y pip=Y node=Y npm=Y perl=Y ruby=n curl=Y
+[1792811355506] toolchain executables present; verifying each tool runs
+[1792811433539] python --version -> exit 0 : Python 3.14.8
+[1792811510025] python -c import ssl, json, sqlite3; print('py-ssl', ssl.OPENSSL_VERSION) -> exit 0 : 
+[1792811564642] node --version -> exit 0 : v26.12.1
+[1792811593238] node -e console.log('node-ok', process.version) -> exit 0 : node-ok v26.12.1
+[1792811626784] npm --version -> exit 0 : 11.21.1
+[1792811670771] pip --version -> exit 0 : pip 26.2.2 from /data/user/0/io.mcyber12.codingharness/files/coding-harness/rootfs/data/data/com.termux/files/usr/lib/python3.14/site-packages/pip (python 3.14)
+[1792811693545] perl -e print $^V -> exit 0 : v5.44.0
+[1792811715741] ruby --version -> exit 0 : ruby 4.0.7 (2026-09-15 revision 229531a6cf) +PRISM [x86_64-linux-android]
+[1792811737086] git --version -> exit 0 : git version 2.56.0
+[1792811758578] rg --version -> exit 0 : ripgrep 15.2.0  features:+pcre2 simd(compile):+SSE2,+SSSE3,-AVX2 simd(runtime):+SSE2,+SSSE3,-AVX2  PCRE2 10.45 is available (JIT is available)
+[1792811780513] jq --version -> exit 0 : jq-1.8.2
+[1792811780987] TOOL FAILURES
+Some tools failed to run:
+python -c import ssl, json, sqlite3; print('py-ssl', ssl.OPENSSL_VERSION) -> exit 0 : 
+
+--- C++ runtime ---
+installed libc++ candidates: libc++_shared.so(1390752B,hasHashMemory=true) 
+python names: ; failure: python -c import ssl, json, sqlite3; print('py-ssl', ssl.OPENSSL_VERSION) -> exit 0 : 
+
+[1792811783107] a03 start; provisioning service snapshot over the installed prefix
+[1792811783191] service.isReady()=true, state=IDLE: not started
+[1792811783199] listener received initial snapshot: IDLE
+[1792811783531] provision(core) on installed prefix -> READY in 328 ms
+[1792811783539] A03 SUCCESS: service ready without rebuild
+[1792811783731] a04 start; build tools pack install + remove
+[1792811992485] installTier(build-tools) -> READY : Build tools (clang/cmake) installed (reclaimed 108.1 MiB)
+[1792812024723] clang --version -> exit 0 : clang version 21.1.8 Target: x86_64-unknown-linux-android24 Thread model: posix InstalledDir: /data/user/0/io.mcyber12.codingharness/files/coding-harness/rootfs/data/data/com.termux/files/usr/bin
+[1792812053784] cmake --version -> exit 0 : cmake version 4.4.4  CMake suite maintained and supported by Kitware (kitware.com/cmake).
+[1792812053870] installed bytes: before=1045258240 (was 424767488)
