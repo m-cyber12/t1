@@ -276,23 +276,45 @@ wait_for_device_again() {
   return 1
 }
 
-: > e2e-logs/connected-test.log
-run_connected_test
-RC=$?
-if [ $RC -ne 0 ] && grep -q "No compatible devices connected" e2e-logs/connected-test.log; then
-  # Infrastructure, not the build: the emulator was gone when Gradle looked.
-  # Wait for it to come back and run the same task once more, so a flaky
-  # disconnect does not report a green build as a failed one.
-  echo "no device visible to Gradle; waiting for it and retrying once" >> e2e-logs/phases.log
-  : > e2e-logs/connected-test-retry.log
-  if wait_for_device_again; then
-    run_connected_test
-    RC=$?
-    cp e2e-logs/connected-test.log e2e-logs/connected-test-retry.log 2>/dev/null || true
-    echo "retry exit=$RC" >> e2e-logs/phases.log
+# Infrastructure failures look like test failures.
+#
+# Without KVM the emulator runs under software emulation, and ddmlib's shell
+# timeout fires while `am instrument` is still starting: the log says
+# "Starting 0 tests" plus a ShellCommandUnresponsiveException, and Gradle
+# reports a failed test task even though no test ran. Those signatures are
+# retried; a real assertion failure is not, because retrying it would hide a
+# real regression behind a green run.
+is_infrastructure_failure() {
+  grep -qE "No compatible devices connected|ShellCommandUnresponsiveException|Starting 0 tests|device offline|INSTALL_FAILED_UPDATE_INCOMPATIBLE|Unable to install" "$1"
+}
+
+uninstall_packages() {
+  "$ADB" shell pm uninstall io.mcyber12.codingharness >/dev/null 2>&1 || true
+  "$ADB" shell pm uninstall io.mcyber12.codingharness.test >/dev/null 2>&1 || true
+}
+
+RC=0
+ATTEMPT=1
+while [ "$ATTEMPT" -le 3 ]; do
+  : > e2e-logs/connected-test.log
+  run_connected_test
+  RC=$?
+  [ "$RC" -eq 0 ] && break
+  if ! is_infrastructure_failure e2e-logs/connected-test.log; then
+    echo "attempt $ATTEMPT failed on the test itself; not retrying" >> e2e-logs/phases.log
+    break
   fi
-fi
-echo "$E2E_TEST_TASK exit=$RC" | tee -a e2e-logs/phases.log
+  cp e2e-logs/connected-test.log "e2e-logs/connected-test-attempt${ATTEMPT}.log" 2>/dev/null || true
+  echo "attempt $ATTEMPT failed for an infrastructure reason; retrying" >> e2e-logs/phases.log
+  [ "$ATTEMPT" -lt 3 ] || break
+  wait_for_device_again || true
+  # A half-installed pair is a common cause of the next attempt failing the
+  # same way: start from a clean device.
+  uninstall_packages
+  ATTEMPT=$((ATTEMPT + 1))
+  sleep 20
+done
+echo "$E2E_TEST_TASK exit=$RC (attempts=$ATTEMPT)" | tee -a e2e-logs/phases.log
 "$ADB" shell cat /sdcard/Android/data/io.mcyber12.codingharness/files/setup-e2e-report.txt > e2e-logs/device-report.log 2>&1 || true
 "$ADB" pull /sdcard/Android/data/io.mcyber12.codingharness/files/setup-e2e-report.txt ./setup-e2e-report.txt >> e2e-logs/phases.log 2>&1 || true
 "$ADB" shell run-as io.mcyber12.codingharness cat files/coding-harness/bootstrap-error.log > e2e-logs/bootstrap-error.log 2>&1 || true
@@ -322,14 +344,27 @@ if [ "${E2E_PACK_DEMO:-0}" = "1" ]; then
   : > e2e-logs/pack-demo.log
   echo "task=:app:connectedPackdemoAndroidTest class=packsComeFromTheStoreAndNeverFromApt" \
     >> e2e-logs/pack-demo.log
-  # shellcheck disable=SC2086  # word splitting is intended for the property list
-  ./gradlew --no-daemon --stacktrace \
-    -PharnessTargetSdk="$E2E_TARGET_SDK" \
-    -PharnessCompileSdk="$E2E_COMPILE_SDK" \
-    -PharnessTestBuildType=packdemo \
-    :app:connectedPackdemoAndroidTest \
-    -Pandroid.testInstrumentationRunnerArguments.class=io.mcyber12.codingharness.SealedShellTest\#packsComeFromTheStoreAndNeverFromApt \
-    >> e2e-logs/pack-demo.log 2>&1 || PACK_RC=1
+  PACK_ATTEMPT=1
+  while [ "$PACK_ATTEMPT" -le 2 ]; do
+    # shellcheck disable=SC2086  # word splitting is intended for the property list
+    ./gradlew --no-daemon --stacktrace \
+      -PharnessTargetSdk="$E2E_TARGET_SDK" \
+      -PharnessCompileSdk="$E2E_COMPILE_SDK" \
+      -PharnessTestBuildType=packdemo \
+      :app:connectedPackdemoAndroidTest \
+      -Pandroid.testInstrumentationRunnerArguments.class=io.mcyber12.codingharness.SealedShellTest\#packsComeFromTheStoreAndNeverFromApt \
+      >> e2e-logs/pack-demo.log 2>&1 || PACK_RC=1
+    [ "$PACK_RC" = "0" ] && break
+    is_infrastructure_failure e2e-logs/pack-demo.log || break
+    echo "pack attempt $PACK_ATTEMPT failed for an infrastructure reason; retrying" \
+      >> e2e-logs/pack-demo.log
+    [ "$PACK_ATTEMPT" -lt 2 ] || break
+    PACK_RC=0
+    PACK_ATTEMPT=$((PACK_ATTEMPT + 1))
+    wait_for_device_again || true
+    uninstall_packages
+    sleep 20
+  done
   # A skipped test is not a pass: the pack test skips itself when the APK has no
   # payload, which is exactly the case this phase exists to rule out.
   grep -qE "Tests 1/1 completed" e2e-logs/pack-demo.log \
