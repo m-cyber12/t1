@@ -1,0 +1,378 @@
+task=:app:connectedPackdemoAndroidTest class=packsComeFromTheStoreAndNeverFromApt
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/9.2.1/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build 
+> Task :harness-core:preBuild UP-TO-DATE
+> Task :harness-core:preDebugBuild UP-TO-DATE
+> Task :terminal-emulator:buildExecProbe UP-TO-DATE
+> Task :harness-core:generateDebugResValues UP-TO-DATE
+> Task :terminal-emulator:preBuild UP-TO-DATE
+> Task :terminal-emulator:preDebugBuild UP-TO-DATE
+> Task :app:downloadHarnessBootstrap UP-TO-DATE
+> Task :sealed-runtime:compileJava UP-TO-DATE
+> Task :harness-core:generateDebugResources UP-TO-DATE
+> Task :terminal-emulator:generateDebugResValues UP-TO-DATE
+> Task :sealed-runtime:processResources NO-SOURCE
+> Task :sealed-runtime:classes UP-TO-DATE
+> Task :terminal-emulator:generateDebugResources UP-TO-DATE
+> Task :app:fetchCoreDebs UP-TO-DATE
+> Task :sealed-runtime:jar UP-TO-DATE
+> Task :harness-core:packageDebugResources UP-TO-DATE
+> Task :terminal-emulator:packageDebugResources UP-TO-DATE
+> Task :terminal-view:preBuild UP-TO-DATE
+> Task :terminal-view:preDebugBuild UP-TO-DATE
+> Task :harness-core:processDebugNavigationResources UP-TO-DATE
+> Task :terminal-emulator:processDebugNavigationResources UP-TO-DATE
+> Task :terminal-view:generateDebugResValues UP-TO-DATE
+> Task :terminal-view:generateDebugResources UP-TO-DATE
+> Task :terminal-emulator:parseDebugLocalResources UP-TO-DATE
+> Task :harness-core:parseDebugLocalResources UP-TO-DATE
+> Task :terminal-view:packageDebugResources UP-TO-DATE
+> Task :terminal-view:processDebugNavigationResources UP-TO-DATE
+> Task :harness-core:generateDebugRFile UP-TO-DATE
+> Task :harness-core:javaPreCompileDebug UP-TO-DATE
+> Task :terminal-view:parseDebugLocalResources UP-TO-DATE
+> Task :terminal-view:generateDebugRFile UP-TO-DATE
+> Task :app:buildSealedPayload UP-TO-DATE
+> Task :app:preBuild UP-TO-DATE
+> Task :terminal-view:javaPreCompileDebug UP-TO-DATE
+> Task :terminal-view:processDebugJavaRes NO-SOURCE
+> Task :terminal-view:writeDebugAarMetadata UP-TO-DATE
+> Task :pack_buildtools:fetchPackDebs UP-TO-DATE
+> Task :terminal-emulator:generateDebugRFile UP-TO-DATE
+> Task :terminal-view:extractDeepLinksDebug UP-TO-DATE
+> Task :harness-core:processDebugJavaRes UP-TO-DATE
+> Task :terminal-emulator:javaPreCompileDebug UP-TO-DATE
+> Task :harness-core:writeDebugAarMetadata UP-TO-DATE
+> Task :terminal-view:processDebugManifest UP-TO-DATE
+> Task :harness-core:extractDeepLinksDebug UP-TO-DATE
+> Task :pack_buildtools:buildPackPayload UP-TO-DATE
+> Task :terminal-view:compileDebugLibraryResources UP-TO-DATE
+> Task :pack_buildtools:preBuild UP-TO-DATE
+> Task :pack_buildtools:prePackdemoBuild UP-TO-DATE
+> Task :app:prePackdemoAndroidTestBuild SKIPPED
+> Task :pack_buildtools:featurePackdemoWriter UP-TO-DATE
+> Task :harness-core:processDebugManifest UP-TO-DATE
+> Task :pack_buildtools:generatePackdemoResValues UP-TO-DATE
+> Task :harness-core:compileDebugLibraryResources UP-TO-DATE
+> Task :terminal-view:mergeDebugShaders UP-TO-DATE
+> Task :terminal-view:compileDebugShaders NO-SOURCE
+> Task :harness-core:mergeDebugShaders UP-TO-DATE
+> Task :terminal-view:generateDebugAssets UP-TO-DATE
+> Task :harness-core:compileDebugShaders NO-SOURCE
+> Task :harness-core:generateDebugAssets UP-TO-DATE
+> Task :terminal-view:mergeDebugAssets UP-TO-DATE
+> Task :harness-core:mergeDebugAssets UP-TO-DATE
+> Task :pack_buildtools:javaPreCompilePackdemo UP-TO-DATE
+> Task :terminal-emulator:compileDebugJavaWithJavac UP-TO-DATE
+> Task :harness-core:mergeDebugJniLibFolders UP-TO-DATE
+> Task :pack_buildtools:generatePackdemoResources UP-TO-DATE
+> Task :harness-core:mergeDebugNativeLibs NO-SOURCE
+> Task :terminal-emulator:bundleLibCompileToJarDebug UP-TO-DATE
+> Task :app:javaPreCompilePackdemoAndroidTest FROM-CACHE
+> Task :harness-core:copyDebugJniLibsProjectOnly UP-TO-DATE
+> Task :terminal-emulator:bundleLibRuntimeToJarDebug UP-TO-DATE
+> Task :pack_buildtools:packagePackdemoResources UP-TO-DATE
+> Task :terminal-emulator:processDebugJavaRes NO-SOURCE
+> Task :terminal-emulator:createFullJarDebug UP-TO-DATE
+> Task :app:processPackdemoAndroidTestNavigationResources FROM-CACHE
+> Task :terminal-emulator:writeDebugAarMetadata UP-TO-DATE
+> Task :terminal-emulator:extractDeepLinksDebug UP-TO-DATE
+> Task :app:compilePackdemoAndroidTestNavigationResources FROM-CACHE
+> Task :terminal-view:compileDebugJavaWithJavac UP-TO-DATE
+> Task :terminal-emulator:processDebugManifest UP-TO-DATE
+> Task :terminal-emulator:compileDebugLibraryResources UP-TO-DATE
+> Task :terminal-view:bundleLibRuntimeToJarDebug UP-TO-DATE
+> Task :terminal-emulator:mergeDebugShaders UP-TO-DATE
+> Task :terminal-view:createFullJarDebug UP-TO-DATE
+> Task :terminal-emulator:compileDebugShaders NO-SOURCE
+> Task :terminal-emulator:generateDebugAssets UP-TO-DATE
+> Task :terminal-view:bundleLibCompileToJarDebug UP-TO-DATE
+> Task :terminal-emulator:mergeDebugAssets UP-TO-DATE
+> Task :terminal-view:bundleLibRuntimeToDirDebug UP-TO-DATE
+> Task :terminal-emulator:bundleLibRuntimeToDirDebug UP-TO-DATE
+> Task :terminal-view:mergeDebugJniLibFolders UP-TO-DATE
+> Task :terminal-view:mergeDebugNativeLibs NO-SOURCE
+> Task :terminal-view:copyDebugJniLibsProjectOnly UP-TO-DATE
+> Task :harness-core:compileDebugJavaWithJavac UP-TO-DATE
+> Task :harness-core:bundleLibRuntimeToJarDebug UP-TO-DATE
+> Task :harness-core:createFullJarDebug UP-TO-DATE
+> Task :harness-core:bundleLibCompileToJarDebug UP-TO-DATE
+> Task :harness-core:bundleLibRuntimeToDirDebug UP-TO-DATE
+> Task :app:generatePackdemoFeatureTransitiveDeps UP-TO-DATE
+> Task :app:checkPackdemoAndroidTestAarMetadata
+> Task :app:generatePackdemoAndroidTestResValues FROM-CACHE
+> Task :terminal-emulator:configureNdkBuildDebug[arm64-v8a]
+> Task :pack_buildtools:generatePackdemoFeatureTransitiveDeps UP-TO-DATE
+> Task :pack_buildtools:desugarPackdemoFileDependencies UP-TO-DATE
+> Task :pack_buildtools:checkPackdemoAarMetadata UP-TO-DATE
+> Task :app:mapPackdemoAndroidTestSourceSetPaths
+> Task :app:checkPackdemoLibraries UP-TO-DATE
+> Task :app:prePackdemoBuild UP-TO-DATE
+> Task :app:javaPreCompilePackdemo UP-TO-DATE
+> Task :app:checkPackdemoAarMetadata UP-TO-DATE
+> Task :pack_buildtools:mapPackdemoSourceSetPaths UP-TO-DATE
+> Task :pack_buildtools:mergePackdemoResources UP-TO-DATE
+> Task :app:processPackdemoNavigationResources UP-TO-DATE
+> Task :app:compilePackdemoNavigationResources UP-TO-DATE
+> Task :app:generatePackdemoResValues UP-TO-DATE
+> Task :app:mapPackdemoSourceSetPaths UP-TO-DATE
+> Task :app:generatePackdemoResources UP-TO-DATE
+> Task :terminal-emulator:buildNdkBuildDebug[arm64-v8a]
+> Task :app:mergePackdemoResources UP-TO-DATE
+> Task :app:packagePackdemoResources UP-TO-DATE
+> Task :app:parsePackdemoLocalResources UP-TO-DATE
+> Task :terminal-emulator:configureNdkBuildDebug[x86_64]
+> Task :app:createPackdemoCompatibleScreenManifests UP-TO-DATE
+> Task :app:extractDeepLinksPackdemo UP-TO-DATE
+> Task :app:writePackdemoModuleMetadata UP-TO-DATE
+> Task :app:generatePackdemoFeatureMetadata UP-TO-DATE
+> Task :pack_buildtools:extractDeepLinksPackdemo UP-TO-DATE
+> Task :app:generatePackdemoAndroidTestResources FROM-CACHE
+> Task :terminal-emulator:buildNdkBuildDebug[x86_64]
+> Task :terminal-emulator:mergeDebugJniLibFolders UP-TO-DATE
+> Task :pack_buildtools:processPackdemoMainManifest UP-TO-DATE
+> Task :pack_buildtools:copyPackdemoMergedManifest UP-TO-DATE
+> Task :pack_buildtools:processApplicationManifestPackdemoForBundle UP-TO-DATE
+> Task :terminal-emulator:mergeDebugNativeLibs UP-TO-DATE
+> Task :pack_buildtools:processManifestPackdemoForFeature UP-TO-DATE
+> Task :terminal-emulator:copyDebugJniLibsProjectOnly UP-TO-DATE
+> Task :pack_buildtools:processPackdemoNavigationResources UP-TO-DATE
+> Task :pack_buildtools:compilePackdemoNavigationResources UP-TO-DATE
+> Task :pack_buildtools:parsePackdemoLocalResources UP-TO-DATE
+> Task :pack_buildtools:processPackdemoManifestForPackage UP-TO-DATE
+> Task :app:processPackdemoMainManifest UP-TO-DATE
+> Task :app:processPackdemoManifest UP-TO-DATE
+> Task :app:processPackdemoManifestForPackage UP-TO-DATE
+> Task :app:mergePackdemoAndroidTestResources
+> Task :app:processPackdemoResources UP-TO-DATE
+> Task :app:compilePackdemoJavaWithJavac UP-TO-DATE
+> Task :app:bundlePackdemoClassesToCompileJar UP-TO-DATE
+> Task :pack_buildtools:processPackdemoResources UP-TO-DATE
+> Task :pack_buildtools:compilePackdemoJavaWithJavac NO-SOURCE
+> Task :pack_buildtools:dexBuilderPackdemo UP-TO-DATE
+> Task :app:processPackdemoAndroidTestManifest
+> Task :app:mergePackdemoShaders UP-TO-DATE
+> Task :app:compilePackdemoShaders NO-SOURCE
+> Task :app:generatePackdemoAssets UP-TO-DATE
+> Task :app:mergePackdemoAssets UP-TO-DATE
+> Task :app:compressPackdemoAssets UP-TO-DATE
+> Task :app:checkPackdemoDuplicateClasses UP-TO-DATE
+> Task :app:desugarPackdemoFileDependencies UP-TO-DATE
+> Task :app:mergeExtDexPackdemo UP-TO-DATE
+> Task :app:mergeLibDexPackdemo UP-TO-DATE
+> Task :app:dexBuilderPackdemo UP-TO-DATE
+> Task :app:bundlePackdemoClassesToRuntimeJar UP-TO-DATE
+> Task :app:processPackdemoJavaRes NO-SOURCE
+> Task :app:mergePackdemoJavaResource UP-TO-DATE
+> Task :pack_buildtools:featureGlobalSyntheticsPackdemoMerge UP-TO-DATE
+> Task :app:mergeProjectDexPackdemo UP-TO-DATE
+> Task :app:mergePackdemoGlobalSynthetics UP-TO-DATE
+> Task :app:mergePackdemoJniLibFolders UP-TO-DATE
+> Task :app:mergePackdemoNativeLibs UP-TO-DATE
+> Task :app:stripPackdemoDebugSymbols UP-TO-DATE
+> Task :app:validateSigningPackdemo UP-TO-DATE
+> Task :app:writePackdemoAppMetadata UP-TO-DATE
+> Task :app:writePackdemoSigningConfigVersions UP-TO-DATE
+> Task :app:packagePackdemo UP-TO-DATE
+> Task :app:createPackdemoApkListingFileRedirect UP-TO-DATE
+> Task :app:mergePackdemoAndroidTestShaders
+> Task :app:compilePackdemoAndroidTestShaders NO-SOURCE
+> Task :app:generatePackdemoAndroidTestAssets UP-TO-DATE
+> Task :app:mergePackdemoAndroidTestAssets
+> Task :app:compressPackdemoAndroidTestAssets FROM-CACHE
+> Task :app:desugarPackdemoAndroidTestFileDependencies FROM-CACHE
+> Task :app:processPackdemoAndroidTestJavaRes NO-SOURCE
+> Task :app:checkPackdemoAndroidTestDuplicateClasses
+> Task :app:mergeExtDexPackdemoAndroidTest FROM-CACHE
+> Task :app:mergeLibDexPackdemoAndroidTest FROM-CACHE
+> Task :app:mergePackdemoAndroidTestJniLibFolders
+> Task :app:mergePackdemoAndroidTestNativeLibs NO-SOURCE
+> Task :app:stripPackdemoAndroidTestDebugSymbols NO-SOURCE
+> Task :app:validateSigningPackdemoAndroidTest
+> Task :app:writePackdemoAndroidTestSigningConfigVersions
+> Task :app:processPackdemoAndroidTestResources
+> Task :app:compilePackdemoAndroidTestJavaWithJavac FROM-CACHE
+> Task :app:mergePackdemoAndroidTestJavaResource
+> Task :app:dexBuilderPackdemoAndroidTest
+> Task :app:mergePackdemoAndroidTestGlobalSynthetics FROM-CACHE
+> Task :app:mergeProjectDexPackdemoAndroidTest FROM-CACHE
+> Task :app:packagePackdemoAndroidTest
+> Task :app:createPackdemoAndroidTestApkListingFileRedirect
+[EmulatorConsole]: Failed to start Emulator console for 5554
+> Task :app:connectedPackdemoAndroidTest
+Starting 1 tests on emulator-5554 - 14
+
+emulator-5554 - 14 Tests 0/1 completed. (0 skipped) (0 failed)
+
+> Task :app:connectedPackdemoAndroidTest
+
+io.mcyber12.codingharness.SealedShellTest > packsComeFromTheStoreAndNeverFromApt[emulator-5554 - 14] [31mFAILED [0m
+	java.lang.AssertionError: the core payload did not install: sealed payload (x86_64): 13858 data files, 1173 data links, 0 executables from the APK, 13858 verified, problems: [libcoreutils.so (for bin/[), libaddpart.so (for bin/addpart), libapt.so (for bin/apt), libapt_cache.so (for bin/apt-cache), libapt_config.so (for bin/apt-config), libapt_get.so (for bin/apt-get), libapt_mark.so (for bin/apt-mark), libarp.so (for bin/arp), libattr.so (for bin/attr), libgawk.so (for bin/awk), libcoreutils.so (for bin/b2sum), libcoreutils.so (for bin/base32), libcoreutils.so (for bin/base64), libcoreutils.so (for bin/basename), libcoreutils.so (for bin/basenc), libbash.so (for bin/bash), libbits.so (for bin/bits), libblkpr.so (for bin/blkpr), libblockdev.so (for bin/blockdev), libbzip2.so (for bin/bunzip2), libbzip2.so (for bin/bzcat), libbzip2.so (for bin/bzip2), libbzip2recover.so (for bin/bzip2recover), libcal.so (for bin/cal), libcaptest.so (for bin/captest), libcoreutils.so (for bin/cat), libchacl.so (for bin/chacl), libcoreutils.so (for bin/chcon), libchcpu.so (for bin/chcpu), libcoreutils.so (for bin/chgrp), libcoreutils.so (for bin/chmod), libchoom.so (for bin/choom), libcoreutils.so (for bin/chown), libcoreutils.so (for bin/chroot), libchrt.so (for bin/chrt), libcoreutils.so (for bin/cksum), libclear.so (for bin/clear), libcmd.so (for bin/cmd), libcmp.so (for bin/cmp), libcol.so (for bin/col), libcolcrt.so (for bin/colcrt), libcolrm.so (for bin/colrm), libcolumn.so (for bin/column), libcoreutils.so (for bin/comm), libcoresched.so (for bin/coresched), libcoreutils.so (for bin/coreutils), libcoreutils.so (for bin/cp), libcoreutils.so (for bin/csplit), libctrlaltdel.so (for bin/ctrlaltdel), libcurl.so (for bin/curl), libcoreutils.so (for bin/cut), libdash.so (for bin/dash), libcoreutils.so (for bin/date), libcoreutils.so (for bin/dd), libdelpart.so (for bin/delpart), libdialog.so (for bin/dialog), libdiff.so (for bin/diff), libdiff3.so (for bin/diff3), libcoreutils.so (for bin/dir), libcoreutils.so (for bin/dircolors), libcoreutils.so (for bin/dirname), libdmesg.so (for bin/dmesg), libdnsdomainname.so (for bin/dnsdomainname), libdos2unix.so (for bin/dos2unix), libdpkg.so (for bin/dpkg), libdpkg_deb.so (for bin/dpkg-deb), libdpkg_divert.so (for bin/dpkg-divert), libdpkg_query.so (for bin/dpkg-query), libdpkg_split.so (for bin/dpkg-split), libdpkg_trigger.so (for bin/dpkg-trigger), libdrill.so (for bin/drill), libcoreutils.so (for bin/du), libdumpsexp.so (for bin/dumpsexp), libcoreutils.so (for bin/echo), libed.so (for bin/ed), libenosys.so (for bin/enosys), libcoreutils.so (for bin/env), libexch.so (for bin/exch), libcoreutils.so (for bin/expand), libcoreutils.so (for bin/expr), libcoreutils.so (for bin/factor), libfadvise.so (for bin/fadvise), libfallocate.so (for bin/fallocate), libcoreutils.so (for bin/false), libfile.so (for bin/file), libfilecap.so (for bin/filecap), libfincore.so (for bin/fincore), libfind.so (for bin/find), libflock.so (for bin/flock), libcoreutils.so (for bin/fmt), libcoreutils.so (for bin/fold), libfree.so (for bin/free), libfsck_cramfs.so (for bin/fsck.cramfs), libfsck_minix.so (for bin/fsck.minix), libfsfreeze.so (for bin/fsfreeze), libftp.so (for bin/ftp), libfunzip.so (for bin/funzip), libfuser.so (for bin/fuser), libgawk.so (for bin/gawk), libgdbm_dump.so (for bin/gdbm_dump), libgdbm_load.so (for bin/gdbm_load), libgdbmtool.so (for bin/gdbmtool), libgetfacl.so (for bin/getfacl), libgetfattr.so (for bin/getfattr), libgetopt.so (for bin/getopt), libgit.so (for bin/git), libgit.so (for bin/git-receive-pack), libgit_shell.so (for bin/git-shell), libgit.so (for bin/git-upload-archive), libgit.so (for bin/git-upload-pack), libgpg_error.so (for bin/gpg-error), libgpgv.so (for bin/gpgv), libgrep.so (for bin/grep), libcoreutils.so (for bin/groups), libgss_client.so (for bin/gss-client), libgss_server.so (for bin/gss-server), libgzip.so (for bin/gzip), libhardlink.so (for bin/hardlink), libcoreutils.so (for bin/head), libhexdump.so (for bin/hexdump), libhmac256.so (for bin/hmac256), libhostname.so (for bin/hostname), libhwclock.so (for bin/hwclock), libsetarch.so (for bin/i386), libcoreutils.so (for bin/id), libidn2.so (for bin/idn2), libifconfig.so (for bin/ifconfig), libcoreutils.so (for bin/install), libionice.so (for bin/ionice), libipmaddr.so (for bin/ipmaddr), libiptunnel.so (for bin/iptunnel), libirqtop.so (for bin/irqtop), libischroot.so (for bin/ischroot), libisosize.so (for bin/isosize), libcoreutils.so (for bin/join), libjq.so (for bin/jq), libkadmin.so (for bin/kadmin), libkadmin_local.so (for bin/kadmin.local), libkadmind.so (for bin/kadmind), libkdb5_util.so (for bin/kdb5_util), libkdestroy.so (for bin/kdestroy), libcoreutils.so (for bin/kill), libkillall.so (for bin/killall), libkinit.so (for bin/kinit), libklist.so (for bin/klist), libkpasswd.so (for bin/kpasswd), libkprop.so (for bin/kprop), libkpropd.so (for bin/kpropd), libkproplog.so (for bin/kproplog), libkrb5kdc.so (for bin/krb5kdc), libksu.so (for bin/ksu), libkswitch.so (for bin/kswitch), libktutil.so (for bin/ktutil), libkvno.so (for bin/kvno), libldattach.so (for bin/ldattach), libless.so (for bin/less), liblessecho.so (for bin/lessecho), liblesskey.so (for bin/lesskey), libcoreutils.so (for bin/link), libsetarch.so (for bin/linux32), libsetarch.so (for bin/linux64), libcoreutils.so (for bin/ln), liblogger.so (for bin/logger), libcoreutils.so (for bin/logname), liblook.so (for bin/look), liblosetup.so (for bin/losetup), libcoreutils.so (for bin/ls), liblsclocks.so (for bin/lsclocks), liblscpu.so (for bin/lscpu), liblsfd.so (for bin/lsfd), liblsipc.so (for bin/lsipc), liblsirq.so (for bin/lsirq), liblsof.so (for bin/lsof), libxz.so (for bin/lzcat), libxz.so (for bin/lzma), liblzmadec.so (for bin/lzmadec), liblzmainfo.so (for bin/lzmainfo), libdos2unix.so (for bin/mac2unix), libmcookie.so (for bin/mcookie), libcoreutils.so (for bin/md5sum), libmii_tool.so (for bin/mii-tool), libcoreutils.so (for bin/mkdir), libcoreutils.so (for bin/mkfifo), libmkfs.so (for bin/mkfs), libmkfs_bfs.so (for bin/mkfs.bfs), libmkfs_cramfs.so (for bin/mkfs.cramfs), libmkfs_minix.so (for bin/mkfs.minix), libcoreutils.so (for bin/mknod), libcoreutils.so (for bin/mktemp), libmore.so (for bin/more), libmpicalc.so (for bin/mpicalc), libcoreutils.so (for bin/mv), libnamei.so (for bin/namei), libnameif.so (for bin/nameif), libnano.so (for bin/nano), libnetcap.so (for bin/netcap), libnetstat.so (for bin/netstat), libcoreutils.so (for bin/nice), libcoreutils.so (for bin/nl), libnode.so (for bin/node), libcoreutils.so (for bin/nohup), libcoreutils.so (for bin/nproc), libnsenter.so (for bin/nsenter), libcoreutils.so (for bin/numfmt), libcoreutils.so (for bin/od), libpasswd.so (for bin/passwd), libcoreutils.so (for bin/paste), libpatch.so (for bin/patch), libcoreutils.so (for bin/pathchk), libperl.so (for bin/perl), libpgrep.so (for bin/pgrep), libpidof.so (for bin/pidof), libpipesz.so (for bin/pipesz), libpgrep.so (for bin/pkill), libplipconfig.so (for bin/plipconfig), libpmap.so (for bin/pmap), libcoreutils.so (for bin/pr), libcoreutils.so (for bin/printenv), libcoreutils.so (for bin/printf), libprlimit.so (for bin/prlimit), libprtstat.so (for bin/prtstat), libps.so (for bin/ps), libpscap.so (for bin/pscap), libpslog.so (for bin/pslog), libpstree.so (for bin/pstree), libcoreutils.so (for bin/ptx), libpgrep.so (for bin/pwait), libcoreutils.so (for bin/pwd), libpwdx.so (for bin/pwdx), libpwlogin.so (for bin/pwlogin), libpython3_14.so (for bin/python), libpython3_14.so (for bin/python3), libpython3_14.so (for bin/python3.14), librarp.so (for bin/rarp), libcoreutils.so (for bin/readlink), libreadprofile.so (for bin/readprofile), libcoreutils.so (for bin/realpath), librename.so (for bin/rename), librenice.so (for bin/renice), libtset.so (for bin/reset), libresizepart.so (for bin/resizepart), librev.so (for bin/rev), librg.so (for bin/rg), libcoreutils.so (for bin/rm), libcoreutils.so (for bin/rmdir), libroute.so (for bin/route), librtcwake.so (for bin/rtcwake), libruby.so (for bin/ruby), librun_parts.so (for bin/run-parts), libcoreutils.so (for bin/runcon), libscalar.so (for bin/scalar), libsclient.so (for bin/sclient), libscp.so (for bin/scp), libscript.so (for bin/script), libscriptlive.so (for bin/scriptlive), libscriptreplay.so (for bin/scriptreplay), libsdiff.so (for bin/sdiff), libsed.so (for bin/sed), libcoreutils.so (for bin/seq), libsetarch.so (for bin/setarch), libsetfacl.so (for bin/setfacl), libsetfattr.so (for bin/setfattr), libsetpgid.so (for bin/setpgid), libsetpriv.so (for bin/setpriv), libsetsid.so (for bin/setsid), libsetterm.so (for bin/setterm), libsftp.so (for bin/sftp), libdash.so (for bin/sh), libcoreutils.so (for bin/sha1sum), libcoreutils.so (for bin/sha224sum), libcoreutils.so (for bin/sha256sum), libcoreutils.so (for bin/sha384sum), libcoreutils.so (for bin/sha512sum), libcoreutils.so (for bin/shred), libcoreutils.so (for bin/shuf), libsim_client.so (for bin/sim_client), libsim_server.so (for bin/sim_server), libslattach.so (for bin/slattach), libcoreutils.so (for bin/sleep), libcoreutils.so (for bin/sort), libcoreutils.so (for bin/split), libsserver.so (for bin/sserver), libssh.so (for bin/ssh), libssh_add.so (for bin/ssh-add), libssh_agent.so (for bin/ssh-agent), libssh_keygen.so (for bin/ssh-keygen), libssh_keyscan.so (for bin/ssh-keyscan), libsshd.so (for bin/sshd), libstart_stop_daemon.so (for bin/start-stop-daemon), libcoreutils.so (for bin/stat), libcoreutils.so (for bin/stdbuf), libcoreutils.so (for bin/stty), libcoreutils.so (for bin/sum), libcoreutils.so (for bin/sync), libsysctl.so (for bin/sysctl), libcoreutils.so (for bin/tac), libcoreutils.so (for bin/tail), libtar.so (for bin/tar), libtaskset.so (for bin/taskset), libcoreutils.so (for bin/tee), libtelnet.so (for bin/telnet), libtempfile.so (for bin/tempfile), libtermux_am_socket.so (for bin/termux-am-socket), libcoreutils.so (for bin/test), libtftp.so (for bin/tftp), libcoreutils.so (for bin/timeout), libtload.so (for bin/tload), libcoreutils.so (for bin/touch), libcoreutils.so (for bin/tr), libtree.so (for bin/tree), libcoreutils.so (for bin/true), libcoreutils.so (for bin/truncate), libtset.so (for bin/tset), libcoreutils.so (for bin/tsort), libcoreutils.so (for bin/tty), libuclampset.so (for bin/uclampset), libul.so (for bin/ul), libcoreutils.so (for bin/uname), libsetarch.so (for bin/uname26), libcoreutils.so (for bin/unexpand), libcoreutils.so (for bin/uniq), libunix2dos.so (for bin/unix2dos), libunix2dos.so (for bin/unix2mac), libcoreutils.so (for bin/unlink), libxz.so (for bin/unlzma), libunshare.so (for bin/unshare), libxz.so (for bin/unxz), libunzip.so (for bin/unzip), libunzipsfx.so (for bin/unzipsfx), libzstd.so (for bin/unzstd), libupdate_alternatives.so (for bin/update-alternatives), libuptime.so (for bin/uptime), libuuclient.so (for bin/uuclient), libuuserver.so (for bin/uuserver), libcoreutils.so (for bin/vdir), libvmstat.so (for bin/vmstat), libwaitpid.so (for bin/waitpid), libwatch.so (for bin/watch), libcoreutils.so (for bin/wc), libwdctl.so (for bin/wdctl), libwhereis.so (for bin/whereis), libwhich.so (for bin/which), libcoreutils.so (for bin/whoami), libsetarch.so (for bin/x86_64), libxargs.so (for bin/xargs), libxxhsum.so (for bin/xxh128sum), libxxhsum.so (for bin/xxh32sum), libxxhsum.so (for bin/xxh3sum), libxxhsum.so (for bin/xxh64sum), libxxhsum.so (for bin/xxhsum), libxz.so (for bin/xz), libxz.so (for bin/xzcat), libxzdec.so (for bin/xzdec), libyat2m.so (for bin/yat2m), libcoreutils.so (for bin/yes), libunzip.so (for bin/zipinfo), libzramctl.so (for bin/zramctl), libzstd.so (for bin/zstd), libzstd.so (for bin/zstdcat), libzstd.so (for bin/zstdmt), libgrcat.so (for libexec/awk/grcat), libgrcat.so (for libexec/awk/pwcat), liblibstdbuf_so.so (for libexec/coreutils/libstdbuf.so), libfrcode.so (for libexec/frcode), libgit.so (for libexec/git-core/git), libgit.so (for libexec/git-core/git-add), libgit.so (for libexec/git-core/git-am), libgit.so (for libexec/git-core/git-annotate), libgit.so (for libexec/git-core/git-apply), libgit.so (for libexec/git-core/git-archive), libgit.so (for libexec/git-core/git-backfill), libgit.so (for libexec/git-core/git-bisect), libgit.so (for libexec/git-core/git-blame), libgit.so (for libexec/git-core/git-branch), libgit.so (for libexec/git-core/git-bugreport), libgit.so (for libexec/git-core/git-bundle), libgit.so (for libexec/git-core/git-cat-file), libgit.so (for libexec/git-core/git-check-attr), libgit.so (for libexec/git-core/git-check-ignore), libgit.so (for libexec/git-core/git-check-mailmap), libgit.so (for libexec/git-core/git-check-ref-format), libgit.so (for libexec/git-core/git-checkout), libgit.so (for libexec/git-core/git-checkout--worker), libgit.so (for libexec/git-core/git-checkout-index), libgit.so (for libexec/git-core/git-cherry), libgit.so (for libexec/git-core/git-cherry-pick), libgit.so (for libexec/git-core/git-clean), libgit.so (for libexec/git-core/git-clone), libgit.so (for libexec/git-core/git-column), libgit.so (for libexec/git-core/git-commit), libgit.so (for libexec/git-core/git-commit-graph), libgit.so (for libexec/git-core/git-commit-tree), libgit.so (for libexec/git-core/git-config), libgit.so (for libexec/git-core/git-count-objects), libgit.so (for libexec/git-core/git-credential), libgit.so (for libexec/git-core/git-credential-cache), libgit.so (for libexec/git-core/git-credential-cache--daemon), libgit.so (for libexec/git-core/git-credential-store), libgit_daemon.so (for libexec/git-core/git-daemon), libgit.so (for libexec/git-core/git-describe), libgit.so (for libexec/git-core/git-diagnose), libgit.so (for libexec/git-core/git-diff), libgit.so (for libexec/git-core/git-diff-files), libgit.so (for libexec/git-core/git-diff-index), libgit.so (for libexec/git-core/git-diff-pairs), libgit.so (for libexec/git-core/git-diff-tree), libgit.so (for libexec/git-core/git-difftool), libgit.so (for libexec/git-core/git-fast-export), libgit.so (for libexec/git-core/git-fast-import), libgit.so (for libexec/git-core/git-fetch), libgit.so (for libexec/git-core/git-fetch-pack), libgit.so (for libexec/git-core/git-fmt-merge-msg), libgit.so (for libexec/git-core/git-for-each-ref), libgit.so (for libexec/git-core/git-for-each-repo), libgit.so (for libexec/git-core/git-format-patch), libgit.so (for libexec/git-core/git-format-rev), libgit.so (for libexec/git-core/git-fsck), libgit.so (for libexec/git-core/git-fsck-objects), libgit.so (for libexec/git-core/git-fsmonitor--daemon), libgit.so (for libexec/git-core/git-gc), libgit.so (for libexec/git-core/git-get-tar-commit-id), libgit.so (for libexec/git-core/git-grep), libgit.so (for libexec/git-core/git-hash-object), libgit.so (for libexec/git-core/git-help), libgit.so (for libexec/git-core/git-history), libgit.so (for libexec/git-core/git-hook), libgit_http_backend.so (for libexec/git-core/git-http-backend), libgit_http_fetch.so (for libexec/git-core/git-http-fetch), libgit_http_push.so (for libexec/git-core/git-http-push), libgit_imap_send.so (for libexec/git-core/git-imap-send), libgit.so (for libexec/git-core/git-index-pack), libgit.so (for libexec/git-core/git-init), libgit.so (for libexec/git-core/git-init-db), libgit.so (for libexec/git-core/git-interpret-trailers), libgit.so (for libexec/git-core/git-last-modified), libgit.so (for libexec/git-core/git-log), libgit.so (for libexec/git-core/git-ls-files), libgit.so (for libexec/git-core/git-ls-remote), libgit.so (for libexec/git-core/git-ls-tree), libgit.so (for libexec/git-core/git-mailinfo), libgit.so (for libexec/git-core/git-mailsplit), libgit.so (for libexec/git-core/git-maintenance), libgit.so (for libexec/git-core/git-merge), libgit.so (for libexec/git-core/git-merge-base), libgit.so (for libexec/git-core/git-merge-file), libgit.so (for libexec/git-core/git-merge-index), libgit.so (for libexec/git-core/git-merge-ours), libgit.so (for libexec/git-core/git-merge-recursive), libgit.so (for libexec/git-core/git-merge-subtree), libgit.so (for libexec/git-core/git-merge-tree), libgit.so (for libexec/git-core/git-mktag), libgit.so (for libexec/git-core/git-mktree), libgit.so (for libexec/git-core/git-multi-pack-index), libgit.so (for libexec/git-core/git-mv), libgit.so (for libexec/git-core/git-name-rev), libgit.so (for libexec/git-core/git-notes), libgit.so (for libexec/git-core/git-pack-objects), libgit.so (for libexec/git-core/git-pack-redundant), libgit.so (for libexec/git-core/git-pack-refs), libgit.so (for libexec/git-core/git-patch-id), libgit.so (for libexec/git-core/git-prune), libgit.so (for libexec/git-core/git-prune-packed), libgit.so (for libexec/git-core/git-pull), libgit.so (for libexec/git-core/git-push), libgit.so (for libexec/git-core/git-range-diff), libgit.so (for libexec/git-core/git-read-tree), libgit.so (for libexec/git-core/git-rebase), libgit.so (for libexec/git-core/git-receive-pack), libgit.so (for libexec/git-core/git-reflog), libgit.so (for libexec/git-core/git-refs), libgit.so (for libexec/git-core/git-remote), libgit.so (for libexec/git-core/git-remote-ext), libgit.so (for libexec/git-core/git-remote-fd), libgit_remote_http.so (for libexec/git-core/git-remote-ftp), libgit_remote_http.so (for libexec/git-core/git-remote-ftps), libgit_remote_http.so (for libexec/git-core/git-remote-http), libgit_remote_http.so (for libexec/git-core/git-remote-https), libgit.so (for libexec/git-core/git-repack), libgit.so (for libexec/git-core/git-replace), libgit.so (for libexec/git-core/git-replay), libgit.so (for libexec/git-core/git-repo), libgit.so (for libexec/git-core/git-rerere), libgit.so (for libexec/git-core/git-reset), libgit.so (for libexec/git-core/git-restore), libgit.so (for libexec/git-core/git-rev-list), libgit.so (for libexec/git-core/git-rev-parse), libgit.so (for libexec/git-core/git-revert), libgit.so (for libexec/git-core/git-rm), libgit.so (for libexec/git-core/git-send-pack), libgit_sh_i18n__envsubst.so (for libexec/git-core/git-sh-i18n--envsubst), libgit_shell.so (for libexec/git-core/git-shell), libgit.so (for libexec/git-core/git-shortlog), libgit.so (for libexec/git-core/git-show), libgit.so (for libexec/git-core/git-show-branch), libgit.so (for libexec/git-core/git-show-index), libgit.so (for libexec/git-core/git-show-ref), libgit.so (for libexec/git-core/git-sparse-checkout), libgit.so (for libexec/git-core/git-stage), libgit.so (for libexec/git-core/git-stash), libgit.so (for libexec/git-core/git-status), libgit.so (for libexec/git-core/git-stripspace), libgit.so (for libexec/git-core/git-submodule--helper), libgit.so (for libexec/git-core/git-switch), libgit.so (for libexec/git-core/git-symbolic-ref), libgit.so (for libexec/git-core/git-tag), libgit.so (for libexec/git-core/git-unpack-file), libgit.so (for libexec/git-core/git-unpack-objects), libgit.so (for libexec/git-core/git-update-index), libgit.so (for libexec/git-core/git-update-ref), libgit.so (for libexec/git-core/git-update-server-info), libgit.so (for libexec/git-core/git-upload-archive), libgit.so (for libexec/git-core/git-upload-pack), libgit.so (for libexec/git-core/git-url-parse), libgit.so (for libexec/git-core/git-var), libgit.so (for libexec/git-core/git-verify-commit), libgit.so (for libexec/git-core/git-verify-pack), libgit.so (for libexec/git-core/git-verify-tag), libgit.so (for libexec/git-core/git-version), libgit.so (for libexec/git-core/git-whatchanged), libgit.so (for libexec/git-core/git-worktree), libgit.so (for libexec/git-core/git-write-tree), libscalar.so (for libexec/git-core/scalar), libinetd.so (for libexec/inetd), liblessecho_b6536be1.so (for libexec/lessecho), librmt.so (for libexec/rmt), libsftp_server.so (for libexec/sftp-server), libssh_keysign.so (for libexec/ssh-keysign), libssh_pkcs11_helper.so (for libexec/ssh-pkcs11-helper), libssh_sk_helper.so (for libexec/ssh-sk-helper), libsshd_auth.so (for libexec/sshd-auth), libsshd_session.so (for libexec/sshd-session), libsyslogd.so (for libexec/syslogd), libtelnetd.so (for libexec/telnetd), libcommand_not_found.so (for libexec/termux/command-not-found), libtftpd.so (for libexec/tftpd)]
+	at org.junit.Assert.fail(Assert.java:89)
+
+emulator-5554 - 14 Tests 1/1 completed. (0 skipped) (1 failed)
+Finished 1 tests on emulator-5554 - 14
+
+> Task :app:connectedPackdemoAndroidTest
+Tests on emulator-5554 - 14 failed: There was 1 failure(s).
+
+> Task :app:connectedPackdemoAndroidTest FAILED
+
+[Incubating] Problems report is available at: file:///home/runner/work/t1/t1/build/reports/problems/problems-report.html
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':app:connectedPackdemoAndroidTest'.
+> There were failing tests. See the report at: file:///home/runner/work/t1/t1/app/build/reports/androidTests/connected/packdemo/index.html
+
+* Try:
+> Run with --info or --debug option to get more log output.
+> Run with --scan to generate a Build Scan (powered by Develocity).
+> Get more help at https://help.gradle.org.
+
+* Exception is:
+org.gradle.api.tasks.TaskExecutionException: Execution failed for task ':app:connectedPackdemoAndroidTest'.
+	at org.gradle.api.internal.tasks.execution.ExecuteActionsTaskExecuter.lambda$executeIfValid$1(ExecuteActionsTaskExecuter.java:135)
+	at org.gradle.internal.Try$Failure.ifSuccessfulOrElse(Try.java:288)
+	at org.gradle.api.internal.tasks.execution.ExecuteActionsTaskExecuter.executeIfValid(ExecuteActionsTaskExecuter.java:133)
+	at org.gradle.api.internal.tasks.execution.ExecuteActionsTaskExecuter.execute(ExecuteActionsTaskExecuter.java:121)
+	at org.gradle.api.internal.tasks.execution.ProblemsTaskPathTrackingTaskExecuter.execute(ProblemsTaskPathTrackingTaskExecuter.java:41)
+	at org.gradle.api.internal.tasks.execution.FinalizePropertiesTaskExecuter.execute(FinalizePropertiesTaskExecuter.java:46)
+	at org.gradle.api.internal.tasks.execution.ResolveTaskExecutionModeExecuter.execute(ResolveTaskExecutionModeExecuter.java:51)
+	at org.gradle.api.internal.tasks.execution.SkipTaskWithNoActionsExecuter.execute(SkipTaskWithNoActionsExecuter.java:57)
+	at org.gradle.api.internal.tasks.execution.SkipOnlyIfTaskExecuter.execute(SkipOnlyIfTaskExecuter.java:74)
+	at org.gradle.api.internal.tasks.execution.CatchExceptionTaskExecuter.execute(CatchExceptionTaskExecuter.java:36)
+	at org.gradle.api.internal.tasks.execution.EventFiringTaskExecuter$1.executeTask(EventFiringTaskExecuter.java:77)
+	at org.gradle.api.internal.tasks.execution.EventFiringTaskExecuter$1.call(EventFiringTaskExecuter.java:55)
+	at org.gradle.api.internal.tasks.execution.EventFiringTaskExecuter$1.call(EventFiringTaskExecuter.java:52)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$CallableBuildOperationWorker.execute(DefaultBuildOperationRunner.java:209)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$CallableBuildOperationWorker.execute(DefaultBuildOperationRunner.java:204)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:66)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:59)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:166)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:59)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.call(DefaultBuildOperationRunner.java:53)
+	at org.gradle.api.internal.tasks.execution.EventFiringTaskExecuter.execute(EventFiringTaskExecuter.java:52)
+	at org.gradle.execution.plan.DefaultNodeExecutor.executeLocalTaskNode(DefaultNodeExecutor.java:55)
+	at org.gradle.execution.plan.DefaultNodeExecutor.execute(DefaultNodeExecutor.java:34)
+	at org.gradle.execution.taskgraph.DefaultTaskExecutionGraph$InvokeNodeExecutorsAction.execute(DefaultTaskExecutionGraph.java:355)
+	at org.gradle.execution.taskgraph.DefaultTaskExecutionGraph$InvokeNodeExecutorsAction.execute(DefaultTaskExecutionGraph.java:343)
+	at org.gradle.execution.taskgraph.DefaultTaskExecutionGraph$BuildOperationAwareExecutionAction.lambda$execute$0(DefaultTaskExecutionGraph.java:339)
+	at org.gradle.internal.operations.CurrentBuildOperationRef.with(CurrentBuildOperationRef.java:84)
+	at org.gradle.execution.taskgraph.DefaultTaskExecutionGraph$BuildOperationAwareExecutionAction.execute(DefaultTaskExecutionGraph.java:339)
+	at org.gradle.execution.taskgraph.DefaultTaskExecutionGraph$BuildOperationAwareExecutionAction.execute(DefaultTaskExecutionGraph.java:328)
+	at org.gradle.execution.plan.DefaultPlanExecutor$ExecutorWorker.execute(DefaultPlanExecutor.java:459)
+	at org.gradle.execution.plan.DefaultPlanExecutor$ExecutorWorker.run(DefaultPlanExecutor.java:376)
+	at org.gradle.internal.concurrent.ExecutorPolicy$CatchAndRecordFailures.onExecute(ExecutorPolicy.java:64)
+	at org.gradle.internal.concurrent.AbstractManagedExecutor$1.run(AbstractManagedExecutor.java:47)
+Caused by: org.gradle.api.GradleException: There were failing tests. See the report at: file:///home/runner/work/t1/t1/app/build/reports/androidTests/connected/packdemo/index.html
+	at com.android.build.gradle.internal.tasks.DeviceProviderInstrumentTestTask.run(DeviceProviderInstrumentTestTask.java:461)
+	at com.android.build.gradle.internal.tasks.DeviceProviderInstrumentTestTask.doTaskAction(DeviceProviderInstrumentTestTask.java:320)
+	at com.android.build.gradle.internal.tasks.NonIncrementalTask$taskAction$$inlined$recordTaskAction$1.invoke(BaseTask.kt:79)
+	at com.android.build.gradle.internal.tasks.Blocks.recordSpan(Blocks.java:51)
+	at com.android.build.gradle.internal.tasks.NonIncrementalTask.taskAction(NonIncrementalTask.kt:78)
+	at org.gradle.internal.reflect.JavaMethod.invoke(JavaMethod.java:125)
+	at org.gradle.api.internal.project.taskfactory.StandardTaskAction.doExecute(StandardTaskAction.java:58)
+	at org.gradle.api.internal.project.taskfactory.StandardTaskAction.execute(StandardTaskAction.java:51)
+	at org.gradle.api.internal.project.taskfactory.StandardTaskAction.execute(StandardTaskAction.java:29)
+	at org.gradle.api.internal.tasks.execution.TaskExecution$3.run(TaskExecution.java:252)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$1.execute(DefaultBuildOperationRunner.java:29)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$1.execute(DefaultBuildOperationRunner.java:26)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:66)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:59)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:166)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:59)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.run(DefaultBuildOperationRunner.java:47)
+	at org.gradle.api.internal.tasks.execution.TaskExecution.executeAction(TaskExecution.java:237)
+	at org.gradle.api.internal.tasks.execution.TaskExecution.executeActions(TaskExecution.java:220)
+	at org.gradle.api.internal.tasks.execution.TaskExecution.executeWithPreviousOutputFiles(TaskExecution.java:203)
+	at org.gradle.api.internal.tasks.execution.TaskExecution.execute(TaskExecution.java:170)
+	at org.gradle.internal.execution.steps.ExecuteStep.executeInternal(ExecuteStep.java:105)
+	at org.gradle.internal.execution.steps.ExecuteStep.access$000(ExecuteStep.java:44)
+	at org.gradle.internal.execution.steps.ExecuteStep$1.call(ExecuteStep.java:59)
+	at org.gradle.internal.execution.steps.ExecuteStep$1.call(ExecuteStep.java:56)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$CallableBuildOperationWorker.execute(DefaultBuildOperationRunner.java:209)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$CallableBuildOperationWorker.execute(DefaultBuildOperationRunner.java:204)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:66)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:59)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:166)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:59)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.call(DefaultBuildOperationRunner.java:53)
+	at org.gradle.internal.execution.steps.ExecuteStep.execute(ExecuteStep.java:56)
+	at org.gradle.internal.execution.steps.ExecuteStep.execute(ExecuteStep.java:44)
+	at org.gradle.internal.execution.steps.CancelExecutionStep.execute(CancelExecutionStep.java:42)
+	at org.gradle.internal.execution.steps.TimeoutStep.executeWithoutTimeout(TimeoutStep.java:75)
+	at org.gradle.internal.execution.steps.TimeoutStep.execute(TimeoutStep.java:55)
+	at org.gradle.internal.execution.steps.PreCreateOutputParentsStep.execute(PreCreateOutputParentsStep.java:50)
+	at org.gradle.internal.execution.steps.PreCreateOutputParentsStep.execute(PreCreateOutputParentsStep.java:28)
+	at org.gradle.internal.execution.steps.RemovePreviousOutputsStep.execute(RemovePreviousOutputsStep.java:68)
+	at org.gradle.internal.execution.steps.RemovePreviousOutputsStep.execute(RemovePreviousOutputsStep.java:38)
+	at org.gradle.internal.execution.steps.BroadcastChangingOutputsStep.execute(BroadcastChangingOutputsStep.java:61)
+	at org.gradle.internal.execution.steps.BroadcastChangingOutputsStep.execute(BroadcastChangingOutputsStep.java:26)
+	at org.gradle.internal.execution.steps.CaptureOutputsAfterExecutionStep.execute(CaptureOutputsAfterExecutionStep.java:69)
+	at org.gradle.internal.execution.steps.CaptureOutputsAfterExecutionStep.execute(CaptureOutputsAfterExecutionStep.java:46)
+	at org.gradle.internal.execution.steps.ResolveInputChangesStep.execute(ResolveInputChangesStep.java:39)
+	at org.gradle.internal.execution.steps.ResolveInputChangesStep.execute(ResolveInputChangesStep.java:28)
+	at org.gradle.internal.execution.steps.BuildCacheStep.executeWithoutCache(BuildCacheStep.java:189)
+	at org.gradle.internal.execution.steps.BuildCacheStep.lambda$execute$1(BuildCacheStep.java:75)
+	at org.gradle.internal.Either$Right.fold(Either.java:176)
+	at org.gradle.internal.execution.caching.CachingState.fold(CachingState.java:62)
+	at org.gradle.internal.execution.steps.BuildCacheStep.execute(BuildCacheStep.java:73)
+	at org.gradle.internal.execution.steps.BuildCacheStep.execute(BuildCacheStep.java:48)
+	at org.gradle.internal.execution.steps.StoreExecutionStateStep.execute(StoreExecutionStateStep.java:46)
+	at org.gradle.internal.execution.steps.StoreExecutionStateStep.execute(StoreExecutionStateStep.java:35)
+	at org.gradle.internal.execution.steps.SkipUpToDateStep.executeBecause(SkipUpToDateStep.java:75)
+	at org.gradle.internal.execution.steps.SkipUpToDateStep.lambda$execute$2(SkipUpToDateStep.java:53)
+	at org.gradle.internal.execution.steps.SkipUpToDateStep.execute(SkipUpToDateStep.java:53)
+	at org.gradle.internal.execution.steps.SkipUpToDateStep.execute(SkipUpToDateStep.java:35)
+	at org.gradle.internal.execution.steps.legacy.MarkSnapshottingInputsFinishedStep.execute(MarkSnapshottingInputsFinishedStep.java:37)
+	at org.gradle.internal.execution.steps.legacy.MarkSnapshottingInputsFinishedStep.execute(MarkSnapshottingInputsFinishedStep.java:27)
+	at org.gradle.internal.execution.steps.ResolveIncrementalCachingStateStep.executeDelegate(ResolveIncrementalCachingStateStep.java:49)
+	at org.gradle.internal.execution.steps.ResolveIncrementalCachingStateStep.executeDelegate(ResolveIncrementalCachingStateStep.java:27)
+	at org.gradle.internal.execution.steps.AbstractResolveCachingStateStep.execute(AbstractResolveCachingStateStep.java:71)
+	at org.gradle.internal.execution.steps.AbstractResolveCachingStateStep.execute(AbstractResolveCachingStateStep.java:39)
+	at org.gradle.internal.execution.steps.ResolveChangesStep.execute(ResolveChangesStep.java:64)
+	at org.gradle.internal.execution.steps.ResolveChangesStep.execute(ResolveChangesStep.java:35)
+	at org.gradle.internal.execution.steps.ValidateStep.execute(ValidateStep.java:62)
+	at org.gradle.internal.execution.steps.ValidateStep.execute(ValidateStep.java:40)
+	at org.gradle.internal.execution.steps.AbstractCaptureStateBeforeExecutionStep.execute(AbstractCaptureStateBeforeExecutionStep.java:76)
+	at org.gradle.internal.execution.steps.AbstractCaptureStateBeforeExecutionStep.execute(AbstractCaptureStateBeforeExecutionStep.java:45)
+	at org.gradle.internal.execution.steps.AbstractSkipEmptyWorkStep.executeWithNonEmptySources(AbstractSkipEmptyWorkStep.java:136)
+	at org.gradle.internal.execution.steps.AbstractSkipEmptyWorkStep.execute(AbstractSkipEmptyWorkStep.java:61)
+	at org.gradle.internal.execution.steps.AbstractSkipEmptyWorkStep.execute(AbstractSkipEmptyWorkStep.java:38)
+	at org.gradle.internal.execution.steps.legacy.MarkSnapshottingInputsStartedStep.execute(MarkSnapshottingInputsStartedStep.java:38)
+	at org.gradle.internal.execution.steps.LoadPreviousExecutionStateStep.execute(LoadPreviousExecutionStateStep.java:36)
+	at org.gradle.internal.execution.steps.LoadPreviousExecutionStateStep.execute(LoadPreviousExecutionStateStep.java:23)
+	at org.gradle.internal.execution.steps.HandleStaleOutputsStep.execute(HandleStaleOutputsStep.java:75)
+	at org.gradle.internal.execution.steps.HandleStaleOutputsStep.execute(HandleStaleOutputsStep.java:41)
+	at org.gradle.internal.execution.steps.AssignMutableWorkspaceStep.lambda$execute$0(AssignMutableWorkspaceStep.java:35)
+	at org.gradle.api.internal.tasks.execution.TaskExecution$4.withWorkspace(TaskExecution.java:297)
+	at org.gradle.internal.execution.steps.AssignMutableWorkspaceStep.execute(AssignMutableWorkspaceStep.java:31)
+	at org.gradle.internal.execution.steps.AssignMutableWorkspaceStep.execute(AssignMutableWorkspaceStep.java:22)
+	at org.gradle.internal.execution.steps.ChoosePipelineStep.execute(ChoosePipelineStep.java:40)
+	at org.gradle.internal.execution.steps.ChoosePipelineStep.execute(ChoosePipelineStep.java:23)
+	at org.gradle.internal.execution.steps.ExecuteWorkBuildOperationFiringStep.lambda$execute$2(ExecuteWorkBuildOperationFiringStep.java:67)
+	at org.gradle.internal.execution.steps.ExecuteWorkBuildOperationFiringStep.execute(ExecuteWorkBuildOperationFiringStep.java:67)
+	at org.gradle.internal.execution.steps.ExecuteWorkBuildOperationFiringStep.execute(ExecuteWorkBuildOperationFiringStep.java:39)
+	at org.gradle.internal.execution.steps.IdentityCacheStep.execute(IdentityCacheStep.java:46)
+	at org.gradle.internal.execution.steps.IdentityCacheStep.execute(IdentityCacheStep.java:34)
+	at org.gradle.internal.execution.steps.IdentifyStep.execute(IdentifyStep.java:44)
+	at org.gradle.internal.execution.steps.IdentifyStep.execute(IdentifyStep.java:31)
+	at org.gradle.internal.execution.impl.DefaultExecutionEngine$1.execute(DefaultExecutionEngine.java:64)
+	at org.gradle.api.internal.tasks.execution.ExecuteActionsTaskExecuter.executeIfValid(ExecuteActionsTaskExecuter.java:132)
+	... 30 more
+
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 10.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+For more on this, please refer to https://docs.gradle.org/9.2.1/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+
+BUILD FAILED in 9m 35s
+167 actionable tasks: 20 executed, 12 from cache, 135 up-to-date
+--- what the device kept after the run ---
+run-as: unknown package: io.mcyber12.codingharness
+run-as: unknown package: io.mcyber12.codingharness
+run-as: unknown package: io.mcyber12.codingharness
