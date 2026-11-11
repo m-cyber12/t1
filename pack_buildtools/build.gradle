@@ -1,0 +1,175 @@
+plugins {
+    id "com.android.dynamic-feature"
+}
+
+// An on-demand Play Feature Delivery module for the optional build tools.
+//
+// The sealed base APK may not download executable code at runtime — that is the
+// Device & Network Abuse rule, and the reason the core tier ships inside the APK
+// (docs/play-store-plan.md). A pack is therefore also an APK: this module is
+// delivered by Play, installed on demand, and its executables arrive as
+// `lib<tool>.so` in the same native library directory the base payload uses.
+// The mechanism on the device is unchanged (`SealedInstaller`), which is why the
+// pack needs no new install code — only new bytes and a new source.
+//
+// `dist:fusing dist:include="true"` keeps the module inside universal APKs, which
+// is how the emulator gate exercises it: bundletool builds a universal APK from
+// the bundle (an emulator image has no Play Store), and the same AAB still
+// delivers the module on demand to real users. `:app:assembleSealed` alone does
+// not fuse anything — Gradle builds base and feature as separate APKs.
+def packId = "buildtools"
+def packAssetPrefix = "pack-${packId}-"
+def packOutput = layout.buildDirectory.dir("generated/sealed-pack")
+// The full pack is clang + cmake + make + pkg-config and is ~120 MB of payload,
+// which is not something to build on every push. CI builds the small half
+// (make, pkg-config) to prove the wiring; a release build passes
+// -PharnessFullBuildTools=true and gets the whole tier.
+def fullPack = (findProperty("harnessFullBuildTools") ?: "false").toString() == "true"
+def packPackages = fullPack
+    ? ["make", "pkg-config", "clang", "cmake"]
+    : ["make", "pkg-config"]
+def packArch = [["aarch64", "arm64-v8a"], ["x86_64", "x86_64"]]
+def packDebDir = layout.buildDirectory.dir("generated/pack-debs")
+// The pack is applied on top of the base payload, so anything the Termux
+// bootstrap already ships (libc++, zlib, libandroid-support, …) must not be
+// shipped twice. The resolver is told about the bootstrap for the same reason
+// the base payload tells it: it is the authority on what is already present.
+def bootstrapDir = new File(rootProject.projectDir, "app/build/generated/harness-bootstrap")
+def packRepo = (findProperty("harnessSealedRepo") ?: "https://packages-cf.termux.dev/apt/termux-main").toString()
+
+android {
+    namespace "io.mcyber12.codingharness.packs.buildtools"
+    compileSdk rootProject.ext.compileSdkVersion
+
+    defaultConfig {
+        minSdk rootProject.ext.minSdkVersion
+        targetSdk rootProject.ext.targetSdkVersion
+    }
+
+    // A dynamic feature must offer every variant its base module has; `sealed`
+    // is the store-shaped one and has to exist here or a sealed base cannot
+    // resolve it. targetSdk is project-wide (AGP 8 does not allow a build type
+    // to override it), so the base and the pack always agree.
+    buildTypes {
+        debug { }
+        release { }
+        sealed {
+            initWith(getByName("debug"))
+            matchingFallbacks.addAll(["debug", "release"])
+        }
+        // Mirrors the base's test-only variant (see app/build.gradle); the
+        // pack's payload is the same, this only lets that variant resolve.
+        packdemo {
+            initWith(getByName("sealed"))
+            matchingFallbacks.addAll(["sealed", "debug", "release"])
+        }
+    }
+
+    sourceSets {
+        // The generated payload is per ABI, so it belongs to the variant that
+        // ships it rather than to `main`.
+        release { assets.srcDir(new File(packOutput.get().asFile, "assets")); jniLibs.srcDir(new File(packOutput.get().asFile, "jniLibs")) }
+        sealed { assets.srcDir(new File(packOutput.get().asFile, "assets")); jniLibs.srcDir(new File(packOutput.get().asFile, "jniLibs")) }
+        packdemo { assets.srcDir(new File(packOutput.get().asFile, "assets")); jniLibs.srcDir(new File(packOutput.get().asFile, "jniLibs")) }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}
+
+// Run a build-time child and, if it fails, print the transcript it wrote.
+// Gradle throws the moment a captured child exits non-zero and drops
+// everything it said; the child keeps its own account, and this reads it back.
+def runResolver = { fetch, File record, String what ->
+    try {
+        def result = fetch.result.get()
+        fetch.standardOutput.asText.get().readLines().each { logger.lifecycle(it) }
+        result.assertNormalExitValue()
+    } catch (Throwable failure) {
+        if (record.isFile()) logger.error("--- ${record.name} (" + what + ") ---\n" + record.text)
+        throw failure
+    }
+}
+
+def fetchPackDebs = tasks.register("fetchPackDebs") {
+    description = "Fetches the build-tools packages for the on-demand pack"
+    dependsOn(":app:downloadHarnessBootstrap", ":app:fetchCoreDebs")
+    inputs.property("packages", packPackages.join(" "))
+    inputs.property("repo", packRepo)
+    inputs.file(rootProject.file("scripts/fetch-core-debs.py"))
+    outputs.dir(packDebDir)
+    doLast {
+        File script = rootProject.file("scripts/fetch-core-debs.py")
+        packArch.each { arch, abi ->
+            File output = new File(packDebDir.get().asFile, abi)
+            output.mkdirs()
+            File record = new File(packDebDir.get().asFile, "fetch-pack-debs-${abi}.log")
+            File bootstrap = new File(bootstrapDir, "bootstrap-${arch}.zip")
+            // The base payload's own package list: a pack must not re-ship what
+            // the device already has.
+            File basePayload = new File(rootProject.projectDir,
+                "app/build/generated/sealed-debs/${abi}/packages.json")
+            def fetch = providers.exec {
+                commandLine(["python3", script.absolutePath,
+                    "--arch", arch,
+                    "--out", output.absolutePath,
+                    "--repo", packRepo,
+                    "--bootstrap", bootstrap.absolutePath,
+                    "--provided-by", basePayload.absolutePath,
+                    "--log", record.absolutePath,
+                    "--packages"] + packPackages)
+            }
+            runResolver(fetch, record, "fetch ${packPackages} for ${abi}")
+        }
+    }
+}
+
+def buildPackPayload = tasks.register("buildPackPayload") {
+    description = "Splits the pack's packages into a sealed payload for the feature module"
+    // The base payload is read, not just built first: the pack's dependency
+    // check has to know which libraries the base already ships.
+    dependsOn(fetchPackDebs, ":app:buildSealedPayload")
+    inputs.dir(packDebDir)
+    inputs.property("prefix", packAssetPrefix)
+    inputs.file(rootProject.file("scripts/build-sealed-payload.py"))
+    outputs.dir(packOutput)
+    doLast {
+        File script = rootProject.file("scripts/build-sealed-payload.py")
+        packArch.each { arch, abi ->
+            File debs = new File(packDebDir.get().asFile, abi)
+            if (!debs.isDirectory()) throw new GradleException("pack packages missing: ${debs}")
+            File log = new File(packOutput.get().asFile, "pack-payload-${abi}.log")
+            log.parentFile.mkdirs()
+            // No --bootstrap: a pack carries only its own packages.
+            def split = providers.exec {
+                commandLine(["python3", script.absolutePath,
+                    "--abi", abi,
+                    "--out", packOutput.get().asFile.absolutePath,
+                    "--deb-dir", debs.absolutePath,
+                    "--asset-prefix", packAssetPrefix,
+                    "--provided-userland", new File(rootProject.projectDir,
+                        "app/build/generated/sealed-payload/assets/userland-${abi}.zip").absolutePath,
+                    "--log", log.absolutePath])
+            }
+            runResolver(split, log, "split the ${abi} payload")
+        }
+        new File(packOutput.get().asFile, "pack-id.txt").text = packId + "\n"
+    }
+}
+
+// Build the payload before anything packages it, and only for the store
+// variants: a debug build is the apt shape, where the pack has no meaning and
+// its package fetch would be pure cost on every push.
+tasks.matching {
+    it.name.startsWith("mergeRelease") || it.name.startsWith("mergeSealed")
+        || it.name.startsWith("mergePackdemo")
+        || it.name in ["preReleaseBuild", "preSealedBuild", "prePackdemoBuild"]
+}.configureEach {
+    dependsOn(buildPackPayload)
+}
+
+dependencies {
+    implementation project(":app")
+}

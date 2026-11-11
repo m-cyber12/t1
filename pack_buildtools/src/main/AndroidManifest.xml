@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  The build-tools pack, delivered by Play Feature Delivery.
+
+  on-demand: installed only when the user asks for it, so the base install stays
+  small and a Play-configured device pays for clang only if it compiles native
+  code.
+
+  fusing include="true": kept in universal APKs, which is what lets a local
+  sealed build (and the emulator gate) run the pack without a Play Store.
+-->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:dist="http://schemas.android.com/apk/distribution">
+
+    <!--
+      dist:title is mandatory for an on-demand module and is resolved against
+      the base module's resource table, where the string is declared. It is
+      deliberately not declared here: a copy in this module would be linked to
+      an ID this module's own table allocated, and the base does not have it.
+    -->
+    <dist:module dist:instant="false" dist:title="@string/pack_buildtools_title">
+        <dist:delivery>
+            <dist:on-demand />
+        </dist:delivery>
+        <dist:fusing dist:include="true" />
+    </dist:module>
+</manifest>

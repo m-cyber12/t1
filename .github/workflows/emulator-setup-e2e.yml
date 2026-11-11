@@ -1,0 +1,111 @@
+name: Emulator setup E2E
+
+# Runs the REAL app in an Android emulator and proves the whole first-run
+# setup works end to end: bootstrap extraction, apt-get update against the
+# Termux repository (TLS + signature verification included), installation of
+# Python/Node/npm/Perl/Ruby/Git/ripgrep/Clang/CMake, and execution of every
+# tool. This replaces manual on-device testing for setup regressions.
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ["arena/**"]
+    paths:
+      - "app/**"
+      - "harness-core/**"
+      - "terminal-emulator/**"
+      - "terminal-view/**"
+      - "scripts/**"
+      - ".github/workflows/emulator-setup-e2e.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  emulator-e2e:
+    name: Android emulator / full setup E2E
+    runs-on: ubuntu-latest
+    timeout-minutes: 330
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: gradle
+
+      - name: Set up Android SDK command-line tools
+        uses: android-actions/setup-android@v3
+        with:
+          packages: 'platform-tools platforms;android-35 build-tools;35.0.0 ndk;27.2.12479018'
+
+      - name: Enable KVM for emulator hardware acceleration
+        if: runner.os == 'Linux'
+        shell: bash
+        run: |
+          echo 'KERNEL=="KVM", GROUP="KVM", MODE="0666", OPTIONS+="static_node=KVM"' | sudo tee /etc/udev/rules.d/99-KVM.rules
+          sudo udevadm control --reload-rules || true
+          sudo udevadm trigger --name-match=KVM || true
+          # udev rules do not reliably re-apply on hosted runners (the KVM
+          # group is empty), so grant access directly and verify as runner.
+          if [ -e /dev/KVM ]; then
+            sudo chmod 666 /dev/KVM || true
+            ls -l /dev/KVM
+            if [ -w /dev/KVM ]; then echo "KVM is writable by $(id -un)"; else echo "WARNING: /dev/KVM not writable"; fi
+          else
+            echo "WARNING: /dev/KVM not present; x86_64 emulator cannot run accelerated"
+          fi
+          echo "vmx/svm flags: $(grep -c -E 'vmx|svm' /proc/cpuinfo || true)"
+          nproc; free -m | head -2
+
+      - name: Build app and tests (fail fast before booting emulator)
+        shell: bash
+        run: |
+          set -o pipefail
+          ./gradlew --no-daemon --stacktrace :app:assembleDebug :app:assembleDebugAndroidTest 2>&1 | tee gradle-assemble.log
+
+      # The sandbox/CI log endpoints are unreliable; publish the compiler
+      # output to the diagnostics branch so a build failure is readable.
+      - name: Publish build failure log
+        if: failure()
+        shell: bash
+        run: |
+          mkdir -p diagnostics/e2e-logs
+          tail -c 60000 gradle-assemble.log > diagnostics/e2e-logs/gradle-assemble-tail.log 2>/dev/null || true
+          grep -E 'error:|\.java:[0-9]+' gradle-assemble.log > diagnostics/e2e-logs/build-errors.log 2>/dev/null || true
+          git add diagnostics/ || true
+          git -c user.email=ci@invalid -c user.name=ci commit -qm "build failure ${GITHUB_RUN_ID} [ci]" || true
+          git push origin "HEAD:refs/heads/diagnostics/e2e-${GITHUB_RUN_ID}" --force || true
+
+      - name: Run full setup E2E on emulator (manual emulator, self-publishing logs)
+        shell: bash
+        run: bash scripts/run-emulator-e2e.sh
+
+      - name: Publish E2E diagnostics branch
+        if: always()
+        shell: bash
+        run: |
+          mkdir -p diagnostics
+          cp ./setup-e2e-report.txt diagnostics/setup-e2e-report.txt 2>/dev/null || echo "no setup-e2e-report.txt pulled" > diagnostics/setup-e2e-report.txt
+          for x in app/build/outputs/androidTest-results/connected/*.xml app/build/outputs/androidTest-results/*.xml; do [ -f "$x" ] && cp "$x" diagnostics/; done
+          ls -la diagnostics/
+          date -u +"e2e finished %Y-%m-%dT%H:%M:%SZ run=${GITHUB_RUN_ID}" > diagnostics/e2e-status.txt
+          git add diagnostics/
+          git -c user.email=ci@invalid -c user.name=ci-e2e commit -qm "e2e results ${GITHUB_RUN_ID} [ci]" || true
+          git push origin "HEAD:refs/heads/diagnostics/e2e-${GITHUB_RUN_ID}" --force
+
+      - name: Upload E2E results and reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: emulator-setup-e2e-results
+          path: |
+            setup-e2e-report.txt
+            app/build/outputs/androidTest-results/
+            app/build/reports/androidTests/
+            gradle-assemble.log
+          if-no-files-found: warn

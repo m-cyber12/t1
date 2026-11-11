@@ -1,0 +1,518 @@
+plugins {
+    id "com.android.application"
+}
+
+// The bootstrap contains the base Termux userspace (apt/dpkg, shell, core
+// utilities and certificates). Language packages are installed from the Termux
+// repository on first run by harness-core.
+def bootstrapVersion = "2026.02.12-r1%2Bapt.android-7"
+def bootstrapAssets = [
+    "aarch64": [
+        url: "https://github.com/termux/termux-packages/releases/download/bootstrap-${bootstrapVersion}/bootstrap-aarch64.zip",
+        sha256: "ea2aeba8819e517db711f8c32369e89e7c52cee73e07930ff91185e1ab93f4f3"
+    ],
+    "x86_64": [
+        url: "https://github.com/termux/termux-packages/releases/download/bootstrap-${bootstrapVersion}/bootstrap-x86_64.zip",
+        sha256: "b7fd0f2e3a4de534be3144f9f91acc768630fc463eaf134ab2e64c545e834f7a"
+    ]
+]
+
+def bootstrapOutput = layout.buildDirectory.dir("generated/harness-bootstrap/assets")
+// A project property rather than a script local: the `sealed` source set is
+// configured inside an AGP closure whose delegate resolves properties first,
+// so a plain local would not be visible there.
+ext.sealedPayloadDir = layout.buildDirectory.dir("generated/sealed-payload")
+// Packages the apt build installs on first run (PackageTier.CORE). The sealed
+// build fetches exactly these at build time, because it may not fetch them at
+// runtime: Play's Device & Network Abuse policy and the exec model both require
+// the binaries to come out of the APK.
+ext.sealedCorePackages = [
+    "git", "ripgrep", "python", "python-pip", "nodejs", "npm",
+    "perl", "ruby", "jq", "tree", "which", "file", "openssh",
+]
+ext.sealedDebDir = layout.buildDirectory.dir("generated/sealed-debs")
+// Mirror override, mainly so the pipeline can be exercised against a snapshot.
+ext.sealedRepo = (findProperty("harnessSealedRepo") ?: "https://packages-cf.termux.dev/apt/termux-main").toString()
+
+// ---------------------------------------------------------------------------
+// Target API level.
+//
+// Play requires API 36 for new apps and updates from 2026-08-31. The apt build
+// cannot follow: Android 10+ refuses execve() on files under app data, and that
+// build runs its userland from there, so the default target stays 28 (like
+// Termux). A store build is built with -PharnessTargetSdk=36 and would run at 36
+// without any change: its executables come out of the APK.
+//
+// AGP 8 does not let a build type override targetSdk (it was removed), so the
+// value is project-wide and the store artefact is identified by the task that
+// makes it. A bundle built at a target Play rejects is refused here, with the
+// command that fixes it, instead of at upload time.
+// ---------------------------------------------------------------------------
+def bundleTargetSdk = 36
+def requestedTaskNames = gradle.startParameter.taskNames.join(" ").toLowerCase()
+def requestsBundle = requestedTaskNames.contains("bundle")
+if (requestsBundle && (rootProject.ext.targetSdkVersion as Integer) < bundleTargetSdk) {
+    throw new GradleException(
+        "a Play bundle must target API ${bundleTargetSdk}, but this build targets "
+            + "${rootProject.ext.targetSdkVersion}: re-run with "
+            + "-PharnessTargetSdk=${bundleTargetSdk} -PharnessCompileSdk=${bundleTargetSdk}")
+}
+
+// ---------------------------------------------------------------------------
+// Release signing, supplied from outside the repository and failing closed.
+//
+//   keystore.properties in the repository root, or the same four values in the
+//   environment:
+//     storeFile     / HARNESS_KEYSTORE
+//     storePassword / HARNESS_KEYSTORE_PASSWORD
+//     keyAlias      / HARNESS_KEY_ALIAS
+//     keyPassword   / HARNESS_KEY_PASSWORD
+//
+// With no key the release artefact is simply unsigned, and a bundle build says
+// which key signed it (or that none did) before it finishes. A key in the
+// repository would be a key leaked, so there is none.
+// ---------------------------------------------------------------------------
+def signingProperties = new Properties()
+File signingFile = rootProject.file("keystore.properties")
+boolean hasSigningFile = signingFile.isFile()
+if (hasSigningFile) {
+    signingFile.withInputStream { signingProperties.load(it) }
+}
+def signingValue = { String key, String env ->
+    (hasSigningFile ? signingProperties.getProperty(key) : null)
+        ?: System.getenv(env)
+}
+def releaseStoreFile = signingValue("storeFile", "HARNESS_KEYSTORE")
+def releaseStorePassword = signingValue("storePassword", "HARNESS_KEYSTORE_PASSWORD")
+def releaseKeyAlias = signingValue("keyAlias", "HARNESS_KEY_ALIAS")
+def releaseKeyPassword = signingValue("keyPassword", "HARNESS_KEY_PASSWORD")
+boolean canSignRelease = releaseStoreFile && releaseStorePassword
+    && releaseKeyAlias && releaseKeyPassword
+    && rootProject.file(releaseStoreFile).isFile()
+def signingNote = canSignRelease
+    ? "signing with the release key (${releaseKeyAlias})"
+    : "no release key: this artefact is unsigned and cannot be uploaded"
+
+// ---------------------------------------------------------------------------
+// Which ABIs the store artefact carries.
+//
+// Play splits a bundle by ABI for *native libraries*, but assets are delivered
+// whole: a bundle holding both ABIs' sealed userland makes every device
+// download both, which put the base module at 290 MB against Play's 200 MB cap.
+// The uploaded bundle therefore carries arm64-v8a only (it covers the devices
+// Play serves; Google requires 64-bit, not 32-bit), while the local APK builds
+// keep both so the x86_64 emulator gate can run.
+//
+// -PharnessPayloadAbis=x86_64 overrides it, e.g. to build a bundle for an
+// emulator without Play, or to measure one ABI at a time.
+// ---------------------------------------------------------------------------
+def wantsBundle = gradle.startParameter.taskNames.join(" ").toLowerCase().contains("bundle")
+def payloadAbis = ((findProperty("harnessPayloadAbis")
+    ?: (wantsBundle ? "arm64-v8a" : "arm64-v8a,x86_64")).toString())
+    .split(",").collect { it.trim() }.findAll { !it.isEmpty() }
+ext.sealedPayloadAbis = payloadAbis
+def filteredPayloadDir = layout.buildDirectory.dir("generated/sealed-payload-upload")
+// The on-demand pack's payload, built by :pack_buildtools (same builder, same
+// asset names), folded into the packdemo APK only.
+def packPayloadDir = new File(rootProject.projectDir, "pack_buildtools/build/generated/sealed-pack")
+// Staged into :app's own build directory before it is merged. The pack's output
+// directory belongs to another project; pointing a merge at it directly makes
+// the ordering implicit, and an APK built without it looks exactly like a build
+// that never had a pack — a false green rather than a failure.
+def packdemoPayloadDir = layout.buildDirectory.dir("generated/packdemo-pack")
+
+android {
+    namespace "io.mcyber12.codingharness"
+    compileSdk rootProject.ext.compileSdkVersion
+
+    defaultConfig {
+        applicationId "io.mcyber12.codingharness"
+        minSdk rootProject.ext.minSdkVersion
+        targetSdk rootProject.ext.targetSdkVersion
+        versionCode 40
+        versionName "0.33.1"
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    // The emulator gate runs without KVM, and on the API 36 image `adb shell
+    // getprop` can take longer than ddmlib's default timeout. When that happens
+    // ddmlib decides the device is API level 1 and refuses to install the app
+    // ("Cannot install split APKs with API level < 21"), which looks like a
+    // build failure and is not. A generous timeout keeps the gate about the app
+    // instead of about how fast the runner's software emulation is today.
+    installation {
+        timeOutInMs = 20 * 60 * 1000
+    }
+
+    // The base module has to name its feature modules, or the bundle is built
+    // without them and the pack simply does not exist for Play to deliver. This
+    // list is also what makes the pack APK a build output of this project.
+    dynamicFeatures = [":pack_buildtools"]
+
+    sourceSets {
+        // The bootstrap archive belongs to the apt build (debug), which unpacks
+        // it on first run. The store-shaped variants do not read it at all: they
+        // ship the split payload instead, and carrying both meant the uploaded
+        // bundle held ~156 MB of a file it never opens — 97.8% of Play's 200 MB
+        // per-device cap before a single user package was added.
+        debug {
+            assets.srcDir(bootstrapOutput)
+        }
+    }
+
+    // Note: no jniLibs packaging override - libharness-exec.so is extracted
+    // from the APK at bootstrap-provisioning time instead (see
+    // HarnessBootstrap.ensureHarnessExecLibrary), because modern AGP keeps
+    // .so files compressed and a dlopen() path cannot point into the APK.
+
+    // The androidTest variant follows this property, so a build type other than
+    // `debug` can be instrumented without changing the default pipeline:
+    //   ./gradlew :app:connectedSealedAndroidTest -PharnessTestBuildType=sealed
+    testBuildType = (findProperty("harnessTestBuildType") ?: "debug").toString()
+
+    packagingOptions {
+        // The sealed variant ships a PIE executable under a JNI library name
+        // (see terminal-emulator/src/main/jni/harness-probe.c). Stripping an
+        // executable is not the same operation as stripping a library, so it
+        // is excluded rather than trusted to survive --strip-unneeded.
+        jniLibs {
+            keepDebugSymbols.add("**/libharnessprobe.so")
+        }
+    }
+
+    // Declared here, filled in below. AGP's DSL objects refuse a property they
+    // do not own, so a closure inside this block cannot read a script variable
+    // (`if (canSignRelease)` fails as an unknown SigningConfig property); the
+    // values are applied after the block instead.
+    signingConfigs {
+        release { }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
+            // The uploaded artefact: it carries the payload and extracts its
+            // libraries. Built with -PharnessTargetSdk=36 it is the store shape.
+            // Its signing config is attached below, and only when a real key
+            // exists.
+        }
+        // `sealed`: the store-shaped build (docs/play-store-plan.md).
+        //
+        // Two things change, and only these two:
+        //   * app/src/sealed/AndroidManifest.xml sets extractNativeLibs=true,
+        //     so the executables this build ships are extracted to the native
+        //     library directory as real files. Without that they stay inside
+        //     the APK, where nothing can execve() them.
+        //   * it is built with -PharnessTargetSdk=34, i.e. the target a store
+        //     submission would need, which is the point of the variant: the
+        //     data-dir exec exemption is gone, so anything that still runs
+        //     proves the sealed layout carries the harness.
+        // It is debuggable so instrumentation and run-as can inspect it; it
+        // shares the debug signing key and the shipping applicationId, exactly
+        // like the `smoke` variant in the reference harness.
+        sealed {
+            initWith(getByName("debug"))
+            debuggable = true
+            // Same shape as `release`, debuggable so instrumentation can run
+            // against it; measured at whatever target the gate asks for.
+            matchingFallbacks.addAll(["debug", "release"])
+        }
+
+        // `packdemo`: the sealed shape with the pack's payload folded into the
+        // base APK, so the pack's install → run → remove path can be exercised
+        // on an emulator. Play delivers the pack as a separate module, and
+        // `:app:assembleSealed` cannot contain one (Gradle builds base and
+        // feature separately); this variant is the same classes and the same
+        // payload format, packaged as one APK. It is never published.
+        packdemo {
+            initWith(getByName("sealed"))
+            matchingFallbacks.addAll(["sealed", "debug", "release"])
+        }
+    }
+
+    // Only the store-shaped variants carry the split userland: the payload
+    // trees are per-ABI, so they cannot live in the shared `main` source set.
+    //
+    // `sealed` is the one instrumentation runs against (debuggable), `release`
+    // is the one uploaded (Play refuses a debuggable bundle). They share the
+    // payload, so the gate exercises the artefact's own shape.
+    sourceSets {
+        sealed {
+            // Also filtered: the gate installs what the upload ships, one ABI,
+            // so the emulator is not asked to swallow a payload for a CPU it
+            // does not have.
+            assets.srcDir(new File(filteredPayloadDir.get().asFile, "assets"))
+            jniLibs.srcDir(new File(filteredPayloadDir.get().asFile, "jniLibs"))
+        }
+        release {
+            // Filtered: only the ABIs this artefact ships (see above).
+            assets.srcDir(new File(filteredPayloadDir.get().asFile, "assets"))
+            jniLibs.srcDir(new File(filteredPayloadDir.get().asFile, "jniLibs"))
+        }
+        packdemo {
+            // The base payload plus the pack's, which is what a fused module
+            // looks like on the device.
+            assets.srcDir(new File(project.sealedPayloadDir.get().asFile, "assets"))
+            jniLibs.srcDir(new File(project.sealedPayloadDir.get().asFile, "jniLibs"))
+            assets.srcDir(new File(packdemoPayloadDir.get().asFile, "assets"))
+            jniLibs.srcDir(new File(packdemoPayloadDir.get().asFile, "jniLibs"))
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}
+
+// Attach the release key, if there is one. Without one the release build stays
+// unsigned and a bundle build says so: an artefact signed with a throwaway key
+// is worse than a build that refuses to pretend.
+if (canSignRelease) {
+    def releaseSigning = android.signingConfigs.getByName("release")
+    releaseSigning.storeFile = rootProject.file(releaseStoreFile)
+    releaseSigning.storePassword = releaseStorePassword
+    releaseSigning.keyAlias = releaseKeyAlias
+    releaseSigning.keyPassword = releaseKeyPassword
+    // v1 is still needed by API 24-27 era tooling on some devices; v2/v3 are
+    // what Play verifies, and v4 enables fast installs.
+    releaseSigning.enableV1Signing = true
+    releaseSigning.enableV2Signing = true
+    releaseSigning.enableV3Signing = true
+    releaseSigning.enableV4Signing = true
+    android.buildTypes.getByName("release").signingConfig = releaseSigning
+}
+
+/** Logged once, so an AAB never leaves without saying which key signed it. */
+tasks.matching { it.name in ["bundleRelease", "bundleSealed", "assembleRelease"] }.configureEach {
+    doFirst {
+        logger.lifecycle("${it.name}: ${signingNote}")
+    }
+}
+
+def sha256 = { File file ->
+    def digest = java.security.MessageDigest.getInstance("SHA-256")
+    file.withInputStream { input ->
+        byte[] buffer = new byte[64 * 1024]
+        int count
+        while ((count = input.read(buffer)) != -1) digest.update(buffer, 0, count)
+    }
+    digest.digest().collect { String.format("%02x", it & 0xff) }.join()
+}
+
+def downloadBootstrap = tasks.register("downloadHarnessBootstrap") {
+    outputs.dir(bootstrapOutput)
+    doLast {
+        File outputDir = bootstrapOutput.get().asFile
+        outputDir.mkdirs()
+        bootstrapAssets.each { arch, metadata ->
+            File output = new File(outputDir, "bootstrap-${arch}.zip")
+            boolean valid = output.isFile() && sha256(output) == metadata.sha256
+            if (valid) return
+
+            logger.lifecycle("Downloading Termux bootstrap for ${arch}")
+            File temporary = new File(outputDir, output.name + ".part")
+            temporary.delete()
+            def connection = new URL(metadata.url).openConnection()
+            connection.setConnectTimeout(30_000)
+            connection.setReadTimeout(180_000)
+            connection.setUseCaches(false)
+            connection.inputStream.withCloseable { input ->
+                temporary.withOutputStream { outputStream ->
+                    byte[] buffer = new byte[64 * 1024]
+                    int count
+                    while ((count = input.read(buffer)) != -1) outputStream.write(buffer, 0, count)
+                }
+            }
+            if (sha256(temporary) != metadata.sha256) {
+                temporary.delete()
+                throw new GradleException("SHA-256 mismatch for ${metadata.url}")
+            }
+            if (output.exists() && !output.delete()) throw new GradleException("Unable to replace ${output}")
+            if (!temporary.renameTo(output)) throw new GradleException("Unable to activate ${output}")
+        }
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Sealed payload (docs/play-store-plan.md)
+//
+// Splits each ABI's Termux bootstrap into the two halves a modern targetSdk
+// needs: the bytes the kernel executes (JNI libraries, which Android extracts
+// to the exec-allowed native library directory) and the bytes that are only
+// read (extracted into the prefix at first run). The split, the manifest and
+// the payload's own verification live in scripts/build-sealed-payload.py so the
+// same logic runs on a CI runner and on a workstation.
+// ---------------------------------------------------------------------------
+// ---------------------------------------------------------------------------
+// Build-time package fetch: the sealed userland's toolchain.
+//
+// The apt build installs these on first run; the sealed build may not (Play's
+// Device & Network Abuse policy, and the exec model needs the bytes in the
+// APK). So they are downloaded here, pinned by the repository's SHA-256, and
+// unpacked by build-sealed-payload.py. Dependency resolution, alternatives and
+// virtual names are handled by fetch-core-debs.py, and the bootstrap's own dpkg
+// database decides what is already present.
+// ---------------------------------------------------------------------------
+def fetchCoreDebs = tasks.register("fetchCoreDebs") {
+    description = "Fetches the core-tier Termux packages for the sealed payload"
+    dependsOn(downloadBootstrap)
+    inputs.dir(bootstrapOutput)
+    inputs.property("packages", project.sealedCorePackages.join(" "))
+    inputs.property("repo", project.sealedRepo)
+    inputs.file(rootProject.file("scripts/fetch-core-debs.py"))
+    outputs.dir(project.sealedDebDir)
+    doLast {
+        File script = rootProject.file("scripts/fetch-core-debs.py")
+        if (!script.isFile()) throw new GradleException("missing ${script}")
+        [["aarch64", "arm64-v8a"], ["x86_64", "x86_64"]].each { arch, abi ->
+            File zip = new File(bootstrapOutput.get().asFile, "bootstrap-${arch}.zip")
+            File output = new File(project.sealedDebDir.get().asFile, abi)
+            output.mkdirs()
+            // The resolver writes its own transcript: providers.exec throws the
+            // moment the child exits non-zero, and then every word it said is
+            // gone - including the reason a mirror refused, which is the only
+            // thing worth knowing on a networked runner.
+            File record = new File(project.layout.buildDirectory.get().asFile,
+                "fetch-core-debs-${abi}.log")
+            record.parentFile.mkdirs()
+            def fetch = providers.exec {
+                commandLine(["python3", script.absolutePath,
+                    "--arch", arch,
+                    "--out", output.absolutePath,
+                    "--bootstrap", zip.absolutePath,
+                    "--repo", project.sealedRepo,
+                    "--log", record.absolutePath,
+                    "--packages"] + project.sealedCorePackages)
+            }
+            def result = fetch.result.get()
+            fetch.standardOutput.asText.get().readLines().each { logger.lifecycle(it) }
+            result.assertNormalExitValue()
+        }
+    }
+}
+
+def buildSealedPayload = tasks.register("buildSealedPayload") {
+    description = "Splits the Termux bootstrap and core packages into a sealed payload"
+    dependsOn(downloadBootstrap, fetchCoreDebs)
+    inputs.dir(bootstrapOutput)
+    inputs.dir(project.sealedDebDir)
+    inputs.file(rootProject.file("scripts/build-sealed-payload.py"))
+    outputs.dir(project.sealedPayloadDir)
+    doLast {
+        File script = rootProject.file("scripts/build-sealed-payload.py")
+        if (!script.isFile()) throw new GradleException("missing ${script}")
+        [["aarch64", "arm64-v8a"], ["x86_64", "x86_64"]].each { arch, abi ->
+            File zip = new File(bootstrapOutput.get().asFile, "bootstrap-${arch}.zip")
+            if (!zip.isFile()) {
+                throw new GradleException("bootstrap for ${abi} not found: ${zip}")
+            }
+            File debs = new File(project.sealedDebDir.get().asFile, abi)
+            if (!debs.isDirectory()) {
+                throw new GradleException("core packages for ${abi} were not fetched: ${debs}")
+            }
+            // The builder tees its own transcript: Gradle throws the moment a
+            // captured child exits non-zero, so the reason for the failure - a
+            // shared library missing from the payload, say - never reaches the
+            // log unless the child writes it down itself.
+            // Beside the assets, never inside them: anything under the asset
+            // directory is merged into the APK, and two logs with the same name
+            // collide in aapt's resource merge.
+            File log = new File(bootstrapOutput.get().asFile.parentFile,
+                    "sealed-payload-${abi}.log")
+            log.parentFile.mkdirs()
+            def split = providers.exec {
+                commandLine "python3", script.absolutePath,
+                    "--bootstrap", zip.absolutePath,
+                    "--abi", abi,
+                    "--out", project.sealedPayloadDir.get().asFile.absolutePath,
+                    "--deb-dir", debs.absolutePath,
+                    "--log", log.absolutePath
+            }
+            def result = split.result.get()
+            split.standardOutput.asText.get().readLines().each { logger.lifecycle(it) }
+            result.assertNormalExitValue()
+        }
+    }
+}
+
+def filterSealedPayload = tasks.register("filterSealedPayloadAbis", Sync) {
+    description = "Keeps only the ABIs this artefact ships out of the built payload"
+    dependsOn(buildSealedPayload)
+    from(project.sealedPayloadDir.get().asFile)
+    into(filteredPayloadDir)
+    payloadAbis.each { abi ->
+        // The payload names every per-ABI file with the ABI in it.
+        include "assets/*-${abi}.zip"
+        include "assets/*-${abi}.txt"
+        include "assets/*-${abi}.json"
+        include "jniLibs/${abi}/**"
+    }
+    // Anything that is not per-ABI (a future shared asset) is kept as is.
+    include "assets/*"
+    exclude { element ->
+        def name = element.relativePath.pathString
+        def abiMatch = (name =~ /-(arm64-v8a|x86_64)\./)
+        return abiMatch.find() && !payloadAbis.contains(abiMatch.group(1))
+    }
+    doLast {
+        logger.lifecycle("payload ABIs in this artefact: " + payloadAbis.join(", "))
+    }
+}
+
+tasks.matching {
+    it.name.startsWith("mergeSealed") || it.name.startsWith("preSealed")
+        || it.name.startsWith("mergeRelease") || it.name == "preReleaseBuild"
+}.configureEach {
+    dependsOn(filterSealedPayload)
+}
+
+def stagePackdemoPayload = tasks.register("stagePackdemoPayload", Sync) {
+    description = "Copies the pack's payload where the packdemo variant can merge it"
+    dependsOn(":pack_buildtools:buildPackPayload")
+    from(packPayloadDir)
+    into(packdemoPayloadDir)
+    doLast {
+        def assets = new File(packdemoPayloadDir.get().asFile, "assets")
+        def zips = assets.listFiles()?.findAll { it.name.contains("userland-") } ?: []
+        if (zips.isEmpty()) {
+            throw new GradleException(
+                "the pack produced no userland payload in ${assets} - the packdemo "
+                    + "APK would install nothing")
+        }
+        logger.lifecycle("packdemo payload: " + zips*.name.join(", "))
+    }
+}
+
+tasks.matching {
+    it.name.startsWith("mergePackdemo") || it.name == "prePackdemoBuild"
+}.configureEach {
+    dependsOn(buildSealedPayload, stagePackdemoPayload)
+}
+
+// Every variant needs the bootstrap assets, not just debug/release: the
+// `sealed` variant is its own build type (preSealedBuild), and without this it
+// would package an APK with no userland in it at all. Wiring the merge task is
+// variant-agnostic, so a build type added later cannot silently miss the
+// assets.
+tasks.matching { it.name in ["preDebugBuild", "preReleaseBuild"] }.configureEach {
+    dependsOn(downloadBootstrap)
+}
+tasks.matching {
+    (it.name.startsWith("mergeDebug") || it.name.startsWith("mergeRelease")
+        || it.name.startsWith("mergeSealed") || it.name.startsWith("mergePackdemo"))
+        && it.name.endsWith("Assets")
+}.configureEach {
+    dependsOn(downloadBootstrap)
+}
+
+dependencies {
+    implementation project(":harness-core")
+    implementation project(":terminal-view")
+
+    androidTestImplementation "junit:junit:4.13.2"
+    androidTestImplementation "androidx.test:core:1.6.1"
+    androidTestImplementation "androidx.test:runner:1.6.2"
+    androidTestImplementation "androidx.test.ext:junit:1.2.1"
+}

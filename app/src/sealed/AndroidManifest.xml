@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Sealed variant (docs/play-store-plan.md).
+
+  extractNativeLibs=true is the one property that makes a modern targetSdk
+  workable for a terminal harness: it makes Android extract the APK's JNI
+  libraries to the native library directory as real files instead of leaving
+  them compressed inside the APK. That directory is the only place an app
+  targeting API 29+ is allowed to execve() from, so it is where every
+  executable this build ships has to live.
+
+  The cost is install size (each library exists both in the APK and extracted);
+  the benefit is that the shell, the runtimes and the tools all still run at a
+  store-legal target.
+-->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <application android:extractNativeLibs="true" />
+</manifest>
